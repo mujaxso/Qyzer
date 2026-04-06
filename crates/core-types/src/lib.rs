@@ -1,4 +1,4 @@
-pub mod ids;
-pub mod events;
 pub mod commands;
+pub mod events;
+pub mod ids;
 pub mod protocol;

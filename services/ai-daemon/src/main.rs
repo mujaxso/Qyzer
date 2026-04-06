@@ -1,7 +1,7 @@
 mod providers;
-mod streaming;
-mod routing;
 mod quotas;
+mod routing;
+mod streaming;
 
 fn main() {
     // TODO: implement AI daemon

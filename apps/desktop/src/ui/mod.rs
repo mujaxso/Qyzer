@@ -1,5 +1,5 @@
-pub mod layout;
-pub mod editor;
-pub mod sidebar;
 pub mod chat;
+pub mod editor;
+pub mod layout;
+pub mod sidebar;
 pub mod terminal;

@@ -1,3 +1,3 @@
-pub mod diff;
 pub mod apply;
+pub mod diff;
 pub mod preview;

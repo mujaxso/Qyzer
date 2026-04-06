@@ -1,7 +1,7 @@
 mod files;
 mod git;
-mod terminal;
 mod tasks;
+mod terminal;
 
 fn main() {
     // TODO: implement workspace daemon
