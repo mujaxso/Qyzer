@@ -1,1 +1,38 @@
 .aider*
+# Compiled files
+target/
+**/*.rs.bk
+
+# Cargo.lock is generated for applications, not libraries
+# But we have binaries, so we'll keep it
+# Cargo.lock
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+**/*.o
+**/*.so
+**/*.dylib
+
+# Coverage
+coverage/
+*.profraw
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+tmp/
+temp/
