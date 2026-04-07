@@ -5,10 +5,10 @@ use iced::{
 
 use crate::app::Message;
 
-pub fn editor<'a>(text_editor: &'a iced::widget::text_editor::Content) -> Element<'a, Message> {
+pub fn editor<'a>(editor_content: &'a iced::widget::text_editor::Content) -> Element<'a, Message> {
     // Count lines to show line numbers
-    let text = text_editor.text();
-    let line_count = text.lines().count().max(1);
+    let content_text = editor_content.text();
+    let line_count = content_text.lines().count().max(1);
     
     let line_numbers: Vec<Element<_>> = (1..=line_count)
         .map(|i| {
@@ -30,7 +30,7 @@ pub fn editor<'a>(text_editor: &'a iced::widget::text_editor::Content) -> Elemen
         .width(Length::Fixed(60.0));
     
     // Create a text editor
-    let editor = text_editor::Editor::new(text_editor)
+    let editor = text_editor::Editor::new(editor_content)
         .on_action(Message::EditorContentChanged)
         .font(Font::MONOSPACE)
         .size(14)
