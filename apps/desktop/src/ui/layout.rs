@@ -8,9 +8,6 @@ use iced::{
 };
 
 use crate::app::{Activity, Message};
-#[allow(unused_imports)]
-use editor_buffer::buffer::TextBuffer;
-use editor_buffer::buffer::TextBuffer as _;
 
 pub fn ide_layout<'a>(
     workspace_path: &'a str,
@@ -362,7 +359,29 @@ fn editor_panel<'a>(
         .align_items(Alignment::Center)
     };
 
-    let editor_content = if active_file_path.is_some() {
+    // Check if we're loading a file (active file path exists but no buffer yet)
+    let is_loading = active_file_path.is_some() && editor_buffer.is_none();
+    
+    let editor_content = if is_loading {
+        // Show loading indicator
+        container(
+            column![
+                text("Loading file...")
+                    .size(16)
+                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 255))),
+                text("Please wait")
+                    .size(12)
+                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150))),
+            ]
+            .align_items(Alignment::Center)
+            .spacing(16),
+        )
+        .center_y()
+        .center_x()
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into()
+    } else if active_file_path.is_some() {
         super::editor::editor(text_editor)
     } else {
         container(

@@ -12,7 +12,7 @@ pub enum Message {
     OpenWorkspace,
     WorkspaceLoaded(Result<Vec<DirectoryEntry>, String>),
     FileSelected(usize),
-    FileLoaded(Result<(String, String), String>),
+    FileLoaded(Result<(String, String, TextBuffer), String>),
     EditorContentChanged(text_editor::Action),
     SaveFile,
     FileSaved(Result<(), String>),
@@ -131,20 +131,34 @@ impl iced::Application for App {
                     if !entry.is_dir {
                         let path = entry.path.clone();
                         self.active_file_path = Some(path.clone());
-                        self.status_message = format!("Loading {}... (this may take a moment for large files)", entry.name);
+                        // Clear current editor content to show loading state
+                        self.text_editor = text_editor::Content::new();
+                        self.editor_content = String::new();
+                        self.editor_buffer = None;
+                        self.status_message = format!("Loading {}...", entry.name);
+                        self.error_message = None;
                         
                         Command::perform(
                             async move {
                                 // Clone path for use inside the async block
                                 let path_clone = path.clone();
-                                // Read file in a blocking task to avoid freezing the UI
-                                let content_result = tokio::task::spawn_blocking(move || {
-                                    files::read_file(&path_clone)
+                                // Read file and create buffer in a blocking task
+                                let result = tokio::task::spawn_blocking(move || {
+                                    match files::read_file(&path_clone) {
+                                        Ok(content) => {
+                                            // Create buffer in the background thread
+                                            let buffer = TextBuffer::new(content.clone());
+                                            Ok((path, content, buffer))
+                                        }
+                                        Err(e) => Err(format!("Failed to read file: {}", e)),
+                                    }
                                 }).await;
                                 
-                                match content_result {
-                                    Ok(Ok(content)) => Message::FileLoaded(Ok((path, content))),
-                                    Ok(Err(e)) => Message::FileLoaded(Err(format!("Failed to read file: {}", e))),
+                                match result {
+                                    Ok(Ok((path, content, buffer))) => {
+                                        Message::FileLoaded(Ok((path, content, buffer)))
+                                    }
+                                    Ok(Err(e)) => Message::FileLoaded(Err(e)),
                                     Err(join_err) => Message::FileLoaded(Err(format!("Failed to join task: {}", join_err))),
                                 }
                             },
@@ -159,25 +173,31 @@ impl iced::Application for App {
             }
             Message::FileLoaded(result) => {
                 match result {
-                    Ok((path, content)) => {
-                        // Check file size to determine handling mode
+                    Ok((path, content, buffer)) => {
                         let file_size = content.len();
                         const WARNING_THRESHOLD: usize = 1_000_000; // 1MB
                         const READ_ONLY_THRESHOLD: usize = 10_000_000; // 10MB
                         
+                        // Update text editor content on the main thread
+                        // This could still be heavy for very large files, but we've already loaded the content
+                        self.text_editor = text_editor::Content::with_text(&content);
+                        self.editor_content = content.clone();
+                        self.editor_buffer = Some(buffer);
+                        self.is_dirty = false;
+                        
+                        // Update workspace state
+                        {
+                            let mut state = self.workspace_state.lock().unwrap();
+                            state.open_buffer(&path, self.editor_content.clone());
+                        }
+                        
+                        // Set status based on file size
                         if file_size > READ_ONLY_THRESHOLD {
                             self.status_message = format!(
-                                "Opened very large file ({} MB) in read-only mode. Editing disabled.",
+                                "Opened very large file ({} MB) - editing may be slow",
                                 file_size / 1_000_000
                             );
-                            // Mark as read-only by not creating an editor buffer
-                            // But we still want to show the content
-                            self.text_editor = text_editor::Content::with_text(&content);
-                            self.editor_content = content.clone();
-                            self.editor_buffer = None;
-                            self.is_dirty = false;
-                            self.error_message = Some("File is very large - opened in read-only mode".to_string());
-                            return Command::none();
+                            self.error_message = Some("File is very large - performance may be affected".to_string());
                         } else if file_size > WARNING_THRESHOLD {
                             self.status_message = format!(
                                 "Opened large file ({} MB). Performance may be affected.",
@@ -188,33 +208,6 @@ impl iced::Application for App {
                             self.status_message = format!("Loaded: {} ({} bytes)", path, file_size);
                             self.error_message = None;
                         }
-                        
-                        // We'll update the UI immediately with a loading message
-                        self.status_message = format!("Processing file content... ({} bytes)", file_size);
-                        
-                        // Update text editor content
-                        // This may still block, but with the 1MB limit it should be manageable
-                        self.text_editor = text_editor::Content::with_text(&content);
-                        self.editor_content = content.clone();
-                        
-                        // Create buffer
-                        let buffer = TextBuffer::new(content.clone());
-                        self.editor_buffer = Some(buffer);
-                        self.is_dirty = false;
-                        
-                        // Update workspace state quickly
-                        {
-                            let mut state = self.workspace_state.lock().unwrap();
-                            state.open_buffer(&path, self.editor_content.clone());
-                        }
-                        
-                        if file_size > 1_000_000 { // 1MB
-                            self.status_message = format!("Loaded large file: {} ({} MB).", 
-                                path, file_size / 1_000_000);
-                        } else {
-                            self.status_message = format!("Loaded: {} ({} bytes)", path, file_size);
-                        }
-                        self.error_message = None;
                     }
                     Err(e) => {
                         self.error_message = Some(e);
