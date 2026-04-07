@@ -2,6 +2,7 @@ mod app;
 mod bootstrap;
 mod commands;
 mod ui;
+mod events;
 
 use std::env;
 use std::sync::{Arc, Mutex};
@@ -223,93 +224,16 @@ impl NeoteApp {
         }
     }
 
-    fn handle_sidebar_actions(&mut self) {
-        // Handle open workspace dialog
-        if self.sidebar.open_workspace_dialog {
-            if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                let path_str = path.to_string_lossy().to_string();
-                if let Err(e) = self.open_workspace(path_str) {
-                    eprintln!("Failed to open workspace: {}", e);
-                }
-                self.sidebar.open_workspace_dialog = false;
-            } else {
-                self.sidebar.open_workspace_dialog = false;
-            }
-        }
-
-        // Handle create file dialog
-        if self.sidebar.create_file_dialog {
-            if let Some(path) = rfd::FileDialog::new().save_file() {
-                let path_str = path.to_string_lossy().to_string();
-                if let Err(e) = self.create_file(path_str) {
-                    eprintln!("Failed to create file: {}", e);
-                }
-                self.sidebar.create_file_dialog = false;
-                self.sidebar.create_file_path_input.clear();
-            } else {
-                self.sidebar.create_file_dialog = false;
-                self.sidebar.create_file_path_input.clear();
-            }
-        }
-
-        // Handle delete file dialog
-        if self.sidebar.delete_file_dialog {
-            if let Some(path) = rfd::FileDialog::new().pick_file() {
-                let path_str = path.to_string_lossy().to_string();
-                if let Err(e) = self.delete_file(path_str) {
-                    eprintln!("Failed to delete file: {}", e);
-                }
-                self.sidebar.delete_file_dialog = false;
-                self.sidebar.delete_file_path_input.clear();
-            } else {
-                self.sidebar.delete_file_dialog = false;
-                self.sidebar.delete_file_path_input.clear();
-            }
-        }
-
-        // Handle open file dialog
-        if self.sidebar.open_file_dialog {
-            if let Some(path) = rfd::FileDialog::new().pick_file() {
-                let path_str = path.to_string_lossy().to_string();
-                // Find the index of this file in file_entries
-                if let Some(index) = self.file_entries.iter().position(|entry| entry.path == path_str) {
-                    self.open_file(index);
-                } else {
-                    // If not in current list, open it directly
-                    match files::read_file(&path_str) {
-                        Ok(content) => {
-                            let mut state = self.workspace_state.lock().unwrap();
-                            state.open_buffer(&path_str, content.clone());
-                            self.editor_text = content;
-                            self.dirty = false;
-                            // If we have a workspace, refresh the file list to include the new file
-                            if !self.workspace_path.is_empty() {
-                                // Check if the file is within the workspace
-                                if path_str.starts_with(&self.workspace_path) {
-                                    if let Ok(entries) = files::list_directory(&self.workspace_path) {
-                                        self.file_entries = entries;
-                                        state.set_file_tree(self.file_entries.clone());
-                                    }
-                                }
-                            }
-                        }
-                        Err(e) => eprintln!("Failed to read file: {}", e),
-                    }
-                }
-                self.sidebar.open_file_dialog = false;
-                self.sidebar.open_file_path_input.clear();
-            } else {
-                self.sidebar.open_file_dialog = false;
-                self.sidebar.open_file_path_input.clear();
-            }
-        }
-    }
 }
 
 impl eframe::App for NeoteApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Handle sidebar actions (file dialogs, etc.)
-        self.handle_sidebar_actions();
+        // Collect events from the sidebar
+        let events = self.sidebar.take_events();
+        self.pending_sidebar_events.extend(events);
+        
+        // Process pending events
+        self.process_sidebar_events();
         
         egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
             ui.horizontal(|ui| {
