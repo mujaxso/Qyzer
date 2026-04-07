@@ -17,7 +17,7 @@ pub fn editor<'a>(editor_content: &'a str) -> Element<'a, Message> {
                     .style(iced::theme::Text::Color(iced::Color::from_rgb8(100, 100, 100)))
             )
             .padding([0, 8, 0, 0])
-            .width(Length::Fixed(50.0))
+            .width(Length::Fill)
             .align_x(iced::alignment::Horizontal::Right)
             .into()
         })
@@ -25,7 +25,7 @@ pub fn editor<'a>(editor_content: &'a str) -> Element<'a, Message> {
     
     let line_numbers_column = column(line_numbers)
         .spacing(0)
-        .width(Length::Fixed(60.0));
+        .width(Length::Fill);
     
     let editor_input = text_input("", editor_content)
         .on_input(Message::EditorContentChanged)
@@ -37,6 +37,7 @@ pub fn editor<'a>(editor_content: &'a str) -> Element<'a, Message> {
     row![
         container(line_numbers_column)
             .style(iced::theme::Container::Box)
+            .width(Length::Shrink)
             .height(Length::Fill),
         scrollable(
             editor_input

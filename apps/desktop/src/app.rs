@@ -22,6 +22,7 @@ pub enum Message {
     SendPrompt,
     KeyPressed(iced::keyboard::Key, iced::keyboard::Modifiers),
     ToggleDirectory(String),
+    ToggleCommandPalette,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -268,8 +269,17 @@ impl iced::Application for App {
                         // Ctrl+O to open workspace
                         self.update(Message::OpenWorkspace)
                     }
+                    iced::keyboard::Key::Character(c) if c == "p" && modifiers.control() && modifiers.shift() => {
+                        // Ctrl+Shift+P for command palette
+                        self.update(Message::ToggleCommandPalette)
+                    }
                     _ => Command::none(),
                 }
+            }
+            Message::ToggleCommandPalette => {
+                // For now, just show a status message
+                self.status_message = "Command palette (Ctrl+Shift+P) - coming soon".to_string();
+                Command::none()
             }
             Message::ToggleDirectory(path) => {
                 if self.expanded_directories.contains(&path) {

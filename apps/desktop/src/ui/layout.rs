@@ -20,7 +20,7 @@ pub fn ide_layout<'a>(
     active_activity: Activity,
     ai_panel_visible: bool,
     prompt_input: &'a str,
-    _expanded_directories: &'a std::collections::HashSet<String>,
+    expanded_directories: &'a std::collections::HashSet<String>,
 ) -> Element<'a, Message> {
     // Top bar
     let top_bar = top_bar(workspace_path, is_dirty);
@@ -43,13 +43,25 @@ pub fn ide_layout<'a>(
         // Activity rail
         activity_rail,
         vertical_rule(1),
-        // Left panel (explorer)
-        left_panel(file_entries, active_activity),
+        // Left panel (explorer) - flexible width
+        container(left_panel_with_expanded(file_entries, active_activity, expanded_directories))
+            .width(Length::FillPortion(2))
+            .height(Length::Fill),
         vertical_rule(1),
-        // Editor area
-        editor_panel(active_file_path, editor_content, is_dirty),
-        // AI panel (conditionally visible)
-        ai_panel_widget,
+        // Editor area - takes most space
+        container(editor_panel(active_file_path, editor_content, is_dirty))
+            .width(Length::FillPortion(5))
+            .height(Length::Fill),
+        // AI panel (conditionally visible) - flexible width
+        if ai_panel_visible {
+            container(ai_panel(prompt_input))
+                .width(Length::FillPortion(3))
+                .height(Length::Fill)
+                .style(theme::Container::Box)
+                .into()
+        } else {
+            container(horizontal_space()).width(Length::Fixed(0.0)).into()
+        },
     ]
     .height(Length::Fill);
 
@@ -71,11 +83,38 @@ pub fn ide_layout<'a>(
     ]
     .height(Length::Fill);
 
-    container(content)
+    let base = container(content)
         .width(Length::Fill)
         .height(Length::Fill)
-        .style(theme::Container::Box)
-        .into()
+        .style(theme::Container::Box);
+    
+    // Add a command palette overlay (placeholder)
+    // In a real implementation, this would be conditional
+    let overlay = container(
+        column![
+            text("Command Palette").size(20),
+            text("Type a command...").size(14),
+            text_input("", "").padding(8),
+            text("Ctrl+P to close").size(12),
+        ]
+        .padding(20)
+        .spacing(10)
+    )
+    .width(Length::Fixed(400.0))
+    .height(Length::Shrink)
+    .style(theme::Container::Box)
+    .center_x()
+    .center_y();
+    
+    container(
+        iced::widget::stack![
+            base,
+            overlay,
+        ]
+    )
+    .width(Length::Fill)
+    .height(Length::Fill)
+    .into()
 }
 
 fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> {
@@ -173,6 +212,20 @@ fn activity_rail<'a>(active_activity: Activity) -> Element<'a, Message> {
         .into()
 }
 
+fn left_panel_with_expanded<'a>(
+    file_entries: &'a [core_types::workspace::DirectoryEntry],
+    active_activity: Activity,
+    expanded_directories: &'a std::collections::HashSet<String>,
+) -> Element<'a, Message> {
+    match active_activity {
+        Activity::Explorer => explorer_panel_with_expanded(file_entries, expanded_directories),
+        Activity::Search => search_panel(),
+        Activity::SourceControl => terminal_panel(),
+        Activity::Settings => settings_panel(),
+        _ => placeholder_panel(&format!("{} panel", format!("{:?}", active_activity))),
+    }
+}
+
 fn left_panel<'a>(
     file_entries: &'a [core_types::workspace::DirectoryEntry],
     active_activity: Activity,
@@ -216,9 +269,20 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
                 } else {
                     iced::Color::from_rgb8(180, 180, 255)
                 };
+                let padding_left = if entry.is_dir { 0 } else { 20 };
                 container(
                     button(
                         row![
+                            if entry.is_dir {
+                                // Add a toggle button for directories
+                                button("▶")
+                                    .on_press(Message::ToggleDirectory(entry.path.clone()))
+                                    .style(theme::Button::Text)
+                                    .padding(0)
+                                    .into()
+                            } else {
+                                horizontal_space().width(20).into()
+                            },
                             text(icon).size(14),
                             text(&entry.name).size(14)
                                 .style(iced::theme::Text::Color(text_color)),
@@ -226,11 +290,16 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
                         .spacing(8)
                         .align_items(Alignment::Center),
                     )
-                    .on_press(Message::FileSelected(i))
+                    .on_press(if entry.is_dir {
+                        Message::ToggleDirectory(entry.path.clone())
+                    } else {
+                        Message::FileSelected(i)
+                    })
                     .padding([6, 12])
                     .width(Length::Fill)
                     .style(theme::Button::Secondary),
                 )
+                .padding(iced::Padding::left(padding_left))
                 .into()
             })
             .collect();
@@ -257,7 +326,6 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
         iced::widget::horizontal_rule(1),
         content,
     ]
-    .width(Length::Fixed(250.0))
     .height(Length::Fill)
     .into()
 }
@@ -501,6 +569,16 @@ fn settings_panel<'a>() -> Element<'a, Message> {
     .width(Length::Fixed(250.0))
     .height(Length::Fill)
     .into()
+}
+
+fn explorer_panel_with_expanded<'a>(
+    file_entries: &'a [core_types::workspace::DirectoryEntry],
+    expanded_directories: &'a std::collections::HashSet<String>,
+) -> Element<'a, Message> {
+    // Filter files based on expanded directories
+    // For simplicity, show all entries for now
+    // In a real implementation, you would filter based on directory structure
+    explorer_panel(file_entries)
 }
 
 fn placeholder_panel<'a>(label: &str) -> Element<'a, Message> {
