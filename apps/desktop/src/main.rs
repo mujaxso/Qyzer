@@ -6,7 +6,6 @@ mod ui;
 use std::env;
 use std::io::{self, Write};
 
-use app::App;
 use bootstrap::init;
 use workspace_daemon::files;
 use workspace_model::state::WorkspaceState;
@@ -58,10 +57,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "1" => {
                 // Open a file
                 println!("Enter file number to open:");
-                // Collect non-directory entries
+                // Collect non-directory entries and their data before mutable borrow
                 let file_entries: Vec<_> = workspace_state.file_tree()
                     .iter()
                     .filter(|entry| !entry.is_dir)
+                    .map(|entry| (entry.path.clone(), entry.name.clone()))
                     .collect();
                 
                 if file_entries.is_empty() {
@@ -69,8 +69,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     continue;
                 }
                 
-                for (i, entry) in file_entries.iter().enumerate() {
-                    println!("  {}. {}", i + 1, entry.name);
+                for (i, (_, name)) in file_entries.iter().enumerate() {
+                    println!("  {}. {}", i + 1, name);
                 }
                 print!("File number: ");
                 io::stdout().flush()?;
@@ -79,12 +79,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 io::stdin().read_line(&mut file_input)?;
                 if let Ok(file_num) = file_input.trim().parse::<usize>() {
                     if file_num >= 1 && file_num <= file_entries.len() {
-                        let entry = file_entries[file_num - 1];
+                        let (path, name) = &file_entries[file_num - 1];
                         // Read the file
-                        match files::read_file(&entry.path) {
+                        match files::read_file(path) {
                             Ok(content) => {
-                                let buffer_id = workspace_state.open_buffer(&entry.path, content.clone());
-                                println!("Opened '{}' (buffer ID: {:?})", entry.name, buffer_id);
+                                let buffer_id = workspace_state.open_buffer(path, content.clone());
+                                println!("Opened '{}' (buffer ID: {:?})", name, buffer_id);
                                 println!("Content preview: {}", 
                                     if content.len() > 50 { 
                                         format!("{}...", &content[..50]) 
