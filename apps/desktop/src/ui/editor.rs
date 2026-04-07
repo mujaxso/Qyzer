@@ -33,7 +33,6 @@ pub fn editor<'a>(editor_content: &'a iced::widget::text_editor::Content) -> Ele
     let editor = text_editor::TextEditor::new(editor_content)
         .on_action(Message::EditorContentChanged)
         .font(Font::MONOSPACE)
-        .size(14)
         .height(Length::Fill);
     
     // Wrap in a scrollable
