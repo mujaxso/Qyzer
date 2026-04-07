@@ -124,7 +124,7 @@ impl iced::Application for App {
             Message::FileLoaded(result) => {
                 match result {
                     Ok((path, content)) => {
-                        let mut buffer = TextBuffer::new(content.clone());
+                        let buffer = TextBuffer::new(content.clone());
                         self.editor_content = content;
                         self.editor_buffer = Some(buffer);
                         self.is_dirty = false;

@@ -31,7 +31,7 @@ pub fn file_list<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry]) 
                             .padding(8)
                             .into()
                     })
-                    .collect(),
+                    .collect::<Vec<_>>(),
             )
             .spacing(5),
         )
