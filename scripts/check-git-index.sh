@@ -21,7 +21,12 @@ if [ -f .git/index ]; then
     fi
     
     # Get version (bytes 5-8)
-    VERSION_HEX=$(head -c 8 .git/index | tail -c 4 | xxd -p -u)
+    VERSION_HEX=$(head -c 8 .git/index | tail -c 4 | xxd -p -u | tr -d '[:space:]')
+    # Handle empty or invalid hex string
+    if [ -z "$VERSION_HEX" ]; then
+        echo "Could not read version from Git index"
+        exit 1
+    fi
     VERSION=$((16#$VERSION_HEX))
     
     echo "Git index version: $VERSION"
