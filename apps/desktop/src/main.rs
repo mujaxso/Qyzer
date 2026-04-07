@@ -56,7 +56,7 @@ impl NeoteApp {
     }
 
     fn save_current_file(&mut self) {
-        let state = self.workspace_state.lock().unwrap();
+        let mut state = self.workspace_state.lock().unwrap();
         if let Some((path, _)) = state.save_active_buffer() {
             match files::write_file(&path.to_string_lossy(), &self.editor_text) {
                 Ok(_) => {
@@ -90,6 +90,7 @@ impl eframe::App for NeoteApp {
                 // Left column: file list
                 columns[0].vertical(|ui| {
                     ui.heading("Files");
+                    let mut file_to_open: Option<usize> = None;
                     egui::ScrollArea::vertical().show(ui, |ui| {
                         for (i, entry) in self.file_entries.iter().enumerate() {
                             let label = if entry.is_dir {
@@ -98,10 +99,13 @@ impl eframe::App for NeoteApp {
                                 format!("📄 {}", entry.name)
                             };
                             if ui.selectable_label(self.selected_file_index == Some(i), label).clicked() && !entry.is_dir {
-                                self.open_file(i);
+                                file_to_open = Some(i);
                             }
                         }
                     });
+                    if let Some(index) = file_to_open {
+                        self.open_file(index);
+                    }
                 });
 
                 // Right column: editor
