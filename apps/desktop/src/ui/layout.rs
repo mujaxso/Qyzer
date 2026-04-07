@@ -20,7 +20,7 @@ pub fn ide_layout<'a>(
     active_activity: Activity,
     ai_panel_visible: bool,
     prompt_input: &'a str,
-    expanded_directories: &'a std::collections::HashSet<String>,
+    _expanded_directories: &'a std::collections::HashSet<String>,
 ) -> Element<'a, Message> {
     // Top bar
     let top_bar = top_bar(workspace_path, is_dirty);
@@ -44,7 +44,7 @@ pub fn ide_layout<'a>(
         activity_rail,
         vertical_rule(1),
         // Left panel (explorer) - flexible width
-        container(left_panel_with_expanded(file_entries, active_activity, expanded_directories))
+        container(left_panel_with_expanded(file_entries, active_activity, _expanded_directories))
             .width(Length::FillPortion(2))
             .height(Length::Fill),
         vertical_rule(1),
@@ -83,38 +83,11 @@ pub fn ide_layout<'a>(
     ]
     .height(Length::Fill);
 
-    let base = container(content)
+    container(content)
         .width(Length::Fill)
         .height(Length::Fill)
-        .style(theme::Container::Box);
-    
-    // Add a command palette overlay (placeholder)
-    // In a real implementation, this would be conditional
-    let overlay = container(
-        column![
-            text("Command Palette").size(20),
-            text("Type a command...").size(14),
-            text_input("", "").padding(8),
-            text("Ctrl+P to close").size(12),
-        ]
-        .padding(20)
-        .spacing(10)
-    )
-    .width(Length::Fixed(400.0))
-    .height(Length::Shrink)
-    .style(theme::Container::Box)
-    .center_x()
-    .center_y();
-    
-    container(
-        iced::widget::stack![
-            base,
-            overlay,
-        ]
-    )
-    .width(Length::Fill)
-    .height(Length::Fill)
-    .into()
+        .style(theme::Container::Box)
+        .into()
 }
 
 fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> {
@@ -215,10 +188,10 @@ fn activity_rail<'a>(active_activity: Activity) -> Element<'a, Message> {
 fn left_panel_with_expanded<'a>(
     file_entries: &'a [core_types::workspace::DirectoryEntry],
     active_activity: Activity,
-    expanded_directories: &'a std::collections::HashSet<String>,
+    _expanded_directories: &'a std::collections::HashSet<String>,
 ) -> Element<'a, Message> {
     match active_activity {
-        Activity::Explorer => explorer_panel_with_expanded(file_entries, expanded_directories),
+        Activity::Explorer => explorer_panel_with_expanded(file_entries, _expanded_directories),
         Activity::Search => search_panel(),
         Activity::SourceControl => terminal_panel(),
         Activity::Settings => settings_panel(),
@@ -299,7 +272,7 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
                     .width(Length::Fill)
                     .style(theme::Button::Secondary),
                 )
-                .padding(iced::Padding::left(padding_left))
+                .padding(iced::Padding::new(padding_left as f32))
                 .into()
             })
             .collect();
@@ -573,7 +546,7 @@ fn settings_panel<'a>() -> Element<'a, Message> {
 
 fn explorer_panel_with_expanded<'a>(
     file_entries: &'a [core_types::workspace::DirectoryEntry],
-    expanded_directories: &'a std::collections::HashSet<String>,
+    _expanded_directories: &'a std::collections::HashSet<String>,
 ) -> Element<'a, Message> {
     // Filter files based on expanded directories
     // For simplicity, show all entries for now
