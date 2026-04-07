@@ -210,7 +210,7 @@ impl iced::Application for App {
         }
     }
 
-    fn view(&self) -> Element<Message> {
+    fn view(&self) -> Element<'_, Message> {
         crate::ui::layout::layout(
             &self.workspace_path,
             &self.file_entries,
