@@ -262,7 +262,7 @@ impl eframe::App for NeoteApp {
         });
 
         egui::SidePanel::left("sidebar").show(ctx, |ui| {
-            self.sidebar.ui(ui, self);
+            self.sidebar.ui(ui);
         });
 
         egui::CentralPanel::default().show(ctx, |ui| {
