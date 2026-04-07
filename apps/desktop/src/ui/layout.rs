@@ -4,6 +4,7 @@ use iced::{
         text_input, vertical_rule,
     },
     Alignment, Element, Length, Theme,
+    theme,
 };
 
 use crate::app::{Activity, Message};
@@ -38,18 +39,7 @@ pub fn ide_layout<'a>(
             container(ai_panel(prompt_input))
                 .width(Length::Fixed(320.0))
                 .height(Length::Fill)
-                .style(|theme| container::Style {
-                    background: Some(
-                        iced::Background::Color(
-                            theme.extended_palette().background.weak.color
-                        )
-                    ),
-                    border: iced::Border {
-                        width: 0.0,
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                })
+                .style(theme::Container::Box)
                 .into()
         } else {
             container(horizontal_space()).width(Length::Fixed(0.0)).into()
@@ -78,42 +68,26 @@ pub fn ide_layout<'a>(
     container(content)
         .width(Length::Fill)
         .height(Length::Fill)
-        .style(|theme| container::Style {
-            background: Some(iced::Background::Color(
-                theme.extended_palette().background.base.color,
-            )),
-            ..Default::default()
-        })
+        .style(theme::Container::Box)
         .into()
 }
 
 fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> {
     row![
-        text("Neote").size(20).style(iced::Color::from_rgb8(100, 150, 255)),
+        text("Neote").size(20).style(iced::theme::Text::Color(iced::Color::from_rgb8(100, 150, 255))),
         horizontal_space(),
         text_input("Workspace path", workspace_path)
             .on_input(Message::WorkspacePathChanged)
             .padding(8)
-            .width(Length::Fixed(400.0))
-            .style(|theme| text_input::Style {
-                background: iced::Background::Color(
-                    theme.extended_palette().background.weak.color
-                ),
-                border: iced::Border {
-                    width: 1.0,
-                    radius: 4.0.into(),
-                    color: theme.extended_palette().background.strong.color,
-                },
-                ..Default::default()
-            }),
+            .width(Length::Fixed(400.0)),
         button("Open")
             .on_press(Message::OpenWorkspace)
             .padding([8, 12])
-            .style(|theme| button::secondary(theme)),
+            .style(theme::Button::Secondary),
         button("Refresh")
             .on_press(Message::RefreshWorkspace)
             .padding([8, 12])
-            .style(|theme| button::secondary(theme)),
+            .style(theme::Button::Secondary),
         horizontal_space(),
         if is_dirty {
             row![
@@ -135,7 +109,7 @@ fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> 
         button("Save")
             .on_press(Message::SaveFile)
             .padding([8, 16])
-            .style(|theme| button::primary(theme)),
+            .style(theme::Button::Primary),
     ]
     .padding([8, 16])
     .align_items(Alignment::Center)
@@ -157,9 +131,9 @@ fn activity_rail<'a>(active_activity: Activity) -> Element<'a, Message> {
             .map(|&(activity, icon, label)| {
                 let is_active = activity == active_activity;
                 let button_style = if is_active {
-                    button::primary
+                    theme::Button::Primary
                 } else {
-                    button::secondary
+                    theme::Button::Secondary
                 };
                 container(
                     button(
@@ -200,7 +174,7 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
         row![
             text("EXPLORER").size(12).style(iced::Color::from_rgb8(150, 150, 150)),
             horizontal_space(),
-            button("⋯").style(|theme| button::secondary(theme)),
+            button("⋯").style(theme::Button::Secondary),
         ]
         .padding([12, 16])
         .align_items(Alignment::Center),
@@ -235,7 +209,7 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
                                 .on_press(Message::FileSelected(i))
                                 .padding([6, 12])
                                 .width(Length::Fill)
-                                .style(|theme| button::secondary(theme)),
+                                .style(theme::Button::Secondary),
                             )
                             .into()
                         })
@@ -287,12 +261,12 @@ fn editor_panel<'a>(
             column![
                 text("Neote").size(48).style(iced::Color::from_rgb8(100, 150, 255)),
                 text("AI‑first IDE").size(20).style(iced::Color::from_rgb8(150, 150, 200)),
-                iced::widget::horizontal_rule(1).width(200),
+                container(iced::widget::horizontal_rule(1)).width(200),
                 column![
-                    button("Open a file from the explorer").style(|theme| button::secondary(theme)),
-                    button("Ask AI about the workspace").style(|theme| button::secondary(theme)),
-                    button("Create a new note").style(|theme| button::secondary(theme)),
-                    button("Review project structure").style(|theme| button::secondary(theme)),
+                    button("Open a file from the explorer").style(theme::Button::Secondary),
+                    button("Ask AI about the workspace").style(theme::Button::Secondary),
+                    button("Create a new note").style(theme::Button::Secondary),
+                    button("Review project structure").style(theme::Button::Secondary),
                 ]
                 .spacing(12)
                 .padding(20),
@@ -321,7 +295,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
         row![
             text("AI ASSISTANT").size(12).style(iced::Color::from_rgb8(150, 150, 150)),
             horizontal_space(),
-            button("⋯").style(|theme| button::secondary(theme)),
+            button("⋯").style(theme::Button::Secondary),
         ]
         .padding([12, 16])
         .align_items(Alignment::Center),
@@ -338,17 +312,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
                     .padding(16)
                     .spacing(8)
                 )
-                .style(|theme| container::Style {
-                    background: Some(iced::Background::Color(
-                        theme.extended_palette().background.weak.color
-                    )),
-                    border: iced::Border {
-                        width: 1.0,
-                        radius: 8.0.into(),
-                        color: theme.extended_palette().background.strong.color,
-                    },
-                    ..Default::default()
-                }),
+                .style(theme::Container::Box),
                 column![
                     button("Explain this file").on_press(Message::SendPrompt).padding(12),
                     button("Refactor selection").on_press(Message::SendPrompt).padding(12),
@@ -376,7 +340,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
             button("Send")
                 .on_press(Message::SendPrompt)
                 .padding([12, 16])
-                .style(|theme| button::primary(theme)),
+                .style(theme::Button::Primary),
         ]
         .padding([8, 16])
         .align_items(Alignment::Center),
@@ -403,30 +367,32 @@ fn status_bar<'a>(
     active_file_path: Option<&'a String>,
     file_count: usize,
 ) -> Element<'a, Message> {
+    let error_widget: Element<_> = if let Some(err) = error_message {
+        row![
+            text(" | Error:").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(255, 100, 100))),
+            text(err).size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(255, 150, 150))),
+        ]
+        .spacing(4)
+        .into()
+    } else {
+        horizontal_space().into()
+    };
+
     row![
         text(format!("{} files", file_count)).size(12),
         horizontal_space(),
         if let Some(path) = active_file_path {
-            text(path).size(12).style(iced::Color::from_rgb8(180, 180, 255))
+            text(path).size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(180, 180, 255)))
         } else {
-            text("No active file").size(12).style(iced::Color::from_rgb8(150, 150, 150))
+            text("No active file").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
         },
         horizontal_space(),
         text(status_message).size(12),
-        if let Some(err) = error_message {
-            row![
-                text(" | Error:").size(12).style(iced::Color::from_rgb8(255, 100, 100)),
-                text(err).size(12).style(iced::Color::from_rgb8(255, 150, 150)),
-            ]
-            .spacing(4)
-            .into()
-        } else {
-            horizontal_space().into()
-        },
+        error_widget,
         horizontal_space(),
-        text("Ln 1, Col 1").size(12).style(iced::Color::from_rgb8(150, 150, 150)),
+        text("Ln 1, Col 1").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150))),
         horizontal_space(),
-        text("Plain Text").size(12).style(iced::Color::from_rgb8(150, 150, 150)),
+        text("Plain Text").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150))),
     ]
     .padding([8, 16])
     .align_items(Alignment::Center)

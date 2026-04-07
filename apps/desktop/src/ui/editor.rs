@@ -13,16 +13,6 @@ pub fn editor<'a>(editor_content: &'a str) -> Element<'a, Message> {
             .width(Length::Fill)
             .font(Font::MONOSPACE)
             .size(14)
-            .style(|theme| text_input::Style {
-                background: iced::Background::Color(
-                    theme.extended_palette().background.base.color
-                ),
-                border: iced::Border {
-                    width: 0.0,
-                    ..Default::default()
-                },
-                ..Default::default()
-            })
     )
     .height(Length::Fill)
     .into()
