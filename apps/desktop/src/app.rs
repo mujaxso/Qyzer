@@ -188,7 +188,9 @@ impl iced::Application for App {
                 self.text_editor.perform(action);
                 self.editor_content = self.text_editor.text().to_string();
                 if let Some(buffer) = &mut self.editor_buffer {
-                    buffer.replace_all(self.editor_content.clone());
+                    // For now, replace all content to keep it simple
+                    // This matches the previous behavior
+                    buffer.replace_all(&self.editor_content);
                     self.is_dirty = buffer.is_dirty();
                 }
                 self.status_message = if self.is_dirty {

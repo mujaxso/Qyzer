@@ -3,53 +3,185 @@
 //! Manages the underlying text storage, line tracking, and basic text
 //! manipulation operations.
 
+use ropey::Rope;
+
 #[derive(Debug, Clone)]
 pub struct TextBuffer {
-    text: String,
+    rope: Rope,
     version: i32,
     dirty: bool,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new_buffer() {
+        let buffer = TextBuffer::new("Hello, world!");
+        assert_eq!(buffer.len_chars(), 13);
+        assert_eq!(buffer.len_lines(), 1);
+        assert_eq!(buffer.text(), "Hello, world!");
+        assert!(!buffer.is_dirty());
+        assert_eq!(buffer.version(), 0);
+    }
+
+    #[test]
+    fn test_from_str() {
+        let buffer = TextBuffer::from_str("Test");
+        assert_eq!(buffer.text(), "Test");
+    }
+
+    #[test]
+    fn test_replace_all() {
+        let mut buffer = TextBuffer::new("Initial");
+        buffer.replace_all("Replaced");
+        assert_eq!(buffer.text(), "Replaced");
+        assert!(buffer.is_dirty());
+        assert_eq!(buffer.version(), 1);
+    }
+
+    #[test]
+    fn test_insert() {
+        let mut buffer = TextBuffer::new("Hello world!");
+        buffer.insert_char_idx(6, "beautiful ").unwrap();
+        assert_eq!(buffer.text(), "Hello beautiful world!");
+        assert!(buffer.is_dirty());
+        assert_eq!(buffer.version(), 1);
+    }
+
+    #[test]
+    fn test_insert_out_of_bounds() {
+        let mut buffer = TextBuffer::new("Hello");
+        let result = buffer.insert_char_idx(10, " world");
+        assert!(result.is_err());
+        assert!(!buffer.is_dirty());
+        assert_eq!(buffer.version(), 0);
+    }
+
+    #[test]
+    fn test_delete() {
+        let mut buffer = TextBuffer::new("Hello beautiful world!");
+        buffer.delete_char_range(6, 16).unwrap(); // Delete "beautiful "
+        assert_eq!(buffer.text(), "Hello world!");
+        assert!(buffer.is_dirty());
+        assert_eq!(buffer.version(), 1);
+    }
+
+    #[test]
+    fn test_delete_invalid_range() {
+        let mut buffer = TextBuffer::new("Hello");
+        let result = buffer.delete_char_range(3, 10);
+        assert!(result.is_err());
+        assert!(!buffer.is_dirty());
+        assert_eq!(buffer.version(), 0);
+    }
+
+    #[test]
+    fn test_mark_saved() {
+        let mut buffer = TextBuffer::new("Text");
+        buffer.replace_all("New text");
+        assert!(buffer.is_dirty());
+        buffer.mark_saved();
+        assert!(!buffer.is_dirty());
+    }
+
+    #[test]
+    fn test_line_counting() {
+        let buffer = TextBuffer::new("Line 1\nLine 2\nLine 3");
+        assert_eq!(buffer.len_lines(), 3);
+    }
+
+    #[test]
+    fn test_char_to_line() {
+        let buffer = TextBuffer::new("Line 1\nLine 2\nLine 3");
+        assert_eq!(buffer.char_to_line(0), 0); // 'L' in Line 1
+        assert_eq!(buffer.char_to_line(7), 1); // 'L' in Line 2
+        assert_eq!(buffer.char_to_line(14), 2); // 'L' in Line 3
+    }
+
+    #[test]
+    fn test_line_col_to_char() {
+        let buffer = TextBuffer::new("Line 1\nLine 2\nLine 3");
+        assert_eq!(buffer.line_col_to_char(0, 2).unwrap(), 2); // 'n' in Line 1
+        assert_eq!(buffer.line_col_to_char(1, 3).unwrap(), 10); // 'e' in Line 2
+    }
+
+    #[test]
+    fn test_unicode_safety() {
+        let mut buffer = TextBuffer::new("Hello ");
+        buffer.insert_char_idx(6, "🌍").unwrap();
+        assert_eq!(buffer.text(), "Hello 🌍");
+        assert_eq!(buffer.len_chars(), 8); // Note: emoji is 1 char, not 2
+        assert_eq!(buffer.len_lines(), 1);
+    }
+
+    #[test]
+    fn test_slice_char_range() {
+        let buffer = TextBuffer::new("Hello, world!");
+        let slice = buffer.slice_char_range(7, 12).unwrap();
+        assert_eq!(slice, "world");
+    }
 }
 
 impl TextBuffer {
     pub fn new(text: impl Into<String>) -> Self {
         Self {
-            text: text.into(),
+            rope: Rope::from_str(&text.into()),
             version: 0,
             dirty: false,
         }
     }
 
-    pub fn text(&self) -> &str {
-        &self.text
+    pub fn from_str(text: &str) -> Self {
+        Self {
+            rope: Rope::from_str(text),
+            version: 0,
+            dirty: false,
+        }
     }
 
-    pub fn replace_all(&mut self, text: impl Into<String>) {
-        self.text = text.into();
+    pub fn text(&self) -> String {
+        self.rope.to_string()
+    }
+
+    pub fn replace_all(&mut self, text: &str) {
+        self.rope = Rope::from_str(text);
         self.version += 1;
         self.dirty = true;
     }
 
-    pub fn insert(&mut self, offset: usize, text: &str) -> Result<(), String> {
-        if offset > self.text.len() {
-            return Err(format!("Offset {} out of bounds (length {})", offset, self.text.len()));
+    pub fn insert_char_idx(&mut self, char_idx: usize, text: &str) -> Result<(), String> {
+        if char_idx > self.rope.len_chars() {
+            return Err(format!("Char index {} out of bounds (length {})", 
+                char_idx, self.rope.len_chars()));
         }
-        self.text.insert_str(offset, text);
+        self.rope.insert(char_idx, text);
         self.version += 1;
         self.dirty = true;
         Ok(())
     }
 
-    pub fn delete(&mut self, start: usize, end: usize) -> Result<(), String> {
+    pub fn delete_char_range(&mut self, start: usize, end: usize) -> Result<(), String> {
         if start > end {
             return Err(format!("Start {} greater than end {}", start, end));
         }
-        if end > self.text.len() {
-            return Err(format!("End {} out of bounds (length {})", end, self.text.len()));
+        if end > self.rope.len_chars() {
+            return Err(format!("End {} out of bounds (length {})", 
+                end, self.rope.len_chars()));
         }
-        self.text.replace_range(start..end, "");
+        self.rope.remove(start..end);
         self.version += 1;
         self.dirty = true;
         Ok(())
+    }
+
+    pub fn len_chars(&self) -> usize {
+        self.rope.len_chars()
+    }
+
+    pub fn len_lines(&self) -> usize {
+        self.rope.len_lines()
     }
 
     pub fn mark_saved(&mut self) {
@@ -62,5 +194,40 @@ impl TextBuffer {
 
     pub fn version(&self) -> i32 {
         self.version
+    }
+
+    // Helper methods for position conversion
+    pub fn char_to_line(&self, char_idx: usize) -> usize {
+        self.rope.char_to_line(char_idx)
+    }
+
+    pub fn line_to_char(&self, line_idx: usize) -> usize {
+        self.rope.line_to_char(line_idx)
+    }
+
+    pub fn line_col_to_char(&self, line: usize, col: usize) -> Result<usize, String> {
+        if line >= self.rope.len_lines() {
+            return Err(format!("Line {} out of bounds (total lines {})", 
+                line, self.rope.len_lines()));
+        }
+        let line_start = self.rope.line_to_char(line);
+        let line_len = self.rope.line(line).len_chars();
+        // Column is in characters, not bytes
+        if col > line_len {
+            return Err(format!("Column {} out of bounds for line {} (line length {})", 
+                col, line, line_len));
+        }
+        Ok(line_start + col)
+    }
+
+    pub fn slice_char_range(&self, start: usize, end: usize) -> Result<String, String> {
+        if start > end {
+            return Err(format!("Start {} greater than end {}", start, end));
+        }
+        if end > self.rope.len_chars() {
+            return Err(format!("End {} out of bounds (length {})", 
+                end, self.rope.len_chars()));
+        }
+        Ok(self.rope.slice(start..end).to_string())
     }
 }

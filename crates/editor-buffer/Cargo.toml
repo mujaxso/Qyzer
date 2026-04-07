@@ -7,3 +7,5 @@ license.workspace = true
 [dependencies]
 serde = { workspace = true }
 thiserror = { workspace = true }
+ropey = "1.6"
+ropey = "1.6"
