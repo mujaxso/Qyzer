@@ -542,6 +542,7 @@ fn editor_panel<'a>(
                 .into()
             }
         }
+    };
 
     column![
         header,
