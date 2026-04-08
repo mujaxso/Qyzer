@@ -185,7 +185,7 @@ fn activity_rail<'a>(active_activity: Activity) -> Element<'a, Message> {
                 container(
                     iced::widget::Space::new(Length::Fixed(3.0), Length::Fixed(24.0))
                 )
-                .style(iced::theme::Container::Custom(Box::new(move || {
+                .style(iced::theme::Container::Custom(Box::new(move |_theme| {
                     iced::widget::container::Appearance {
                         background: Some(iced::Color::from_rgb(0.35, 0.60, 0.95).into()),
                         border: iced::Border::default(),
@@ -327,8 +327,7 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
         container(
             row![
                 text("EXPLORER").size(11)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(160, 160, 170)))
-                    .font(iced::Font::with_weight(iced::Font::DEFAULT, iced::font::Weight::Bold)),
+                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(160, 160, 170))),
                 horizontal_space(),
                 button("⟳")
                     .on_press(Message::RefreshWorkspace)
@@ -631,8 +630,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
         container(
             row![
                 text("AI ASSISTANT").size(11)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(160, 160, 170)))
-                    .font(iced::Font::with_weight(iced::Font::DEFAULT, iced::font::Weight::Bold)),
+                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(160, 160, 170))),
                 horizontal_space(),
                 button("⋯")
                     .on_press(Message::PromptInputChanged("AI options".to_string()))
@@ -651,8 +649,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
                     column![
                         row![
                             text("🤖").size(20),
-                            text("Neote AI").size(16)
-                                .font(iced::Font::with_weight(iced::Font::DEFAULT, iced::font::Weight::Bold)),
+                            text("Neote AI").size(16),
                         ]
                         .spacing(8)
                         .align_items(Alignment::Center),
@@ -663,11 +660,11 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
                     .spacing(10)
                     .padding(20)
                 )
-                .style(iced::theme::Container::Custom(Box::new(|| {
+                .style(iced::theme::Container::Custom(Box::new(|_theme| {
                     iced::widget::container::Appearance {
-                        background: Some(iced::Color::from_rgba(100, 160, 255, 0.08).into()),
+                        background: Some(iced::Color::from_rgba(100.0/255.0, 160.0/255.0, 255.0/255.0, 0.08).into()),
                         border: iced::Border {
-                            color: iced::Color::from_rgb8(100, 160, 255),
+                            color: iced::Color::from_rgb(100.0/255.0, 160.0/255.0, 255.0/255.0),
                             width: 1.0,
                             radius: 8.0.into(),
                         },
@@ -679,8 +676,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
                 container(
                     column![
                         text("Quick Actions").size(13)
-                            .style(iced::theme::Text::Color(iced::Color::from_rgb8(160, 160, 170)))
-                            .font(iced::Font::with_weight(iced::Font::DEFAULT, iced::font::Weight::Bold)),
+                            .style(iced::theme::Text::Color(iced::Color::from_rgb8(160, 160, 170))),
                         column![
                             button("Explain this file")
                                 .on_press(Message::PromptInputChanged("Explain the current file".to_string()))
@@ -1153,11 +1149,11 @@ fn status_bar<'a>(
             .align_items(Alignment::Center)
         )
         .padding([4, 8])
-        .style(iced::theme::Container::Custom(Box::new(|| {
+        .style(iced::theme::Container::Custom(Box::new(|_theme| {
             iced::widget::container::Appearance {
-                background: Some(iced::Color::from_rgba(255, 120, 120, 0.1).into()),
+                background: Some(iced::Color::from_rgba(255.0/255.0, 120.0/255.0, 120.0/255.0, 0.1).into()),
                 border: iced::Border {
-                    color: iced::Color::from_rgb8(255, 120, 120),
+                    color: iced::Color::from_rgb(255.0/255.0, 120.0/255.0, 120.0/255.0),
                     width: 1.0,
                     radius: 4.0.into(),
                 },

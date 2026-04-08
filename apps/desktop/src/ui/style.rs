@@ -1,4 +1,4 @@
-use iced::{Color, Vector, widget::{button, container, text, text_input}};
+use iced::{Color, widget::{button, container, text, text_input}};
 use crate::theme::{current_colors, NeoteTheme, SemanticColors};
 
 /// Get current theme colors from app state
