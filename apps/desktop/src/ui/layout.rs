@@ -181,21 +181,27 @@ fn activity_rail<'a>(active_activity: Activity) -> Element<'a, Message> {
             };
             
             // Active indicator
-            let active_indicator = if is_active {
-                container(
+            let active_indicator: Element<_> = if is_active {
+                struct ActiveIndicatorStyle;
+                impl iced::widget::container::StyleSheet for ActiveIndicatorStyle {
+                    type Style = iced::Theme;
+                        
+                    fn appearance(&self, _style: &Self::Style) -> iced::widget::container::Appearance {
+                        iced::widget::container::Appearance {
+                            background: Some(iced::Color::from_rgb(0.35, 0.60, 0.95).into()),
+                            border: iced::Border::default(),
+                            shadow: Default::default(),
+                            text_color: None,
+                        }
+                    }
+                }
+                let container = container(
                     iced::widget::Space::new(Length::Fixed(3.0), Length::Fixed(24.0))
                 )
-                .style(iced::theme::Container::Custom(Box::new(move |_theme| {
-                    iced::widget::container::Appearance {
-                        background: Some(iced::Color::from_rgb(0.35, 0.60, 0.95).into()),
-                        border: iced::Border::default(),
-                        shadow: Default::default(),
-                        text_color: None,
-                    }
-                })))
+                .style(iced::theme::Container::Custom(Box::new(ActiveIndicatorStyle)))
                 .width(Length::Fixed(3.0))
-                .height(Length::Fixed(24.0))
-                .into()
+                .height(Length::Fixed(24.0));
+                container.into()
             } else {
                 iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into()
             };
@@ -645,33 +651,41 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
         scrollable(
             column![
                 // Welcome card
-                container(
-                    column![
-                        row![
-                            text("🤖").size(20),
-                            text("Neote AI").size(16),
-                        ]
-                        .spacing(8)
-                        .align_items(Alignment::Center),
-                        text("Ask questions about your code, get explanations, refactor suggestions, and more.")
-                            .size(13)
-                            .style(iced::theme::Text::Color(iced::Color::from_rgb8(180, 180, 190))),
-                    ]
-                    .spacing(10)
-                    .padding(20)
-                )
-                .style(iced::theme::Container::Custom(Box::new(|_theme| {
-                    iced::widget::container::Appearance {
-                        background: Some(iced::Color::from_rgba(100.0/255.0, 160.0/255.0, 255.0/255.0, 0.08).into()),
-                        border: iced::Border {
-                            color: iced::Color::from_rgb(100.0/255.0, 160.0/255.0, 255.0/255.0),
-                            width: 1.0,
-                            radius: 8.0.into(),
-                        },
-                        shadow: Default::default(),
-                        text_color: None,
+                {
+                    struct WelcomeCardStyle;
+                    impl iced::widget::container::StyleSheet for WelcomeCardStyle {
+                        type Style = iced::Theme;
+                        
+                        fn appearance(&self, _style: &Self::Style) -> iced::widget::container::Appearance {
+                            iced::widget::container::Appearance {
+                                background: Some(iced::Color::from_rgba(100.0/255.0, 160.0/255.0, 255.0/255.0, 0.08).into()),
+                                border: iced::Border {
+                                    color: iced::Color::from_rgb(100.0/255.0, 160.0/255.0, 255.0/255.0),
+                                    width: 1.0,
+                                    radius: 8.0.into(),
+                                },
+                                shadow: Default::default(),
+                                text_color: None,
+                            }
+                        }
                     }
-                }))),
+                    container(
+                        column![
+                            row![
+                                text("🤖").size(20),
+                                text("Neote AI").size(16),
+                            ]
+                            .spacing(8)
+                            .align_items(Alignment::Center),
+                            text("Ask questions about your code, get explanations, refactor suggestions, and more.")
+                                .size(13)
+                                .style(iced::theme::Text::Color(iced::Color::from_rgb8(180, 180, 190))),
+                        ]
+                        .spacing(10)
+                        .padding(20)
+                    )
+                    .style(iced::theme::Container::Custom(Box::new(WelcomeCardStyle)))
+                },
                 // Quick actions
                 container(
                     column![
@@ -1149,18 +1163,26 @@ fn status_bar<'a>(
             .align_items(Alignment::Center)
         )
         .padding([4, 8])
-        .style(iced::theme::Container::Custom(Box::new(|_theme| {
-            iced::widget::container::Appearance {
-                background: Some(iced::Color::from_rgba(255.0/255.0, 120.0/255.0, 120.0/255.0, 0.1).into()),
-                border: iced::Border {
-                    color: iced::Color::from_rgb(255.0/255.0, 120.0/255.0, 120.0/255.0),
-                    width: 1.0,
-                    radius: 4.0.into(),
-                },
-                shadow: Default::default(),
-                text_color: None,
+        {
+            struct ErrorWidgetStyle;
+            impl iced::widget::container::StyleSheet for ErrorWidgetStyle {
+                type Style = iced::Theme;
+                
+                fn appearance(&self, _style: &Self::Style) -> iced::widget::container::Appearance {
+                    iced::widget::container::Appearance {
+                        background: Some(iced::Color::from_rgba(255.0/255.0, 120.0/255.0, 120.0/255.0, 0.1).into()),
+                        border: iced::Border {
+                            color: iced::Color::from_rgb(255.0/255.0, 120.0/255.0, 120.0/255.0),
+                            width: 1.0,
+                            radius: 4.0.into(),
+                        },
+                        shadow: Default::default(),
+                        text_color: None,
+                    }
+                }
             }
-        })))
+            .style(iced::theme::Container::Custom(Box::new(ErrorWidgetStyle)))
+        }
         .into()
     } else {
         horizontal_space().into()
@@ -1218,23 +1240,26 @@ fn status_bar<'a>(
         .style(iced::theme::Container::Box),
         horizontal_space(),
         // Active file
-        if let Some(path) = active_file_path {
-            let file_name = path.split('/').last().unwrap_or(path);
-            container(
-                text(file_name).size(11)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(180, 180, 255)))
-            )
-            .padding([4, 8])
-            .style(iced::theme::Container::Box)
-            .into()
-        } else {
-            container(
-                text("No active file").size(11)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 170)))
-            )
-            .padding([4, 8])
-            .style(iced::theme::Container::Box)
-            .into()
+        {
+            let container_widget: Element<_> = if let Some(path) = active_file_path {
+                let file_name = path.split('/').last().unwrap_or(path);
+                container(
+                    text(file_name).size(11)
+                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(180, 180, 255)))
+                )
+                .padding([4, 8])
+                .style(iced::theme::Container::Box)
+                .into()
+            } else {
+                container(
+                    text("No active file").size(11)
+                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 170)))
+                )
+                .padding([4, 8])
+                .style(iced::theme::Container::Box)
+                .into()
+            };
+            container_widget
         },
         horizontal_space(),
         // Status indicator
