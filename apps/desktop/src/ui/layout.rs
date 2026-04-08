@@ -742,7 +742,11 @@ fn explorer_panel_with_expanded<'a>(
         std::collections::HashMap::new();
     
     // Use the provided workspace path
-    let workspace_root = normalize_path(workspace_path);
+    let workspace_root = if workspace_path.is_empty() {
+        String::new()
+    } else {
+        normalize_path(workspace_path)
+    };
     
     // Build children map: parent path -> indices of children
     for (i, entry) in file_entries.iter().enumerate() {
@@ -942,6 +946,7 @@ fn render_directory_entry_with_indices<'a, 'b>(
     if entry.is_dir && is_expanded {
         // Normalize the path for lookup
         let normalized_path = normalize_path(&entry.path);
+        // Try to find children in the map
         if let Some(child_indices) = children_map.get(&normalized_path) {
             // Sort child indices: directories first, then files
             let mut sorted_child_indices: Vec<usize> = child_indices.clone();
@@ -967,16 +972,59 @@ fn render_directory_entry_with_indices<'a, 'b>(
                 ));
             }
         } else {
-            // Directory is empty or has no files (only subdirectories maybe)
-            // Add a placeholder element
-            let placeholder = container(
-                text("(empty)")
-                    .size(12)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
-            )
-            .padding(iced::Padding::new((depth + 1) * 20 as f32 + 20.0))
-            .into();
-            elements.push(placeholder);
+            // No children found - this could mean:
+            // 1. The directory is empty
+            // 2. The directory only contains subdirectories (which are in file_entries)
+            //    but their parent path doesn't match due to normalization issues
+            // 3. The directory is a leaf directory with no contents
+            
+            // Let's try to find children by scanning all entries manually
+            // This is a fallback for debugging
+            let mut manual_children = Vec::new();
+            for (i, child_entry) in file_entries.iter().enumerate() {
+                let child_path = std::path::Path::new(&child_entry.path);
+                if let Some(parent) = child_path.parent() {
+                    let parent_str = normalize_path(&parent.to_string_lossy());
+                    if parent_str == normalized_path {
+                        manual_children.push(i);
+                    }
+                }
+            }
+            
+            if !manual_children.is_empty() {
+                // We found children manually - sort them
+                manual_children.sort_by(|&a_idx, &b_idx| {
+                    let a = &file_entries[a_idx];
+                    let b = &file_entries[b_idx];
+                    if a.is_dir != b.is_dir {
+                        b.is_dir.cmp(&a.is_dir) // Directories first
+                    } else {
+                        a.name.cmp(&b.name)
+                    }
+                });
+                
+                for &child_idx in &manual_children {
+                    let child_entry = &file_entries[child_idx];
+                    elements.extend(render_directory_entry_with_indices(
+                        child_entry,
+                        child_idx,
+                        file_entries,
+                        children_map,
+                        expanded_directories,
+                        depth + 1,
+                    ));
+                }
+            } else {
+                // Directory is truly empty
+                let placeholder = container(
+                    text("(empty)")
+                        .size(12)
+                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
+                )
+                .padding(iced::Padding::new((depth + 1) as f32 * 20.0 + 20.0))
+                .into();
+                elements.push(placeholder);
+            }
         }
     }
     
