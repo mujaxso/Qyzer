@@ -894,62 +894,32 @@ pub fn explorer_panel_with_expanded<'a>(
     expanded_directories: &'a std::collections::HashSet<String>,
     workspace_path: &'a str,
 ) -> Element<'a, Message> {
-    // Sort entries by path for consistent display
-    let mut sorted_entries = file_entries.to_vec();
-    sorted_entries.sort_by(|a, b| a.path.cmp(&b.path));
+    // Use the explorer module to build a proper tree
+    let tree = crate::ui::explorer::build_tree(file_entries, workspace_path);
+    let visible_nodes = crate::ui::explorer::get_visible_nodes(&tree, expanded_directories, 0);
     
-    // Build a simple list of visible entries
-    let mut elements = Vec::new();
-    
-    // First, collect all directories to process
-    for entry in &sorted_entries {
-        // Check if this entry should be shown
-        // We'll show it if it's at the root or if its parent directory is expanded
-        let entry_path = std::path::Path::new(&entry.path);
+    let content: Element<_> = if file_entries.is_empty() {
+        container(
+            column![
+                text("No files in workspace")
+                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150))),
+                button("Open Workspace")
+                    .on_press(Message::OpenWorkspace)
+                    .padding(8)
+                    .style(iced::theme::Button::Secondary),
+            ]
+            .spacing(10)
+            .align_items(Alignment::Center)
+        )
+        .center_y()
+        .center_x()
+        .height(Length::Fill)
+        .into()
+    } else {
+        let mut elements = Vec::new();
         
-        // Get the parent directory
-        let parent = entry_path.parent().and_then(|p| p.to_str());
-        
-        // Check if parent is expanded
-        let should_show = if let Some(parent_path) = parent {
-            let normalized_parent = normalize_path(parent_path);
-            expanded_directories.contains(&normalized_parent)
-        } else {
-            // No parent means it's at root - always show
-            true
-        };
-        
-        // Also check if it's directly under workspace root
-        let workspace_root = if workspace_path.is_empty() {
-            "".to_string()
-        } else {
-            normalize_path(workspace_path)
-        };
-        
-        let is_at_workspace_root = if let Some(parent_path) = parent {
-            let normalized_parent = normalize_path(parent_path);
-            normalized_parent == workspace_root
-        } else {
-            true
-        };
-        
-        if should_show || is_at_workspace_root {
-            // Calculate depth (0 for root, 1 for children, etc.)
-            let depth = if is_at_workspace_root {
-                0
-            } else {
-                // Simple depth calculation: count path separators after workspace root
-                let entry_str = &entry.path;
-                let workspace_str = &workspace_root;
-                if workspace_str.is_empty() {
-                    entry_str.matches(std::path::MAIN_SEPARATOR).count()
-                } else if entry_str.starts_with(workspace_str) {
-                    let remaining = &entry_str[workspace_str.len()..];
-                    remaining.matches(std::path::MAIN_SEPARATOR).count()
-                } else {
-                    0
-                }
-            };
+        for (depth, node) in visible_nodes {
+            let entry = &node.entry;
             
             // Check if this directory is expanded
             let normalized_path = normalize_path(&entry.path);
@@ -1002,41 +972,24 @@ pub fn explorer_panel_with_expanded<'a>(
             
             elements.push(entry_element);
         }
-    }
-    
-    let content: Element<_> = if file_entries.is_empty() {
-        container(
-            column![
-                text("No files in workspace")
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150))),
-                button("Open Workspace")
-                    .on_press(Message::OpenWorkspace)
-                    .padding(8)
-                    .style(iced::theme::Button::Secondary),
-            ]
-            .spacing(10)
-            .align_items(Alignment::Center)
-        )
-        .center_y()
-        .center_x()
-        .height(Length::Fill)
-        .into()
-    } else if elements.is_empty() {
-        container(
-            text("No files to display")
-                .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
-        )
-        .center_y()
-        .center_x()
-        .height(Length::Fill)
-        .into()
-    } else {
-        scrollable(
-            column(elements)
-                .spacing(2),
-        )
-        .height(Length::Fill)
-        .into()
+        
+        if elements.is_empty() {
+            container(
+                text("No files to display")
+                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
+            )
+            .center_y()
+            .center_x()
+            .height(Length::Fill)
+            .into()
+        } else {
+            scrollable(
+                column(elements)
+                    .spacing(2),
+            )
+            .height(Length::Fill)
+            .into()
+        }
     };
 
     column![
