@@ -102,6 +102,30 @@ pub fn activity_bar(app: &App) -> Element<'_, Message> {
         })
         .collect();
     
+    struct ActivityBarContainerStyle {
+        colors: SemanticColors,
+    }
+    
+    impl iced::widget::container::StyleSheet for ActivityBarContainerStyle {
+        type Style = iced::Theme;
+        
+        fn appearance(&self, _style: &Self::Style) -> iced::widget::container::Appearance {
+            container::Appearance {
+                background: Some(self.colors.panel_background.into()),
+                border: iced::Border {
+                    color: self.colors.border,
+                    width: 0.0,
+                    radius: 0.0.into(),
+                },
+                ..Default::default()
+            }
+        }
+    }
+    
+    let container_style = ActivityBarContainerStyle {
+        colors: style.colors,
+    };
+    
     container(
         column(activity_buttons)
             .spacing(0)
@@ -109,16 +133,6 @@ pub fn activity_bar(app: &App) -> Element<'_, Message> {
     )
     .width(Length::Fill)
     .height(Length::Fill)
-    .style(iced::theme::Container::Custom(Box::new(move |_theme| {
-        container::Appearance {
-            background: Some(style.colors.panel_background.into()),
-            border: iced::Border {
-                color: style.colors.border,
-                width: 0.0,
-                radius: 0.0.into(),
-            },
-            ..Default::default()
-        }
-    })))
+    .style(iced::theme::Container::Custom(Box::new(container_style)))
     .into()
 }

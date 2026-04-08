@@ -48,37 +48,45 @@ pub fn current_colors(theme: NeoteTheme) -> SemanticColors {
     theme.colors()
 }
 
-/// Semantic color roles for Neote IDE
+/// Semantic color roles for Neote IDE - Premium dark theme
 #[derive(Debug, Clone, Copy)]
 pub struct SemanticColors {
-    // Background surfaces
-    pub app_background: Color,
-    pub panel_background: Color,
-    pub elevated_panel_background: Color,
-    pub status_bar_background: Color,
+    // Background surfaces - Premium dark palette
+    pub app_background: Color,           // #161821
+    pub shell_background: Color,         // #1B1D27
+    pub panel_background: Color,         // #1E2130
+    pub elevated_panel_background: Color, // #232637
+    pub editor_background: Color,        // #171923
+    pub input_background: Color,         // #141722
+    pub status_bar_background: Color,    // #1B1D27
     
     // Text colors
-    pub text_primary: Color,
-    pub text_secondary: Color,
-    pub text_muted: Color,
-    pub text_on_accent: Color,
+    pub text_primary: Color,             // #E6EAF2
+    pub text_secondary: Color,           // #B7C0D1
+    pub text_muted: Color,               // #8892A6
+    pub text_faint: Color,               // #687086
+    pub text_on_accent: Color,           // #FFFFFF
     
     // UI elements
-    pub border: Color,
-    pub divider: Color,
-    pub accent: Color,
-    pub accent_secondary: Color,
+    pub border: Color,                   // #2B3040
+    pub divider: Color,                  // #2B3040
+    pub accent: Color,                   // #4C6FFF
+    pub accent_hover: Color,             // #5A7BFF
+    pub accent_soft_background: Color,   // rgba(76, 111, 255, 0.16)
     
     // States
-    pub hover_background: Color,
-    pub active_background: Color,
-    pub selected_background: Color,
+    pub hover_background: Color,         // #2A2E42
+    pub active_background: Color,        // #2A2E42
+    pub selected_background: Color,      // #2D3A73
     
     // Status colors
-    pub success: Color,
-    pub warning: Color,
-    pub error: Color,
-    pub info: Color,
+    pub success: Color,                  // #35C46B
+    pub warning: Color,                  // #F0B24B
+    pub error: Color,                    // #F05D6C
+    pub info: Color,                     // #6EA8FF
+    
+    // Focus
+    pub focus_ring: Color,               // rgba(92, 122, 255, 0.45)
 }
 
 /// Theme variants for Neote

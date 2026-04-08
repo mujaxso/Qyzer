@@ -1,4 +1,4 @@
-use iced::{Element, Length, widget::{button, container, row, text, text_input}};
+use iced::{Element, Length, Color, widget::{button, container, row, text, text_input}};
 use crate::message::Message;
 use crate::state::App;
 use super::style::StyleHelpers;
@@ -50,6 +50,22 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
         fn selection_color(&self, _style: &Self::Style) -> Color {
             self.colors.accent_soft_background
         }
+        
+        fn disabled_color(&self, _style: &Self::Style) -> Color {
+            self.colors.text_muted
+        }
+        
+        fn disabled(&self, _style: &Self::Style) -> iced::widget::text_input::Appearance {
+            iced::widget::text_input::Appearance {
+                background: self.colors.input_background.into(),
+                border: iced::Border {
+                    color: self.colors.border,
+                    width: 1.0,
+                    radius: crate::ui::common::RADIUS_SM.into(),
+                },
+                icon_color: self.colors.text_muted,
+            }
+        }
     }
     
     let input_style = WorkspaceInputStyle {
@@ -81,6 +97,30 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
     .padding([6, 12])
     .style(iced::theme::Button::Primary);
     
+    struct StatusIndicatorStyle {
+        colors: SemanticColors,
+    }
+    
+    impl iced::widget::container::StyleSheet for StatusIndicatorStyle {
+        type Style = iced::Theme;
+        
+        fn appearance(&self, _style: &Self::Style) -> iced::widget::container::Appearance {
+            container::Appearance {
+                background: Some(self.colors.elevated_panel_background.into()),
+                border: iced::Border {
+                    color: self.colors.border,
+                    width: 1.0,
+                    radius: crate::ui::common::RADIUS_SM.into(),
+                },
+                ..Default::default()
+            }
+        }
+    }
+    
+    let status_indicator_style = StatusIndicatorStyle {
+        colors: style.colors,
+    };
+    
     // Subtle status indicator
     let status_indicator = if app.is_dirty {
         container(
@@ -92,17 +132,7 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
             .align_items(iced::Alignment::Center)
         )
         .padding([4, 8])
-        .style(iced::theme::Container::Custom(Box::new(move |_theme| {
-            container::Appearance {
-                background: Some(style.colors.elevated_panel_background.into()),
-                border: iced::Border {
-                    color: style.colors.border,
-                    width: 1.0,
-                    radius: crate::ui::common::RADIUS_SM.into(),
-                },
-                ..Default::default()
-            }
-        })))
+        .style(iced::theme::Container::Custom(Box::new(status_indicator_style)))
     } else {
         container(
             row![
@@ -113,17 +143,7 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
             .align_items(iced::Alignment::Center)
         )
         .padding([4, 8])
-        .style(iced::theme::Container::Custom(Box::new(move |_theme| {
-            container::Appearance {
-                background: Some(style.colors.elevated_panel_background.into()),
-                border: iced::Border {
-                    color: style.colors.border,
-                    width: 1.0,
-                    radius: crate::ui::common::RADIUS_SM.into(),
-                },
-                ..Default::default()
-            }
-        })))
+        .style(iced::theme::Container::Custom(Box::new(status_indicator_style)))
     };
     
     struct TopBarStyle {
