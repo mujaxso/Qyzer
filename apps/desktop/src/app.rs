@@ -5,7 +5,6 @@ use core_types::workspace::DirectoryEntry;
 use editor_buffer::buffer::TextBuffer;
 use iced::{Element, Command};
 use iced::widget::text_editor;
-use iced::widget::text_editor::EditAction;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -51,14 +50,12 @@ fn extract_edit_info(action: &text_editor::Action) -> Option<EditInfo> {
         text_editor::Action::Edit(edit_action) => {
             // Use a nested match to handle different edit action types
             // We need to match on the concrete type, which should be EditAction
-            // If EditAction is not accessible, we'll need to use a different approach
-            // For now, we'll try to match using pattern matching
-            // If this fails at compile time, we may need to adjust
+            // Use the full path to avoid import issues
             match edit_action {
-                EditAction::InsertText { char_idx, text } => {
+                text_editor::EditAction::InsertText { char_idx, text } => {
                     Some(EditInfo::Insert { char_idx: *char_idx, text: text.clone() })
                 }
-                EditAction::DeleteRange { start, end } => {
+                text_editor::EditAction::DeleteRange { start, end } => {
                     Some(EditInfo::Delete { start: *start, end: *end })
                 }
                 _ => None,
