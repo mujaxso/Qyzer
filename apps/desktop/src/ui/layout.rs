@@ -881,10 +881,6 @@ fn explorer_panel_with_expanded<'a>(
     expanded_directories: &'a std::collections::HashSet<String>,
     workspace_path: &'a str,
 ) -> Element<'a, Message> {
-    // First, organize entries by their parent directory
-    let mut children_by_parent: std::collections::HashMap<String, Vec<&core_types::workspace::DirectoryEntry>> = 
-        std::collections::HashMap::new();
-    
     // Normalize workspace path for comparison
     let workspace_root = if workspace_path.is_empty() {
         "".to_string()
@@ -892,38 +888,23 @@ fn explorer_panel_with_expanded<'a>(
         normalize_path(workspace_path)
     };
     
-    for entry in file_entries {
-        // Get parent path
-        let parent = std::path::Path::new(&entry.path)
-            .parent()
-            .and_then(|p| p.to_str())
-            .map(|s| normalize_path(s))
-            .unwrap_or_else(|| "".to_string());
-        
-        children_by_parent.entry(parent).or_insert_with(Vec::new).push(entry);
-    }
+    // Find root entries: those whose parent is the workspace root or empty or "."
+    let root_entries: Vec<&core_types::workspace::DirectoryEntry> = file_entries
+        .iter()
+        .filter(|entry| {
+            let parent = std::path::Path::new(&entry.path)
+                .parent()
+                .and_then(|p| p.to_str())
+                .map(|s| normalize_path(s))
+                .unwrap_or_else(|| "".to_string());
+            parent == workspace_root || parent == "." || parent == ""
+        })
+        .collect();
     
-    // Find root entries: those whose parent is the workspace root or empty
-    let root_entries: Vec<&core_types::workspace::DirectoryEntry> = children_by_parent
-        .get(&workspace_root)
-        .cloned()
-        .unwrap_or_else(Vec::new);
-    
-    // Also include entries with parent "." or empty string if workspace_root is empty
-    let mut all_root_entries = root_entries;
-    if workspace_root.is_empty() {
-        if let Some(dot_entries) = children_by_parent.get(".") {
-            all_root_entries.extend(dot_entries.iter().cloned());
-        }
-        if let Some(empty_entries) = children_by_parent.get("") {
-            all_root_entries.extend(empty_entries.iter().cloned());
-        }
-    }
-    
-    // Remove duplicates
+    // Remove duplicates (some entries may appear multiple times due to multiple parent matches)
     let mut seen_paths = std::collections::HashSet::new();
     let mut unique_root_entries = Vec::new();
-    for entry in all_root_entries {
+    for entry in root_entries {
         if seen_paths.insert(entry.path.clone()) {
             unique_root_entries.push(entry);
         }
@@ -960,9 +941,9 @@ fn explorer_panel_with_expanded<'a>(
         let mut all_elements = Vec::new();
         
         for entry in unique_root_entries {
-            render_directory_entry(
+            render_directory_entry_simple(
                 entry,
-                &children_by_parent,
+                file_entries,
                 expanded_directories,
                 0,
                 &mut all_elements,
@@ -995,16 +976,14 @@ fn explorer_panel_with_expanded<'a>(
     .into()
 }
 
-fn render_directory_entry<'a>(
+fn render_directory_entry_simple<'a>(
     entry: &'a core_types::workspace::DirectoryEntry,
-    children_by_parent: &'a std::collections::HashMap<String, Vec<&'a core_types::workspace::DirectoryEntry>>,
+    all_entries: &'a [core_types::workspace::DirectoryEntry],
     expanded_directories: &'a std::collections::HashSet<String>,
     depth: usize,
     elements: &mut Vec<Element<'a, Message>>,
 ) {
-    // Use the exact path for comparison (not normalized)
-    // This matches what's stored in expanded_directories (which stores normalized paths)
-    // But to be safe, let's use the exact path and normalize it when looking up children
+    // Use the exact path for comparison
     let is_expanded = expanded_directories.contains(&entry.path);
     
     // Determine icon based on whether it's a directory and expanded
@@ -1057,30 +1036,30 @@ fn render_directory_entry<'a>(
     
     // If this is a directory and it's expanded, render its children
     if entry.is_dir && is_expanded {
-        // Look up children using the normalized path as the parent key
-        // We need to normalize the path to match the key in children_by_parent
-        let parent_key = normalize_path(&entry.path);
-        if let Some(children) = children_by_parent.get(&parent_key) {
-            // Sort children: directories first, then alphabetically
-            let mut sorted_children: Vec<&core_types::workspace::DirectoryEntry> = children.clone();
-            sorted_children.sort_by(|a, b| {
-                if a.is_dir != b.is_dir {
-                    b.is_dir.cmp(&a.is_dir) // Directories first
-                } else {
-                    a.name.cmp(&b.name)
-                }
-            });
-            
-            for child in sorted_children {
-                render_directory_entry(
-                    child,
-                    children_by_parent,
-                    expanded_directories,
-                    depth + 1,
-                    elements,
-                );
+        // Find children whose parent is this entry's path
+        let parent_path = normalize_path(&entry.path);
+        let mut children: Vec<&core_types::workspace::DirectoryEntry> = all_entries
+            .iter()
+            .filter(|child| {
+                let child_parent = std::path::Path::new(&child.path)
+                    .parent()
+                    .and_then(|p| p.to_str())
+                    .map(|s| normalize_path(s))
+                    .unwrap_or_else(|| "".to_string());
+                child_parent == parent_path
+            })
+            .collect();
+        
+        // Sort children: directories first, then alphabetically
+        children.sort_by(|a, b| {
+            if a.is_dir != b.is_dir {
+                b.is_dir.cmp(&a.is_dir) // Directories first
+            } else {
+                a.name.cmp(&b.name)
             }
-        } else {
+        });
+        
+        if children.is_empty() {
             // Directory is empty
             let placeholder = container(
                 text("(empty)")
@@ -1090,6 +1069,16 @@ fn render_directory_entry<'a>(
             .padding(iced::Padding::new((depth + 1) as f32 * 20.0 + 20.0))
             .into();
             elements.push(placeholder);
+        } else {
+            for child in children {
+                render_directory_entry_simple(
+                    child,
+                    all_entries,
+                    expanded_directories,
+                    depth + 1,
+                    elements,
+                );
+            }
         }
     }
 }
