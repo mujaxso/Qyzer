@@ -896,7 +896,19 @@ pub fn explorer_panel_with_expanded<'a>(
 ) -> Element<'a, Message> {
     // Use the explorer module to build a proper tree
     let tree = crate::ui::explorer::build_tree(file_entries, workspace_path);
-    let visible_nodes = crate::ui::explorer::get_visible_nodes(&tree, expanded_directories, 0);
+    
+    // If tree is empty, fall back to flat list
+    let visible_nodes = if tree.is_empty() {
+        // Create a simple flat list with depth 0
+        let mut nodes = Vec::new();
+        for entry in file_entries {
+            // Create a temporary TreeNode
+            nodes.push((0, entry));
+        }
+        nodes
+    } else {
+        crate::ui::explorer::get_visible_nodes(&tree, expanded_directories, 0)
+    };
     
     let content: Element<_> = if file_entries.is_empty() {
         container(
@@ -919,7 +931,12 @@ pub fn explorer_panel_with_expanded<'a>(
         let mut elements = Vec::new();
         
         for (depth, node) in visible_nodes {
-            let entry = &node.entry;
+            let entry = if let Some(treeNode) = node.as_tree_node() {
+                &treeNode.entry
+            } else {
+                // node is a &DirectoryEntry from our fallback
+                node
+            };
             
             // Check if this directory is expanded
             let normalized_path = normalize_path(&entry.path);
@@ -1008,6 +1025,23 @@ pub fn explorer_panel_with_expanded<'a>(
     ]
     .height(Length::Fill)
     .into()
+}
+
+// Helper trait to handle both TreeNode and DirectoryEntry
+trait NodeOrEntry {
+    fn as_tree_node(&self) -> Option<&crate::ui::explorer::TreeNode>;
+}
+
+impl NodeOrEntry for crate::ui::explorer::TreeNode {
+    fn as_tree_node(&self) -> Option<&crate::ui::explorer::TreeNode> {
+        Some(self)
+    }
+}
+
+impl NodeOrEntry for core_types::workspace::DirectoryEntry {
+    fn as_tree_node(&self) -> Option<&crate::ui::explorer::TreeNode> {
+        None
+    }
 }
 
 

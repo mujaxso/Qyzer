@@ -38,36 +38,29 @@ pub fn build_tree(
     let mut children_by_parent: std::collections::HashMap<String, Vec<DirectoryEntry>> = 
         std::collections::HashMap::new();
     
+    // First, add all entries to the map
     for entry in &sorted_entries {
         let entry_path = std::path::Path::new(&entry.path);
-        let parent = entry_path.parent();
         
-        let parent_key = if let Some(parent) = parent {
+        // Get parent path
+        let parent = if let Some(parent) = entry_path.parent() {
             let parent_str = parent.to_string_lossy().to_string();
             normalize_path(&parent_str)
         } else {
-            // Entry has no parent (root)
-            // If it's directly in the workspace root, use workspace_root
-            // Otherwise, use empty string
+            // If no parent, it's at the root
             "".to_string()
         };
         
-        // Also check if the entry is directly in the workspace root
-        // by comparing its parent with workspace_root
-        let entry_parent_normalized = if let Some(parent) = parent {
-            let parent_str = parent.to_string_lossy().to_string();
-            normalize_path(&parent_str)
-        } else {
-            "".to_string()
-        };
-        
-        let actual_key = if entry_parent_normalized == workspace_root {
+        // Adjust parent for workspace root
+        let parent_key = if parent == workspace_root {
             workspace_root.clone()
+        } else if parent.is_empty() && workspace_root.is_empty() {
+            "".to_string()
         } else {
-            parent_key
+            parent
         };
         
-        children_by_parent.entry(actual_key).or_insert_with(Vec::new).push(entry.clone());
+        children_by_parent.entry(parent_key).or_insert_with(Vec::new).push(entry.clone());
     }
     
     // Recursive function to build tree
