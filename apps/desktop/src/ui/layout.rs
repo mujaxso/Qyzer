@@ -775,7 +775,7 @@ fn explorer_panel_with_expanded<'a>(
     });
     
     // Render the tree
-    let content = if root_entries.is_empty() {
+    let content: Element<_> = if root_entries.is_empty() {
         container(
             column![
                 text("No files in workspace")

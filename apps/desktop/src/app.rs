@@ -681,6 +681,14 @@ impl iced::Application for App {
                     _ => Command::none(),
                 }
             }
+            Message::ToggleDirectory(path) => {
+                if self.expanded_directories.contains(&path) {
+                    self.expanded_directories.remove(&path);
+                } else {
+                    self.expanded_directories.insert(path);
+                }
+                Command::none()
+            }
             Message::ToggleCommandPalette => {
                 // For now, just show a status message
                 self.status_message = "Command palette (Ctrl+Shift+P) - coming soon".to_string();
