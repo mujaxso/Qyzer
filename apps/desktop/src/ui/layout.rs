@@ -860,7 +860,7 @@ fn explorer_panel_with_expanded<'a>(
                 button("Open Workspace")
                     .on_press(Message::OpenWorkspace)
                     .padding(8)
-                    .style(Button::Secondary),
+                    .style(iced::theme::Button::Secondary),
             ]
             .spacing(10)
             .align_items(Alignment::Center)

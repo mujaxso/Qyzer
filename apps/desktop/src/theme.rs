@@ -170,5 +170,3 @@ impl SemanticColors {
         }
     }
 }
-
-                Button::Primary
