@@ -744,8 +744,8 @@ fn explorer_panel_with_expanded<'a>(
         // Find the parent path
         let path = std::path::Path::new(&entry.path);
         if let Some(parent) = path.parent() {
-            let parent_str = parent.to_string_lossy().to_string();
-            // Normalize the parent path to match entry.path format
+            // Normalize the parent path
+            let parent_str = normalize_path(&parent.to_string_lossy());
             children_map.entry(parent_str).or_insert_with(Vec::new).push(i);
         } else {
             // This is a root entry
@@ -755,12 +755,10 @@ fn explorer_panel_with_expanded<'a>(
     
     // Also add entries that are directly in the workspace root
     // We need to identify entries whose parent is the workspace root
-    // For simplicity, let's assume workspace root is the common prefix
-    // But for now, let's find entries with no parent or parent is current directory
+    // For simplicity, let's find entries with parent "." or empty string
     for (i, entry) in file_entries.iter().enumerate() {
         let path = std::path::Path::new(&entry.path);
         if let Some(parent) = path.parent() {
-            // Check if parent is "." or empty (current directory)
             let parent_str = parent.to_string_lossy();
             if parent_str == "." || parent_str == "" {
                 // Check if not already in root_indices
@@ -806,13 +804,6 @@ fn explorer_panel_with_expanded<'a>(
         .height(Length::Fill)
         .into()
     } else {
-        // For debugging: if expanded_directories is empty, show a flat list
-        // This helps verify files are being loaded
-        if expanded_directories.is_empty() && children_map.is_empty() {
-            // Fall back to the simple explorer_panel
-            return explorer_panel(file_entries);
-        }
-        
         // Collect all elements first to avoid lifetime issues
         let mut all_elements = Vec::new();
         for &idx in &root_indices {
@@ -859,6 +850,13 @@ fn explorer_panel_with_expanded<'a>(
     .into()
 }
 
+
+// Helper function to normalize paths for consistent comparison
+fn normalize_path(path: &str) -> String {
+    let path = std::path::Path::new(path);
+    // Convert to string and remove trailing separator if present
+    path.to_string_lossy().to_string()
+}
 
 fn render_directory_entry_with_indices<'a, 'b>(
     entry: &'a core_types::workspace::DirectoryEntry,
@@ -925,7 +923,9 @@ fn render_directory_entry_with_indices<'a, 'b>(
     
     // If this is a directory and it's expanded, render its children
     if entry.is_dir && is_expanded {
-        if let Some(child_indices) = children_map.get(&entry.path) {
+        // Normalize the path for lookup
+        let normalized_path = normalize_path(&entry.path);
+        if let Some(child_indices) = children_map.get(&normalized_path) {
             // Sort child indices: directories first, then files
             let mut sorted_child_indices: Vec<usize> = child_indices.clone();
             sorted_child_indices.sort_by(|&a_idx, &b_idx| {
