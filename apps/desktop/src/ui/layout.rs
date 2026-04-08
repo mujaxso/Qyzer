@@ -1002,9 +1002,10 @@ fn render_directory_entry<'a>(
     depth: usize,
     elements: &mut Vec<Element<'a, Message>>,
 ) {
-    // Normalize the path for comparison
-    let normalized_path = normalize_path(&entry.path);
-    let is_expanded = expanded_directories.contains(&normalized_path);
+    // Use the exact path for comparison (not normalized)
+    // This matches what's stored in expanded_directories (which stores normalized paths)
+    // But to be safe, let's use the exact path and normalize it when looking up children
+    let is_expanded = expanded_directories.contains(&entry.path);
     
     // Determine icon based on whether it's a directory and expanded
     let icon = if entry.is_dir {
@@ -1057,7 +1058,9 @@ fn render_directory_entry<'a>(
     // If this is a directory and it's expanded, render its children
     if entry.is_dir && is_expanded {
         // Look up children using the normalized path as the parent key
-        if let Some(children) = children_by_parent.get(&normalized_path) {
+        // We need to normalize the path to match the key in children_by_parent
+        let parent_key = normalize_path(&entry.path);
+        if let Some(children) = children_by_parent.get(&parent_key) {
             // Sort children: directories first, then alphabetically
             let mut sorted_children: Vec<&core_types::workspace::DirectoryEntry> = children.clone();
             sorted_children.sort_by(|a, b| {

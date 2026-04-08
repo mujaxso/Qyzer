@@ -417,12 +417,12 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             }
         }
         Message::ToggleDirectory(path) => {
-            // Normalize the path to ensure consistent comparison
-            let normalized_path = normalize_path(&path);
-            if app.expanded_directories.contains(&normalized_path) {
-                app.expanded_directories.remove(&normalized_path);
+            // Use the exact path (not normalized) to match what's in the UI
+            // The UI now uses entry.path directly for comparison
+            if app.expanded_directories.contains(&path) {
+                app.expanded_directories.remove(&path);
             } else {
-                app.expanded_directories.insert(normalized_path);
+                app.expanded_directories.insert(path);
             }
             Command::none()
         }
