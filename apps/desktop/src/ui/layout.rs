@@ -885,14 +885,15 @@ fn explorer_panel_with_expanded<'a>(
     let mut children_by_parent: std::collections::HashMap<String, Vec<&core_types::workspace::DirectoryEntry>> = 
         std::collections::HashMap::new();
     
-    // Also track all entries by their path for quick lookup
-    let mut entries_by_path: std::collections::HashMap<String, &core_types::workspace::DirectoryEntry> = 
-        std::collections::HashMap::new();
+    // Normalize workspace path for comparison
+    let workspace_root = if workspace_path.is_empty() {
+        "".to_string()
+    } else {
+        normalize_path(workspace_path)
+    };
     
     for entry in file_entries {
-        entries_by_path.insert(entry.path.clone(), entry);
-        
-        // Get parent path and normalize it
+        // Get parent path
         let parent = std::path::Path::new(&entry.path)
             .parent()
             .and_then(|p| p.to_str())
@@ -902,16 +903,7 @@ fn explorer_panel_with_expanded<'a>(
         children_by_parent.entry(parent).or_insert_with(Vec::new).push(entry);
     }
     
-    // Find root entries (those with parent equal to workspace_path or empty)
-    let workspace_root = if workspace_path.is_empty() {
-        "".to_string()
-    } else {
-        // Normalize the workspace path
-        let path = std::path::Path::new(workspace_path);
-        path.to_string_lossy().to_string()
-    };
-    
-    // Get entries at the workspace root
+    // Find root entries: those whose parent is the workspace root or empty
     let root_entries: Vec<&core_types::workspace::DirectoryEntry> = children_by_parent
         .get(&workspace_root)
         .cloned()
@@ -1064,6 +1056,7 @@ fn render_directory_entry<'a>(
     
     // If this is a directory and it's expanded, render its children
     if entry.is_dir && is_expanded {
+        // Look up children using the normalized path as the parent key
         if let Some(children) = children_by_parent.get(&normalized_path) {
             // Sort children: directories first, then alphabetically
             let mut sorted_children: Vec<&core_types::workspace::DirectoryEntry> = children.clone();
@@ -1101,21 +1094,15 @@ fn render_directory_entry<'a>(
 
 // Helper function to normalize paths for consistent comparison
 fn normalize_path(path: &str) -> String {
-    let path = std::path::Path::new(path);
-    // Convert to absolute path if possible
-    let path = if path.is_absolute() {
-        path.to_path_buf()
-    } else {
-        // Try to canonicalize to get absolute path
-        match std::fs::canonicalize(path) {
-            Ok(p) => p,
-            Err(_) => path.to_path_buf(),
-        }
-    };
-    // Convert to string and remove trailing separator if present
-    let s = path.to_string_lossy().to_string();
-    // Remove any trailing separator
-    s.trim_end_matches(std::path::MAIN_SEPARATOR).to_string()
+    use std::path::Path;
+    let path = Path::new(path);
+    // Remove trailing separators and normalize
+    let mut normalized = path.to_string_lossy().to_string();
+    // Remove trailing separator if present
+    while normalized.ends_with(std::path::MAIN_SEPARATOR) {
+        normalized.pop();
+    }
+    normalized
 }
 
 
