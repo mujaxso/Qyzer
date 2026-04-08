@@ -293,26 +293,45 @@ impl iced::Application for App {
                         self.status_message = format!("Checking {}...", entry.name);
                         self.error_message = None;
                         
-                        // Request metadata check by returning a command that will trigger FileOpenRequested
-                        // We need to return a Command, not a Message directly
+                        // Load metadata directly in a background task
                         Command::perform(
                             async move {
-                                // Small delay to ensure UI updates first
-                                tokio::time::sleep(tokio::time::Duration::from_millis(10)).await;
-                                Message::FileOpenRequested(path)
+                                // Get file metadata in a background task
+                                let result = tokio::task::spawn_blocking(move || {
+                                    match std::fs::metadata(&path) {
+                                        Ok(metadata) => {
+                                            // Simple binary detection: check first few bytes
+                                            let is_binary = match std::fs::read(&path) {
+                                                Ok(bytes) => bytes.iter().take(1024).any(|&b| b == 0),
+                                                Err(_) => false,
+                                            };
+                                            Ok(FileMetadata {
+                                                path: path.clone(),
+                                                size: metadata.len(),
+                                                is_binary,
+                                            })
+                                        }
+                                        Err(e) => Err(format!("Failed to read file metadata: {}", e)),
+                                    }
+                                }).await;
+                                
+                                match result {
+                                    Ok(Ok(metadata)) => Message::FileMetadataLoaded(Ok(metadata)),
+                                    Ok(Err(e)) => Message::FileMetadataLoaded(Err(e)),
+                                    Err(join_err) => Message::FileMetadataLoaded(Err(format!("Failed to join task: {}", join_err))),
+                                }
                             },
-                            |msg| msg,
+                            |result| result,
                         )
                     } else {
                         // For directories, toggle expansion
                         let path = entry.path.clone();
-                        self.expanded_directories.insert(path.clone());
-                        Command::perform(
-                            async move {
-                                Message::ToggleDirectory(path)
-                            },
-                            |msg| msg,
-                        )
+                        if self.expanded_directories.contains(&path) {
+                            self.expanded_directories.remove(&path);
+                        } else {
+                            self.expanded_directories.insert(path.clone());
+                        }
+                        Command::none()
                     }
                 } else {
                     Command::none()
