@@ -12,6 +12,7 @@ members = [
   "crates/rpc",
   "crates/settings",
   "crates/permissions",
+  "crates/file-ops",
   "services/workspace-daemon",
   "services/ai-daemon",
 ]
