@@ -28,7 +28,7 @@ pub enum Message {
 }
 
 /// Create text editor content in a background task to avoid blocking the UI
-async fn create_text_editor_content(path: String, content: String) -> String {
+async fn create_text_editor_content(path: String, _content: String) -> String {
     // This runs in a background thread
     // We don't actually create text_editor::Content here because it's not Send
     // Instead, we just process the content to keep the UI responsive
@@ -147,7 +147,6 @@ impl iced::Application for App {
                         self.active_file_path = Some(path.clone());
                         // Clear current editor content to show loading state
                         self.text_editor = text_editor::Content::new();
-                        self.editor_content = String::new();
                         self.editor_buffer = None;
                         self.status_message = format!("Loading {}...", entry.name);
                         self.error_message = None;
@@ -268,41 +267,30 @@ impl iced::Application for App {
                 // Update the canonical buffer incrementally
                 if let Some(ref mut buffer) = self.editor_buffer {
                     match &action {
-                        iced::widget::text_editor::Action::Edit(edit_action) => {
-                            match edit_action {
-                                iced::widget::text_editor::EditAction::InsertText { char_idx, text } => {
-                                    if let Err(e) = buffer.insert_char_idx(*char_idx, text) {
-                                        self.status_message = format!("Insert error: {}", e);
-                                        // Fall back to full update
-                                        let current_text = self.text_editor.text();
-                                        buffer.replace_all(&current_text);
-                                    }
-                                    self.is_dirty = buffer.is_dirty();
-                                }
-                                iced::widget::text_editor::EditAction::DeleteRange { start, end } => {
-                                    if let Err(e) = buffer.delete_char_range(*start, *end) {
-                                        self.status_message = format!("Delete error: {}", e);
-                                        // Fall back to full update
-                                        let current_text = self.text_editor.text();
-                                        buffer.replace_all(&current_text);
-                                    }
-                                    self.is_dirty = buffer.is_dirty();
-                                }
-                                _ => {
-                                    // For other edit actions, fall back to full update
-                                    let current_text = self.text_editor.text();
-                                    buffer.replace_all(&current_text);
-                                    self.is_dirty = buffer.is_dirty();
-                                    self.status_message = "Used full update for complex edit".to_string();
-                                }
+                        iced::widget::text_editor::Action::InsertText { char_idx, text } => {
+                            if let Err(e) = buffer.insert_char_idx(*char_idx, text) {
+                                self.status_message = format!("Insert error: {}", e);
+                                // Fall back to full update
+                                let current_text = self.text_editor.text();
+                                buffer.replace_all(&current_text);
                             }
+                            self.is_dirty = buffer.is_dirty();
+                        }
+                        iced::widget::text_editor::Action::DeleteRange { start, end } => {
+                            if let Err(e) = buffer.delete_char_range(*start, *end) {
+                                self.status_message = format!("Delete error: {}", e);
+                                // Fall back to full update
+                                let current_text = self.text_editor.text();
+                                buffer.replace_all(&current_text);
+                            }
+                            self.is_dirty = buffer.is_dirty();
                         }
                         _ => {
-                            // For non-edit actions, fall back to full update
+                            // For other actions, fall back to full update
                             let current_text = self.text_editor.text();
                             buffer.replace_all(&current_text);
                             self.is_dirty = buffer.is_dirty();
-                            self.status_message = "Used full update for non-edit action".to_string();
+                            self.status_message = "Used full update for other action".to_string();
                         }
                     }
                 }
@@ -416,10 +404,9 @@ impl iced::Application for App {
                 Command::none()
             }
             Message::TextEditorContentCreated(path) => {
-                // Create text editor content from the already loaded content
-                // This is for small files (<100KB), so it should be fast
-                self.text_editor = text_editor::Content::with_text(&self.editor_content);
-                self.status_message = format!("Loaded: {} ({} bytes)", path, self.editor_content.len());
+                // This message is no longer needed since we handle loading directly in FileLoaded
+                // But keep it for compatibility
+                self.status_message = format!("Loaded: {}", path);
                 self.error_message = None;
                 Command::none()
             }
@@ -439,7 +426,7 @@ impl iced::Application for App {
             &self.workspace_path,
             &self.file_entries,
             self.active_file_path.as_ref(),
-            self.text_editor.text(),
+            &self.text_editor.text(),
             self.is_dirty,
             &self.status_message,
             self.error_message.as_ref(),
