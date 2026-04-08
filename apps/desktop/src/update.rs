@@ -280,13 +280,24 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             // First, perform the action on the text editor
             app.text_editor.perform(action.clone());
             
-            // Update the canonical buffer incrementally
-            if let Some(ref mut buffer) = app.editor_buffer {
-                // For simplicity, fall back to full update
-                let current_text = app.text_editor.text();
-                buffer.replace_all(&current_text);
-                app.status_message = "Text updated".to_string();
-                app.is_dirty = buffer.is_dirty();
+            // Check if this is a scroll action - we shouldn't update the buffer for scrolls
+            // Scroll actions don't modify the text content
+            match &action {
+                iced::widget::text_editor::Action::Scroll { .. } => {
+                    // Do not update the buffer for scroll actions
+                    // Just update the editor's internal state
+                    return Command::none();
+                }
+                _ => {
+                    // For other actions (insert, delete, etc.), update the canonical buffer
+                    if let Some(ref mut buffer) = app.editor_buffer {
+                        // For simplicity, fall back to full update
+                        let current_text = app.text_editor.text();
+                        buffer.replace_all(&current_text);
+                        app.status_message = "Text updated".to_string();
+                        app.is_dirty = buffer.is_dirty();
+                    }
+                }
             }
             Command::none()
         }
