@@ -40,7 +40,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
         .spacing(10)
         .padding(20)
     )
-    .style(iced::theme::Container::Custom(Box::new(move |&theme| {
+    .style(iced::theme::Container::Custom(Box::new(move |theme| {
         container::Appearance {
             background: Some(iced::Background::Color(match theme {
                 iced::Theme::Dark => iced::Color::from_rgb(0.12, 0.12, 0.16),

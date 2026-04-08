@@ -87,7 +87,7 @@ pub fn ide_layout<'a>(
     container(content)
         .width(Length::Fill)
         .height(Length::Fill)
-        .style(iced::theme::Container::Custom(Box::new(move |&theme| {
+        .style(iced::theme::Container::Custom(Box::new(move |theme| {
             container::Appearance {
                 background: Some(iced::Background::Color(match theme {
                     iced::Theme::Dark => iced::Color::from_rgb(0.06, 0.06, 0.08),
