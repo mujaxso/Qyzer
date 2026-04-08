@@ -907,48 +907,58 @@ pub fn explorer_panel_with_expanded<'a>(
     } else {
         let mut elements = Vec::new();
         
+        // For each entry, determine if it should be visible
+        // An entry is visible if all its parent directories are expanded
         for entry in &sorted_entries {
-            // Determine if this entry should be shown
-            // An entry should be shown if:
-            // 1. It's at the root (no parent in the list, or parent is workspace root)
-            // 2. Its parent directory is expanded
-            
             let entry_path = std::path::Path::new(&entry.path);
-            let parent = entry_path.parent().and_then(|p| p.to_str());
             
-            // Check if parent is expanded
-            let should_show = if let Some(parent_path) = parent {
-                // Normalize parent path for comparison
-                let normalized_parent = normalize_path(parent_path);
-                expanded_directories.contains(&normalized_parent)
-            } else {
-                // No parent means it's at root
-                true
-            };
+            // Get all parent directories
+            let mut current_path = entry_path;
+            let mut parents = Vec::new();
+            while let Some(parent) = current_path.parent() {
+                if let Some(parent_str) = parent.to_str() {
+                    if !parent_str.is_empty() {
+                        parents.push(parent_str);
+                    }
+                }
+                current_path = parent;
+            }
             
-            // Also check if the parent is the workspace root
+            // Check if all parent directories are expanded
+            let mut all_parents_expanded = true;
+            for parent in &parents {
+                let normalized_parent = normalize_path(parent);
+                if !expanded_directories.contains(&normalized_parent) {
+                    all_parents_expanded = false;
+                    break;
+                }
+            }
+            
+            // Also check if the entry is directly under workspace root
+            // In that case, it should always be visible
             let workspace_root = if workspace_path.is_empty() {
                 "".to_string()
             } else {
                 normalize_path(workspace_path)
             };
             
-            let is_at_root = if let Some(parent_path) = parent {
-                let normalized_parent = normalize_path(parent_path);
-                normalized_parent == workspace_root
+            let is_direct_child_of_workspace_root = if let Some(parent) = entry_path.parent() {
+                if let Some(parent_str) = parent.to_str() {
+                    normalize_path(parent_str) == workspace_root
+                } else {
+                    false
+                }
             } else {
                 true
             };
             
-            if should_show || is_at_root {
-                // Calculate depth for indentation
-                let depth = if is_at_root {
-                    0
+            if all_parents_expanded || is_direct_child_of_workspace_root {
+                // Calculate depth based on number of path components
+                let depth = if workspace_root.is_empty() {
+                    entry_path.components().count().saturating_sub(1)
                 } else {
-                    // Count path components relative to workspace root
-                    let entry_components: Vec<_> = entry_path.components().collect();
                     let workspace_components: Vec<_> = std::path::Path::new(&workspace_root).components().collect();
-                    entry_components.len().saturating_sub(workspace_components.len())
+                    entry_path.components().count().saturating_sub(workspace_components.len())
                 };
                 
                 // Normalize the path for comparison
@@ -1004,12 +1014,24 @@ pub fn explorer_panel_with_expanded<'a>(
             }
         }
         
-        scrollable(
-            column(elements)
-                .spacing(2),
-        )
-        .height(Length::Fill)
-        .into()
+        // If no elements were generated (shouldn't happen), show a message
+        if elements.is_empty() {
+            container(
+                text("No files to display")
+                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
+            )
+            .center_y()
+            .center_x()
+            .height(Length::Fill)
+            .into()
+        } else {
+            scrollable(
+                column(elements)
+                    .spacing(2),
+            )
+            .height(Length::Fill)
+            .into()
+        }
     };
 
     column![
