@@ -117,71 +117,87 @@ impl NeoteTheme {
 }
 
 impl SemanticColors {
-    /// Dark theme semantic colors - Opaque and high contrast
+    /// Premium dark theme semantic colors
     pub fn dark() -> Self {
         Self {
-            // Solid opaque backgrounds with clear hierarchy
-            app_background: Color::from_rgb(0.06, 0.06, 0.08),
-            panel_background: Color::from_rgb(0.10, 0.10, 0.12),
-            elevated_panel_background: Color::from_rgb(0.14, 0.14, 0.16),
-            status_bar_background: Color::from_rgb(0.08, 0.08, 0.10),
+            // Background surfaces
+            app_background: Color::from_rgb(0.086, 0.094, 0.129),      // #161821
+            shell_background: Color::from_rgb(0.106, 0.114, 0.153),    // #1B1D27
+            panel_background: Color::from_rgb(0.118, 0.129, 0.188),    // #1E2130
+            elevated_panel_background: Color::from_rgb(0.137, 0.149, 0.216), // #232637
+            editor_background: Color::from_rgb(0.090, 0.098, 0.137),   // #171923
+            input_background: Color::from_rgb(0.078, 0.090, 0.133),    // #141722
+            status_bar_background: Color::from_rgb(0.106, 0.114, 0.153), // #1B1D27
             
-            // High contrast text colors
-            text_primary: Color::from_rgb(0.98, 0.98, 0.98),
-            text_secondary: Color::from_rgb(0.85, 0.85, 0.85),
-            text_muted: Color::from_rgb(0.70, 0.70, 0.70),
-            text_on_accent: Color::from_rgb(1.0, 1.0, 1.0),
+            // Text colors
+            text_primary: Color::from_rgb(0.902, 0.918, 0.949),        // #E6EAF2
+            text_secondary: Color::from_rgb(0.718, 0.753, 0.820),      // #B7C0D1
+            text_muted: Color::from_rgb(0.533, 0.573, 0.651),          // #8892A6
+            text_faint: Color::from_rgb(0.408, 0.439, 0.525),          // #687086
+            text_on_accent: Color::from_rgb(1.0, 1.0, 1.0),            // #FFFFFF
             
-            // Clear borders and dividers
-            border: Color::from_rgb(0.20, 0.20, 0.25),
-            divider: Color::from_rgb(0.15, 0.15, 0.20),
-            accent: Color::from_rgb(0.35, 0.65, 1.0),
-            accent_secondary: Color::from_rgb(0.45, 0.75, 1.0),
+            // UI elements
+            border: Color::from_rgb(0.169, 0.188, 0.251),              // #2B3040
+            divider: Color::from_rgb(0.169, 0.188, 0.251),             // #2B3040
+            accent: Color::from_rgb(0.298, 0.435, 1.0),                // #4C6FFF
+            accent_hover: Color::from_rgb(0.353, 0.482, 1.0),          // #5A7BFF
+            accent_soft_background: Color::from_rgba(0.298, 0.435, 1.0, 0.16), // rgba(76, 111, 255, 0.16)
             
-            // Solid state backgrounds (no transparency)
-            hover_background: Color::from_rgb(0.18, 0.18, 0.22),
-            active_background: Color::from_rgb(0.22, 0.22, 0.26),
-            selected_background: Color::from_rgb(0.25, 0.40, 0.70),
+            // States
+            hover_background: Color::from_rgb(0.165, 0.180, 0.259),    // #2A2E42
+            active_background: Color::from_rgb(0.165, 0.180, 0.259),   // #2A2E42
+            selected_background: Color::from_rgb(0.176, 0.227, 0.451), // #2D3A73
             
-            // Vibrant status colors
-            success: Color::from_rgb(0.35, 0.90, 0.55),
-            warning: Color::from_rgb(1.0, 0.80, 0.35),
-            error: Color::from_rgb(1.0, 0.45, 0.45),
-            info: Color::from_rgb(0.45, 0.80, 1.0),
+            // Status colors
+            success: Color::from_rgb(0.208, 0.769, 0.420),             // #35C46B
+            warning: Color::from_rgb(0.941, 0.698, 0.294),             // #F0B24B
+            error: Color::from_rgb(0.941, 0.365, 0.424),               // #F05D6C
+            info: Color::from_rgb(0.431, 0.659, 1.0),                  // #6EA8FF
+            
+            // Focus
+            focus_ring: Color::from_rgba(0.361, 0.478, 1.0, 0.45),     // rgba(92, 122, 255, 0.45)
         }
     }
     
-    /// Light theme semantic colors - Opaque and high contrast
+    /// Light theme semantic colors - Keeping for compatibility
     pub fn light() -> Self {
         Self {
-            // Solid opaque backgrounds with clear hierarchy
+            // Background surfaces
             app_background: Color::from_rgb(0.96, 0.96, 0.96),
-            panel_background: Color::from_rgb(0.98, 0.98, 0.98),
+            shell_background: Color::from_rgb(0.98, 0.98, 0.98),
+            panel_background: Color::from_rgb(1.0, 1.0, 1.0),
             elevated_panel_background: Color::from_rgb(1.0, 1.0, 1.0),
+            editor_background: Color::from_rgb(0.98, 0.98, 0.98),
+            input_background: Color::from_rgb(0.95, 0.95, 0.95),
             status_bar_background: Color::from_rgb(0.94, 0.94, 0.94),
             
-            // High contrast text colors
+            // Text colors
             text_primary: Color::from_rgb(0.10, 0.10, 0.10),
             text_secondary: Color::from_rgb(0.30, 0.30, 0.30),
             text_muted: Color::from_rgb(0.50, 0.50, 0.50),
+            text_faint: Color::from_rgb(0.70, 0.70, 0.70),
             text_on_accent: Color::from_rgb(1.0, 1.0, 1.0),
             
-            // Clear borders and dividers
+            // UI elements
             border: Color::from_rgb(0.80, 0.80, 0.80),
             divider: Color::from_rgb(0.85, 0.85, 0.85),
             accent: Color::from_rgb(0.25, 0.55, 0.95),
-            accent_secondary: Color::from_rgb(0.35, 0.65, 1.0),
+            accent_hover: Color::from_rgb(0.35, 0.65, 1.0),
+            accent_soft_background: Color::from_rgba(0.25, 0.55, 0.95, 0.16),
             
-            // Solid state backgrounds (no transparency)
+            // States
             hover_background: Color::from_rgb(0.92, 0.92, 0.94),
             active_background: Color::from_rgb(0.88, 0.88, 0.90),
             selected_background: Color::from_rgb(0.20, 0.50, 0.90),
             
-            // Vibrant status colors
+            // Status colors
             success: Color::from_rgb(0.25, 0.80, 0.45),
             warning: Color::from_rgb(0.95, 0.70, 0.25),
             error: Color::from_rgb(0.95, 0.35, 0.35),
             info: Color::from_rgb(0.35, 0.70, 0.95),
+            
+            // Focus
+            focus_ring: Color::from_rgba(0.25, 0.55, 0.95, 0.45),
         }
     }
 }

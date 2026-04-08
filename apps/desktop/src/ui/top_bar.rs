@@ -126,6 +126,30 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
         })))
     };
     
+    struct TopBarStyle {
+        colors: SemanticColors,
+    }
+    
+    impl iced::widget::container::StyleSheet for TopBarStyle {
+        type Style = iced::Theme;
+        
+        fn appearance(&self, _style: &Self::Style) -> iced::widget::container::Appearance {
+            container::Appearance {
+                background: Some(self.colors.shell_background.into()),
+                border: iced::Border {
+                    color: self.colors.border,
+                    width: 0.0,
+                    radius: 0.0.into(),
+                },
+                ..Default::default()
+            }
+        }
+    }
+    
+    let top_bar_style = TopBarStyle {
+        colors: style.colors,
+    };
+    
     container(
         row![
             // Minimal logo/brand
@@ -174,30 +198,6 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
     )
     .width(Length::Fill)
     .height(Length::Fill)
-    struct TopBarStyle {
-        colors: SemanticColors,
-    }
-    
-    impl iced::widget::container::StyleSheet for TopBarStyle {
-        type Style = iced::Theme;
-        
-        fn appearance(&self, _style: &Self::Style) -> iced::widget::container::Appearance {
-            container::Appearance {
-                background: Some(self.colors.shell_background.into()),
-                border: iced::Border {
-                    color: self.colors.border,
-                    width: 0.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            }
-        }
-    }
-    
-    let top_bar_style = TopBarStyle {
-        colors: style.colors,
-    };
-    
     .style(iced::theme::Container::Custom(Box::new(top_bar_style)))
     .into()
 }
