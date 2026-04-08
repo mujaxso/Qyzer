@@ -11,30 +11,31 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         let file_name = active_path.split('/').last().unwrap_or(active_path);
         container(
             row![
-                text("📄").size(14),
+                text("📄").size(12),
                 text(file_name)
-                    .size(13)
+                    .size(12)
                     .style(iced::theme::Text::Color(style.colors.text_primary)),
                 iced::widget::horizontal_space(),
                 if app.is_dirty {
-                    text("● Unsaved").size(11)
+                    text("●").size(10)
                         .style(iced::theme::Text::Color(style.colors.warning))
                 } else {
-                    text("✓ Saved").size(11)
+                    text("✓").size(10)
                         .style(iced::theme::Text::Color(style.colors.success))
                 }
             ]
-            .spacing(8)
+            .spacing(6)
             .align_items(iced::Alignment::Center)
         )
-        .padding([12, 16])
+        .padding([8, 12])
         .width(Length::Fill)
     } else {
         container(
             text("No file selected")
+                .size(12)
                 .style(iced::theme::Text::Color(style.colors.text_muted))
         )
-        .padding([12, 16])
+        .padding([8, 12])
         .width(Length::Fill)
     };
     
@@ -89,17 +90,11 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     )
     .width(Length::Fill)
     .height(Length::Fill)
-    .style(iced::theme::Container::Custom(Box::new(move |theme: &iced::Theme| {
+    .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
         container::Appearance {
-            background: Some(iced::Background::Color(match theme {
-                iced::Theme::Dark => iced::Color::from_rgb(0.10, 0.10, 0.12),
-                _ => iced::Color::from_rgb(0.98, 0.98, 0.98),
-            })),
+            background: Some(style.colors.panel_background.into()),
             border: iced::Border {
-                color: match theme {
-                    iced::Theme::Dark => iced::Color::from_rgb(0.2, 0.2, 0.25),
-                    _ => iced::Color::from_rgb(0.8, 0.8, 0.8),
-                },
+                color: style.colors.border,
                 width: 1.0,
                 radius: 0.0.into(),
             },

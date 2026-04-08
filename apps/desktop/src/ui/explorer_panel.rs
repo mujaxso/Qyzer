@@ -9,19 +9,19 @@ pub fn explorer_panel(app: &App) -> Element<'_, Message> {
     let header = container(
         row![
             text("EXPLORER")
-                .size(11)
+                .size(10)
                 .style(iced::theme::Text::Color(style.colors.text_muted)),
             iced::widget::horizontal_space(),
             button(
-                text("⟳").size(14)
+                text("⟳").size(12)
             )
             .on_press(Message::RefreshWorkspace)
-            .padding([4, 8])
+            .padding([2, 6])
             .style(iced::theme::Button::Secondary)
         ]
         .align_items(iced::Alignment::Center)
     )
-    .padding([12, 16])
+    .padding([8, 12])
     .width(Length::Fill);
     
     let content: Element<_> = if app.file_entries.is_empty() {
@@ -61,12 +61,12 @@ pub fn explorer_panel(app: &App) -> Element<'_, Message> {
                 };
                 
                 let row_content = row![
-                    text(icon).size(14),
+                    text(icon).size(12),
                     text(&entry.name)
-                        .size(13)
+                        .size(12)
                         .style(iced::theme::Text::Color(text_color)),
                 ]
-                .spacing(8)
+                .spacing(6)
                 .align_items(iced::Alignment::Center);
                 
                 let message = if entry.is_dir {
@@ -111,8 +111,9 @@ pub fn explorer_panel(app: &App) -> Element<'_, Message> {
                 container(
                     button(row_content)
                         .on_press(message)
-                        .padding([6, 12])
+                        .padding([4, 8])
                         .width(Length::Fill)
+                        .height(Length::Fixed(crate::ui::common::EXPLORER_ROW_HEIGHT))
                         .style(button_style)
                 )
                 .into()

@@ -76,7 +76,7 @@ impl App {
                 is_file_too_large_for_editor: false,
                 file_loading_state: FileLoadingState::Idle,
                 is_file_read_only: false,
-                theme: NeoteTheme::System,
+                theme: NeoteTheme::Dark, // Always use premium dark theme
             },
             iced::Command::none(),
         )

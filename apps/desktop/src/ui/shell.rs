@@ -10,22 +10,22 @@ use super::{
     top_bar::top_bar,
 };
 
-/// Main shell that composes all UI components
+/// Main shell that composes all UI components - Premium compact layout
 pub fn shell(app: &App) -> Element<'_, Message> {
     // Determine if AI panel should be visible
     let ai_panel_visible = matches!(app.active_activity, crate::state::Activity::Ai) || app.ai_panel_visible;
     
-    // Build panels
+    // Build panels with compact sizing
     let top_bar = container(top_bar(app))
         .width(Length::Fill)
-        .height(Length::Fixed(48.0));
+        .height(Length::Fixed(crate::ui::common::TOP_BAR_HEIGHT));
     
     let activity_bar = container(activity_bar(app))
-        .width(Length::Fixed(48.0))
+        .width(Length::Fixed(crate::ui::common::ACTIVITY_BAR_WIDTH))
         .height(Length::Fill);
     
     let explorer_panel = container(explorer_panel(app))
-        .width(Length::Fixed(280.0))
+        .width(Length::Fixed(260.0)) // Slightly narrower for compact feel
         .height(Length::Fill);
     
     let editor_panel = container(editor_panel(app))
@@ -35,7 +35,7 @@ pub fn shell(app: &App) -> Element<'_, Message> {
     // Conditionally include AI panel
     let main_content = if ai_panel_visible {
         let assistant_panel = container(assistant_panel(app))
-            .width(Length::Fixed(320.0))
+            .width(Length::Fixed(300.0)) // Compact but useful width
             .height(Length::Fill);
         
         iced::widget::row![
@@ -56,9 +56,9 @@ pub fn shell(app: &App) -> Element<'_, Message> {
     
     let status_bar = container(status_bar(app))
         .width(Length::Fill)
-        .height(Length::Fixed(28.0));
+        .height(Length::Fixed(crate::ui::common::STATUS_BAR_HEIGHT));
     
-    // Combine everything
+    // Combine everything with subtle spacing
     iced::widget::column![
         top_bar,
         main_content,

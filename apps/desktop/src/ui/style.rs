@@ -51,6 +51,21 @@ impl StyleHelpers {
         common::containers::elevated(&self.colors)
     }
     
+    /// Shell container style
+    pub fn shell_container(&self) -> container::Appearance {
+        common::containers::shell(&self.colors)
+    }
+    
+    /// Editor container style
+    pub fn editor_container(&self) -> container::Appearance {
+        common::containers::editor(&self.colors)
+    }
+    
+    /// Input container style
+    pub fn input_container(&self) -> container::Appearance {
+        common::containers::input(&self.colors)
+    }
+    
     /// Status bar container style
     pub fn status_bar_container(&self) -> container::Appearance {
         container::Appearance {

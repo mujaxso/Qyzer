@@ -9,50 +9,44 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
     let header = container(
         row![
             text("AI ASSISTANT")
-                .size(11)
+                .size(10)
                 .style(iced::theme::Text::Color(style.colors.text_muted)),
             iced::widget::horizontal_space(),
             button(
-                text("⋯").size(14)
+                text("⋯").size(12)
             )
             .on_press(Message::PromptInputChanged("AI options".to_string()))
-            .padding([4, 8])
+            .padding([2, 6])
             .style(iced::theme::Button::Secondary)
         ]
         .align_items(iced::Alignment::Center)
     )
-    .padding([12, 16])
+    .padding([8, 12])
     .width(Length::Fill);
     
     let welcome_card = container(
         column![
             row![
-                text("🤖").size(20),
-                text("Neote AI").size(16)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb(0.9, 0.9, 1.0))),
+                text("🤖").size(16),
+                text("Neote AI").size(14)
+                    .style(iced::theme::Text::Color(style.colors.text_primary)),
             ]
-            .spacing(8)
+            .spacing(6)
             .align_items(iced::Alignment::Center),
             text("Ask questions about your code, get explanations, refactor suggestions, and more.")
-                .size(13)
-                .style(iced::theme::Text::Color(iced::Color::from_rgb(0.8, 0.85, 0.9))),
+                .size(12)
+                .style(iced::theme::Text::Color(style.colors.text_secondary)),
         ]
-        .spacing(10)
-        .padding(20)
+        .spacing(8)
+        .padding(16)
     )
-    .style(iced::theme::Container::Custom(Box::new(move |theme: &iced::Theme| {
+    .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
         container::Appearance {
-            background: Some(iced::Background::Color(match theme {
-                iced::Theme::Dark => iced::Color::from_rgb(0.12, 0.12, 0.16),
-                _ => iced::Color::from_rgb(0.95, 0.95, 0.98),
-            })),
+            background: Some(style.colors.elevated_panel_background.into()),
             border: iced::Border {
-                color: match theme {
-                    iced::Theme::Dark => iced::Color::from_rgb(0.25, 0.45, 0.85),
-                    _ => iced::Color::from_rgb(0.6, 0.7, 1.0),
-                },
+                color: style.colors.accent,
                 width: 1.0,
-                radius: 8.0.into(),
+                radius: crate::ui::common::RADIUS_MD.into(),
             },
             ..Default::default()
         }
@@ -60,29 +54,29 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
     
     let quick_actions = container(
         column![
-            text("Quick Actions").size(13)
+            text("Quick Actions").size(11)
                 .style(iced::theme::Text::Color(style.colors.text_muted)),
             column![
                 button("Explain this file")
                     .on_press(Message::PromptInputChanged("Explain the current file".to_string()))
-                    .padding([10, 12])
+                    .padding([8, 10])
                     .width(Length::Fill)
                     .style(iced::theme::Button::Secondary),
                 button("Refactor selection")
                     .on_press(Message::PromptInputChanged("Refactor the selected code".to_string()))
-                    .padding([10, 12])
+                    .padding([8, 10])
                     .width(Length::Fill)
                     .style(iced::theme::Button::Secondary),
                 button("Find bugs")
                     .on_press(Message::PromptInputChanged("Find potential bugs in this code".to_string()))
-                    .padding([10, 12])
+                    .padding([8, 10])
                     .width(Length::Fill)
                     .style(iced::theme::Button::Secondary),
             ]
-            .spacing(6),
+            .spacing(4),
         ]
-        .spacing(12)
-        .padding(16)
+        .spacing(8)
+        .padding(12)
     );
     
     let input_area = container(

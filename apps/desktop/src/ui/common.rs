@@ -2,24 +2,28 @@
 use iced::{Color, widget::{button, container, text}};
 use crate::theme::SemanticColors;
 
-/// Common spacing constants for consistent UI rhythm
+/// Common spacing constants for compact IDE rhythm
 pub const SPACING_XS: f32 = 4.0;
-pub const SPACING_SM: f32 = 8.0;
-pub const SPACING_MD: f32 = 12.0;
-pub const SPACING_LG: f32 = 16.0;
-pub const SPACING_XL: f32 = 24.0;
+pub const SPACING_SM: f32 = 6.0;
+pub const SPACING_MD: f32 = 8.0;
+pub const SPACING_LG: f32 = 12.0;
+pub const SPACING_XL: f32 = 16.0;
 
-/// Common border radius values
+/// Common border radius values - subtle and refined
+pub const RADIUS_XS: f32 = 2.0;
 pub const RADIUS_SM: f32 = 4.0;
 pub const RADIUS_MD: f32 = 6.0;
 pub const RADIUS_LG: f32 = 8.0;
 
-/// Common sizes for UI elements
-pub const ICON_SIZE: f32 = 18.0;
-pub const BUTTON_HEIGHT_SM: f32 = 32.0;
-pub const BUTTON_HEIGHT_MD: f32 = 40.0;
-pub const PANEL_HEADER_HEIGHT: f32 = 48.0;
-pub const STATUS_BAR_HEIGHT: f32 = 28.0;
+/// Common sizes for UI elements - compact IDE density
+pub const ICON_SIZE: f32 = 16.0;
+pub const BUTTON_HEIGHT_SM: f32 = 28.0;
+pub const BUTTON_HEIGHT_MD: f32 = 32.0;
+pub const PANEL_HEADER_HEIGHT: f32 = 36.0;
+pub const STATUS_BAR_HEIGHT: f32 = 24.0;
+pub const EXPLORER_ROW_HEIGHT: f32 = 28.0;
+pub const ACTIVITY_BAR_WIDTH: f32 = 48.0;
+pub const TOP_BAR_HEIGHT: f32 = 40.0;
 
 /// Extension-friendly theme access interface
 /// This trait allows extensions to access Neote's semantic colors and styles
@@ -53,11 +57,11 @@ pub trait ThemeConsumer {
     }
 }
 
-/// Common button styles for extensions to use
+/// Common button styles for extensions to use - Premium compact design
 pub mod buttons {
     use super::*;
     
-    /// Primary button style using semantic colors - Solid and high contrast
+    /// Primary button style - Accent color, used sparingly
     pub fn primary(colors: &SemanticColors) -> button::Appearance {
         button::Appearance {
             background: Some(colors.accent.into()),
@@ -71,7 +75,7 @@ pub mod buttons {
         }
     }
     
-    /// Secondary button style using semantic colors - Solid background
+    /// Secondary button style - Elevated panel background
     pub fn secondary(colors: &SemanticColors) -> button::Appearance {
         button::Appearance {
             background: Some(colors.elevated_panel_background.into()),
@@ -85,7 +89,7 @@ pub mod buttons {
         }
     }
     
-    /// Text button style (minimal appearance) - Still readable
+    /// Text button style - Minimal, transparent background
     pub fn text(colors: &SemanticColors) -> button::Appearance {
         button::Appearance {
             background: Some(Color::TRANSPARENT.into()),
@@ -98,13 +102,27 @@ pub mod buttons {
             ..Default::default()
         }
     }
+    
+    /// Compact button style for IDE panels
+    pub fn compact(colors: &SemanticColors) -> button::Appearance {
+        button::Appearance {
+            background: Some(colors.panel_background.into()),
+            border: iced::Border {
+                color: colors.border,
+                width: 1.0,
+                radius: RADIUS_XS.into(),
+            },
+            text_color: colors.text_secondary,
+            ..Default::default()
+        }
+    }
 }
 
-/// Common container styles for extensions to use
+/// Common container styles for extensions to use - Premium layered surfaces
 pub mod containers {
     use super::*;
     
-    /// Panel container style
+    /// Panel container style - Main side panel
     pub fn panel(colors: &SemanticColors) -> container::Appearance {
         container::Appearance {
             background: Some(colors.panel_background.into()),
@@ -117,7 +135,7 @@ pub mod containers {
         }
     }
     
-    /// Elevated panel container style
+    /// Elevated panel container style - Cards, inputs
     pub fn elevated(colors: &SemanticColors) -> container::Appearance {
         container::Appearance {
             background: Some(colors.elevated_panel_background.into()),
@@ -130,7 +148,7 @@ pub mod containers {
         }
     }
     
-    /// Card container style (for content blocks)
+    /// Card container style - For content blocks, assistant messages
     pub fn card(colors: &SemanticColors) -> container::Appearance {
         container::Appearance {
             background: Some(colors.elevated_panel_background.into()),
@@ -138,6 +156,41 @@ pub mod containers {
                 color: colors.divider,
                 width: 1.0,
                 radius: RADIUS_MD.into(),
+            },
+            ..Default::default()
+        }
+    }
+    
+    /// Shell container style - Outer app background
+    pub fn shell(colors: &SemanticColors) -> container::Appearance {
+        container::Appearance {
+            background: Some(colors.shell_background.into()),
+            border: iced::Border::default(),
+            ..Default::default()
+        }
+    }
+    
+    /// Editor container style - Main editor surface
+    pub fn editor(colors: &SemanticColors) -> container::Appearance {
+        container::Appearance {
+            background: Some(colors.editor_background.into()),
+            border: iced::Border {
+                color: colors.border,
+                width: 1.0,
+                radius: RADIUS_SM.into(),
+            },
+            ..Default::default()
+        }
+    }
+    
+    /// Input container style - Text inputs, search
+    pub fn input(colors: &SemanticColors) -> container::Appearance {
+        container::Appearance {
+            background: Some(colors.input_background.into()),
+            border: iced::Border {
+                color: colors.border,
+                width: 1.0,
+                radius: RADIUS_SM.into(),
             },
             ..Default::default()
         }

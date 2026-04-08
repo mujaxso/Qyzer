@@ -3,6 +3,7 @@ use crate::message::Message;
 use crate::state::{App, Activity};
 
 pub fn activity_bar(app: &App) -> Element<'_, Message> {
+    let style = StyleHelpers::new(app.theme);
     let activities = [
         (Activity::Explorer, "📁", "Explorer"),
         (Activity::Search, "🔍", "Search"),
@@ -22,15 +23,30 @@ pub fn activity_bar(app: &App) -> Element<'_, Message> {
                 Message::ActivitySelected(*activity)
             };
             
-            let button_style = if is_active {
-                iced::theme::Button::Primary
+            // Active state styling
+            let button_appearance = if is_active {
+                iced::widget::button::Appearance {
+                    background: Some(style.colors.accent_soft_background.into()),
+                    border: iced::Border {
+                        color: style.colors.accent,
+                        width: 1.0,
+                        radius: 0.0.into(),
+                    },
+                    text_color: style.colors.accent,
+                    ..Default::default()
+                }
             } else {
-                iced::theme::Button::Secondary
+                iced::widget::button::Appearance {
+                    background: Some(Color::TRANSPARENT.into()),
+                    border: iced::Border::default(),
+                    text_color: style.colors.text_muted,
+                    ..Default::default()
+                }
             };
             
             let button = button(
                 container(
-                    text(*icon).size(18)
+                    text(*icon).size(16)
                 )
                 .width(Length::Fill)
                 .height(Length::Fill)
@@ -38,9 +54,9 @@ pub fn activity_bar(app: &App) -> Element<'_, Message> {
                 .center_y()
             )
             .width(Length::Fill)
-            .height(Length::Fixed(48.0))
+            .height(Length::Fixed(40.0)) // Compact height
             .on_press(message)
-            .style(button_style);
+            .style(iced::theme::Button::Custom(Box::new(move |_| button_appearance)));
             
             button.into()
         })
@@ -53,6 +69,16 @@ pub fn activity_bar(app: &App) -> Element<'_, Message> {
     )
     .width(Length::Fill)
     .height(Length::Fill)
-    .style(iced::theme::Container::Box)
+    .style(iced::theme::Container::Custom(Box::new(move |_theme| {
+        container::Appearance {
+            background: Some(style.colors.panel_background.into()),
+            border: iced::Border {
+                color: style.colors.border,
+                width: 0.0,
+                radius: 0.0.into(),
+            },
+            ..Default::default()
+        }
+    })))
     .into()
 }
