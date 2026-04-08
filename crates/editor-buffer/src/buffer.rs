@@ -263,10 +263,13 @@ impl TextBuffer {
         if start > end {
             return Err(format!("Start {} greater than end {}", start, end));
         }
-        if end > self.rope.len_chars() {
-            return Err(format!("End {} out of bounds (length {})", 
-                end, self.rope.len_chars()));
+        let rope_len = self.rope.len_chars();
+        if start > rope_len {
+            return Err(format!("Start {} out of bounds (length {})", 
+                start, rope_len));
         }
+        // Cap end to rope length to avoid panics
+        let end = end.min(rope_len);
         Ok(self.rope.slice(start..end).to_string())
     }
 

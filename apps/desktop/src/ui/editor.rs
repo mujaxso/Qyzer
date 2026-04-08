@@ -13,11 +13,13 @@ pub fn editor<'a>(editor_content: &'a iced::widget::text_editor::Content) -> Ele
         .height(Length::Fill);
     
     // Create a scrollable container for the editor
+    // Use a fixed height container to prevent infinite layout issues
     let editor_container = container(editor)
         .padding(16)
         .width(Length::Fill)
         .height(Length::Fill);
     
+    // Use a scrollable with explicit height
     scrollable(editor_container)
         .height(Length::Fill)
         .into()

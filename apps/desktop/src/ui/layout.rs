@@ -491,9 +491,18 @@ fn editor_panel<'a>(
                     let content = if let Some(buffer) = editor_buffer {
                         if buffer.is_very_large() {
                             // For very large files, show only first 100KB
-                            buffer.slice_char_range(0, 100_000.min(buffer.len_chars())).unwrap_or_else(|_| String::new())
+                            // Use safe slicing with bounds checking
+                            let len = buffer.len_chars();
+                            let end = 100_000.min(len);
+                            buffer.slice_char_range(0, end).unwrap_or_else(|_| String::new())
                         } else {
-                            buffer.text()
+                            // For large but not very large files, limit to 500KB
+                            let text = buffer.text();
+                            if text.len() > 500_000 {
+                                text[..500_000].to_string()
+                            } else {
+                                text
+                            }
                         }
                     } else {
                         String::new()
@@ -502,18 +511,24 @@ fn editor_panel<'a>(
                         if buffer.is_very_large() {
                             format!("\n\n--- File truncated ({} MB total, showing first 100KB) ---", 
                                    buffer.len_chars() / 1_000_000)
+                        } else if buffer.is_large() {
+                            format!("\n\n--- File truncated ({} MB total, showing first 500KB) ---",
+                                   buffer.len_chars() / 1_000_000)
                         } else {
                             String::new()
                         }
                     } else {
                         String::new()
                     };
+                    // Use a scrollable with explicit height
                     scrollable(
-                        column![
+                        container(
                             text(content + &warning)
                                 .font(iced::Font::MONOSPACE)
-                                .size(14),
-                        ]
+                                .size(14)
+                        )
+                        .padding(16)
+                        .width(Length::Fill)
                     )
                     .height(Length::Fill)
                     .into()

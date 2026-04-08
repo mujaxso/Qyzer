@@ -489,9 +489,16 @@ impl iced::Application for App {
                                 file_size
                             );
                             // For read-only preview, show the content directly
+                            // Limit the content to prevent crashes
+                            let preview_content = if content.len() > 100_000 {
+                                &content[..100_000]
+                            } else {
+                                &content
+                            };
                             self.text_editor = text_editor::Content::with_text(&format!(
-                                "// Read-only preview (first 100KB)\n// File is very large\n\n{}",
-                                content
+                                "// Read-only preview (first {} bytes)\n// File is very large\n\n{}",
+                                preview_content.len(),
+                                preview_content
                             ));
                             // Reset the flag for next time
                             self.is_file_read_only = false;
@@ -512,7 +519,13 @@ impl iced::Application for App {
                             // This is still synchronous, but for files under the threshold it should be fine
                             if let Some(ref buffer) = self.editor_buffer {
                                 let text = buffer.text();
-                                self.text_editor = text_editor::Content::with_text(&text);
+                                // For very large files, limit the text to prevent crashes
+                                let display_text = if text.len() > 1_000_000 {
+                                    &text[..1_000_000]
+                                } else {
+                                    &text
+                                };
+                                self.text_editor = text_editor::Content::with_text(display_text);
                             }
                         }
                         
