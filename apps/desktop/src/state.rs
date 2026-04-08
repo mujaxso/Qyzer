@@ -3,6 +3,7 @@ use workspace_model::state::WorkspaceState;
 use core_types::workspace::DirectoryEntry;
 use editor_buffer::buffer::TextBuffer;
 use iced::widget::text_editor;
+use iced;
 
 use crate::theme::NeoteTheme;
 
@@ -97,12 +98,19 @@ impl App {
     }
 
     pub fn subscription(&self) -> iced::Subscription<crate::message::Message> {
+        use crate::message::Message;
+        
         iced::Subscription::batch(vec![
             iced::keyboard::on_key_press(|key, modifiers| {
-                Some(crate::message::Message::KeyPressed(key, modifiers))
+                Some(Message::KeyPressed(key, modifiers))
             }),
-            iced::window::resized(|width, height| {
-                Message::WindowResized(width, height)
+            iced::event::listen().filter_map(|(event, _status)| {
+                match event {
+                    iced::Event::Window(iced::window::Event::Resized { width, height }) => {
+                        Some(Message::WindowResized(width, height))
+                    }
+                    _ => None,
+                }
             }),
         ])
     }

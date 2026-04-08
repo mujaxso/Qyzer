@@ -17,15 +17,17 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
                 .style(iced::theme::Text::Color(style.colors.text_muted)),
             iced::widget::horizontal_space(),
             if !is_compact {
-                button(
+                let btn: Element<_> = button(
                     text("⋯").size(12)
                 )
                 .on_press(Message::PromptInputChanged("AI options".to_string()))
                 .padding([2, 6])
                 .style(iced::theme::Button::Secondary)
-                .into()
+                .into();
+                btn
             } else {
-                iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into()
+                let space: Element<_> = iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into();
+                space
             }
         ]
         .align_items(iced::Alignment::Center)
@@ -57,7 +59,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
         colors: style.colors,
     };
     
-    let welcome_card = if !is_compact {
+    let welcome_card: Element<_> = if !is_compact {
         container(
             column![
                 row![
@@ -98,11 +100,13 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
     let quick_actions = container(
         column![
             if !is_compact {
-                text("Quick Actions").size(11)
+                let txt: Element<_> = text("Quick Actions").size(11)
                     .style(iced::theme::Text::Color(style.colors.text_muted))
-                    .into()
+                    .into();
+                txt
             } else {
-                iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into()
+                let space: Element<_> = iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into();
+                space
             },
             column![
                 button(if is_compact { "Explain" } else { "Explain this file" })
@@ -116,14 +120,16 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
                     .width(Length::Fill)
                     .style(iced::theme::Button::Secondary),
                 if !is_compact {
-                    button("Find bugs")
+                    let btn: Element<_> = button("Find bugs")
                         .on_press(Message::PromptInputChanged("Find potential bugs in this code".to_string()))
                         .padding([8, 10])
                         .width(Length::Fill)
                         .style(iced::theme::Button::Secondary)
-                        .into()
+                        .into();
+                    btn
                 } else {
-                    iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into()
+                    let space: Element<_> = iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into();
+                    space
                 },
             ]
             .spacing(if is_compact { 2 } else { 4 }),

@@ -129,9 +129,11 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
             row![
                 text("●").size(if is_compact { 9 } else { 10 }).style(iced::theme::Text::Color(style.colors.warning)),
                 if !is_compact {
-                    text("Unsaved").size(11).style(iced::theme::Text::Color(style.colors.text_secondary)).into()
+                    let txt: Element<_> = text("Unsaved").size(11).style(iced::theme::Text::Color(style.colors.text_secondary)).into();
+                    txt
                 } else {
-                    iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into()
+                    let space: Element<_> = iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into();
+                    space
                 },
             ]
             .spacing(if is_compact { 2 } else { 4 })
@@ -144,9 +146,11 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
             row![
                 text("✓").size(if is_compact { 9 } else { 10 }).style(iced::theme::Text::Color(style.colors.success)),
                 if !is_compact {
-                    text("Saved").size(11).style(iced::theme::Text::Color(style.colors.text_muted)).into()
+                    let txt: Element<_> = text("Saved").size(11).style(iced::theme::Text::Color(style.colors.text_muted)).into();
+                    txt
                 } else {
-                    iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into()
+                    let space: Element<_> = iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into();
+                    space
                 },
             ]
             .spacing(if is_compact { 2 } else { 4 })
