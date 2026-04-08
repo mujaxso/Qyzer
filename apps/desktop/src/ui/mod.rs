@@ -1,6 +1,11 @@
-pub mod chat;
+pub mod activity_bar;
+pub mod assistant_panel;
+pub mod common;
 pub mod editor;
-pub mod layout;
-pub mod sidebar;
+pub mod editor_panel;
+pub mod explorer_panel;
+pub mod shell;
+pub mod status_bar;
 pub mod style;
-pub mod terminal;
+pub mod top_bar;
+pub mod theme;
