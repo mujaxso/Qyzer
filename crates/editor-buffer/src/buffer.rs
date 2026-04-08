@@ -269,4 +269,5 @@ impl TextBuffer {
         }
         Ok(self.rope.slice(start..end).to_string())
     }
+
 }

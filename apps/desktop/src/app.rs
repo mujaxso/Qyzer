@@ -52,7 +52,6 @@ pub struct App {
     workspace_path: String,
     file_entries: Vec<DirectoryEntry>,
     active_file_path: Option<String>,
-    editor_content: String,
     editor_buffer: Option<TextBuffer>,
     is_dirty: bool,
     status_message: String,
@@ -79,7 +78,6 @@ impl iced::Application for App {
                 workspace_path: String::new(),
                 file_entries: Vec::new(),
                 active_file_path: None,
-                editor_content: String::new(),
                 editor_buffer: None,
                 is_dirty: false,
                 status_message: "Ready".to_string(),
@@ -199,67 +197,55 @@ impl iced::Application for App {
             Message::FileLoaded(result) => {
                 match result {
                     Ok((path, content, buffer)) => {
+                        self.active_file_path = Some(path.clone());
+                        self.editor_buffer = Some(buffer);
+                        
+                        // Check file size thresholds
                         let file_size = content.len();
-                        const EDITOR_THRESHOLD: usize = 50_000; // 50KB - only use text editor for files under this size
-                        const MAX_FILE_SIZE: usize = 5_000_000; // 5MB - maximum file size to open
+                        const LARGE_THRESHOLD: usize = 100_000; // 100KB
+                        const VERY_LARGE_THRESHOLD: usize = 5_000_000; // 5MB
                         
-                        // For files larger than 5MB, show error
-                        if file_size > MAX_FILE_SIZE {
+                        // For very large files, show a warning and potentially limit functionality
+                        if file_size > VERY_LARGE_THRESHOLD {
                             self.status_message = format!(
-                                "File too large ({} MB). Maximum supported size is {} MB.",
-                                file_size / 1_000_000,
-                                MAX_FILE_SIZE / 1_000_000
+                                "Very large file opened ({} MB) - editing may be limited",
+                                file_size / 1_000_000
                             );
-                            self.error_message = Some("File is too large to open in editor".to_string());
-                            // Clear loading state
-                            self.active_file_path = None;
-                            self.text_editor = text_editor::Content::new();
-                            self.editor_content = String::new();
-                            self.editor_buffer = None;
-                            return Command::none();
-                        }
-                        
-                        // For files larger than 100KB, use read-only view
-                        if file_size > EDITOR_THRESHOLD {
                             self.is_file_too_large_for_editor = true;
+                        } else if file_size > LARGE_THRESHOLD {
                             self.status_message = format!(
-                                "File opened in read-only mode ({} KB)",
+                                "Large file opened ({} KB) - performance may be affected",
                                 file_size / 1_000
                             );
-                            self.error_message = Some("File is large - opened in read-only mode".to_string());
-                        } else {
                             self.is_file_too_large_for_editor = false;
-                            // For small files, create text editor content
-                            // But to prevent blocking, we'll do it in a background task
-                            self.status_message = format!("Preparing editor for {} ({} bytes)...", path, file_size);
-                            self.error_message = None;
-                            // Store content and buffer first
-                            self.editor_content = content.clone();
-                            self.editor_buffer = Some(buffer);
-                            self.is_dirty = false;
-                            
-                            // Update workspace state
-                            {
-                                let mut state = self.workspace_state.lock().unwrap();
-                                state.open_buffer(&path, self.editor_content.clone());
-                            }
-                            
-                            // Create text editor content in background (actually just yields)
-                            return Command::perform(
-                                create_text_editor_content(path, content),
-                                Message::TextEditorContentCreated
-                            );
+                        } else {
+                            self.status_message = format!("File loaded: {} ({} bytes)", path, file_size);
+                            self.is_file_too_large_for_editor = false;
                         }
                         
-                        // For read-only files, just store content
-                        self.editor_content = content.clone();
-                        self.editor_buffer = Some(buffer);
+                        // Initialize the text editor content from the buffer
+                        // For large files, this is a one-time cost on file open
+                        if let Some(ref buffer) = self.editor_buffer {
+                            // Only load the full text if the file is not too large
+                            if file_size <= VERY_LARGE_THRESHOLD {
+                                let text = buffer.text();
+                                self.text_editor = text_editor::Content::with_text(&text);
+                            } else {
+                                // For very large files, load an empty editor with a message
+                                self.text_editor = text_editor::Content::with_text(
+                                    &format!("// File too large to display ({} MB)\n// Open in external editor for full content", 
+                                    file_size / 1_000_000)
+                                );
+                            }
+                        }
+                        
+                        self.error_message = None;
                         self.is_dirty = false;
                         
                         // Update workspace state
                         {
                             let mut state = self.workspace_state.lock().unwrap();
-                            state.open_buffer(&path, self.editor_content.clone());
+                            state.open_buffer(&path, content);
                         }
                     }
                     Err(e) => {
@@ -272,49 +258,75 @@ impl iced::Application for App {
             Message::EditorContentChanged(action) => {
                 // Don't process edits if the file is too large for editor
                 if self.is_file_too_large_for_editor {
-                    self.status_message = "File is read-only - editing disabled".to_string();
-                    return Command::none();
-                }
-                
-                // Don't process if text editor is empty (still loading)
-                if self.text_editor.text().is_empty() {
+                    self.status_message = "File is too large - editing disabled".to_string();
                     return Command::none();
                 }
                 
                 // First, perform the action on the text editor
-                self.text_editor.perform(action);
+                self.text_editor.perform(action.clone());
                 
-                // Update the buffer
-                if let Some(buffer) = &mut self.editor_buffer {
-                    buffer.replace_all(&self.text_editor.text());
-                    self.is_dirty = buffer.is_dirty();
+                // Update the canonical buffer incrementally
+                if let Some(ref mut buffer) = self.editor_buffer {
+                    match &action {
+                        iced::widget::text_editor::Action::Edit(edit_action) => {
+                            match edit_action {
+                                iced::widget::text_editor::EditAction::InsertText { char_idx, text } => {
+                                    if let Err(e) = buffer.insert_char_idx(*char_idx, text) {
+                                        self.status_message = format!("Insert error: {}", e);
+                                        // Fall back to full update
+                                        let current_text = self.text_editor.text();
+                                        buffer.replace_all(&current_text);
+                                    }
+                                    self.is_dirty = buffer.is_dirty();
+                                }
+                                iced::widget::text_editor::EditAction::DeleteRange { start, end } => {
+                                    if let Err(e) = buffer.delete_char_range(*start, *end) {
+                                        self.status_message = format!("Delete error: {}", e);
+                                        // Fall back to full update
+                                        let current_text = self.text_editor.text();
+                                        buffer.replace_all(&current_text);
+                                    }
+                                    self.is_dirty = buffer.is_dirty();
+                                }
+                                _ => {
+                                    // For other edit actions, fall back to full update
+                                    let current_text = self.text_editor.text();
+                                    buffer.replace_all(&current_text);
+                                    self.is_dirty = buffer.is_dirty();
+                                    self.status_message = "Used full update for complex edit".to_string();
+                                }
+                            }
+                        }
+                        _ => {
+                            // For non-edit actions, fall back to full update
+                            let current_text = self.text_editor.text();
+                            buffer.replace_all(&current_text);
+                            self.is_dirty = buffer.is_dirty();
+                            self.status_message = "Used full update for non-edit action".to_string();
+                        }
+                    }
                 }
-                
-                // Update the editor content string
-                self.editor_content = self.text_editor.text().to_string();
-                
-                // Set status message
-                self.status_message = if self.is_dirty {
-                    "File has unsaved changes".to_string()
-                } else {
-                    "All changes saved".to_string()
-                };
                 Command::none()
             }
             Message::SaveFile => {
                 if let Some(path) = &self.active_file_path {
-                    let content = self.editor_content.clone();
-                    let path_clone = path.clone();
-                    
-                    Command::perform(
-                        async move {
-                            match files::write_file(&path_clone, &content) {
-                                Ok(_) => Message::FileSaved(Ok(())),
-                                Err(e) => Message::FileSaved(Err(format!("Failed to save file: {}", e))),
-                            }
-                        },
-                        |result| result,
-                    )
+                    if let Some(ref buffer) = self.editor_buffer {
+                        let content = buffer.text();
+                        let path_clone = path.clone();
+                        
+                        Command::perform(
+                            async move {
+                                match files::write_file(&path_clone, &content) {
+                                    Ok(_) => Message::FileSaved(Ok(())),
+                                    Err(e) => Message::FileSaved(Err(format!("Failed to save file: {}", e))),
+                                }
+                            },
+                            |result| result,
+                        )
+                    } else {
+                        self.status_message = "No buffer to save".to_string();
+                        Command::none()
+                    }
                 } else {
                     self.status_message = "No file selected to save".to_string();
                     Command::none()
@@ -332,7 +344,7 @@ impl iced::Application for App {
                     }
                     Err(e) => {
                         self.error_message = Some(e);
-                        self.status_message = "Failed to save file".to_string();
+                        self.status_message = format!("Failed to save file: {}", e);
                     }
                 }
                 Command::none()
@@ -427,7 +439,7 @@ impl iced::Application for App {
             &self.workspace_path,
             &self.file_entries,
             self.active_file_path.as_ref(),
-            &self.editor_content,
+            self.text_editor.text(),
             self.is_dirty,
             &self.status_message,
             self.error_message.as_ref(),
