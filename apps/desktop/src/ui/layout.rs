@@ -898,62 +898,57 @@ pub fn explorer_panel_with_expanded<'a>(
     let mut sorted_entries = file_entries.to_vec();
     sorted_entries.sort_by(|a, b| a.path.cmp(&b.path));
     
-    // For each entry, determine if it should be visible and its depth
+    // Build a simple list of visible entries
     let mut elements = Vec::new();
     
+    // First, collect all directories to process
     for entry in &sorted_entries {
-        // Check if this entry should be visible
-        // An entry is visible if all its parent directories are expanded
-        
+        // Check if this entry should be shown
+        // We'll show it if it's at the root or if its parent directory is expanded
         let entry_path = std::path::Path::new(&entry.path);
         
-        // Get all parent directories
-        let mut current_path = entry_path;
-        let mut parents = Vec::new();
-        while let Some(parent) = current_path.parent() {
-            if let Some(parent_str) = parent.to_str() {
-                if !parent_str.is_empty() {
-                    parents.push(parent_str);
-                }
-            }
-            current_path = parent;
-        }
+        // Get the parent directory
+        let parent = entry_path.parent().and_then(|p| p.to_str());
         
-        // Check if all parent directories are expanded
-        let mut all_parents_expanded = true;
-        for parent in &parents {
-            let normalized_parent = normalize_path(parent);
-            if !expanded_directories.contains(&normalized_parent) {
-                all_parents_expanded = false;
-                break;
-            }
-        }
+        // Check if parent is expanded
+        let should_show = if let Some(parent_path) = parent {
+            let normalized_parent = normalize_path(parent_path);
+            expanded_directories.contains(&normalized_parent)
+        } else {
+            // No parent means it's at root - always show
+            true
+        };
         
-        // Also, entries directly under workspace root should always be visible
+        // Also check if it's directly under workspace root
         let workspace_root = if workspace_path.is_empty() {
             "".to_string()
         } else {
             normalize_path(workspace_path)
         };
         
-        let is_direct_child_of_workspace_root = if let Some(parent) = entry_path.parent() {
-            if let Some(parent_str) = parent.to_str() {
-                normalize_path(parent_str) == workspace_root
-            } else {
-                false
-            }
+        let is_at_workspace_root = if let Some(parent_path) = parent {
+            let normalized_parent = normalize_path(parent_path);
+            normalized_parent == workspace_root
         } else {
             true
         };
         
-        if all_parents_expanded || is_direct_child_of_workspace_root {
-            // Calculate depth
-            let depth = if workspace_root.is_empty() {
-                // Count path components
-                entry_path.components().count().saturating_sub(1)
+        if should_show || is_at_workspace_root {
+            // Calculate depth (0 for root, 1 for children, etc.)
+            let depth = if is_at_workspace_root {
+                0
             } else {
-                let workspace_components: Vec<_> = std::path::Path::new(&workspace_root).components().collect();
-                entry_path.components().count().saturating_sub(workspace_components.len())
+                // Simple depth calculation: count path separators after workspace root
+                let entry_str = &entry.path;
+                let workspace_str = &workspace_root;
+                if workspace_str.is_empty() {
+                    entry_str.matches(std::path::MAIN_SEPARATOR).count()
+                } else if entry_str.starts_with(workspace_str) {
+                    let remaining = &entry_str[workspace_str.len()..];
+                    remaining.matches(std::path::MAIN_SEPARATOR).count()
+                } else {
+                    0
+                }
             };
             
             // Check if this directory is expanded
