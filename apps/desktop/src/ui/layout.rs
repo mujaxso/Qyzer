@@ -162,17 +162,17 @@ fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> 
         button("Open")
             .on_press(Message::OpenWorkspace)
             .padding([8, 12])
-            .style(theme::Button::Secondary),
+            .style(iced::theme::Button::Secondary),
         button("Refresh")
             .on_press(Message::RefreshWorkspace)
             .padding([8, 12])
-            .style(theme::Button::Secondary),
+            .style(iced::theme::Button::Secondary),
         horizontal_space(),
         status_indicator,
         button("Save")
             .on_press(Message::SaveFile)
             .padding([8, 16])
-            .style(theme::Button::Primary),
+            .style(iced::theme::Button::Primary),
     ]
     .padding([8, 16])
     .align_items(Alignment::Center)
@@ -193,9 +193,9 @@ fn activity_rail<'a>(active_activity: Activity) -> Element<'a, Message> {
         .map(|&(activity, icon, label)| {
             let is_active = activity == active_activity;
             let button_style = if is_active {
-                theme::Button::Primary
+                Button::Primary
             } else {
-                theme::Button::Secondary
+                Button::Secondary
             };
             // For AI activity, we want to toggle the panel visibility
             let message = if activity == Activity::Ai {
@@ -253,7 +253,7 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
                 button("Open Workspace")
                     .on_press(Message::OpenWorkspace)
                     .padding(8)
-                    .style(theme::Button::Secondary),
+                    .style(Button::Secondary),
             ]
             .spacing(10)
             .align_items(Alignment::Center)
@@ -282,7 +282,7 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
                                 // Add a toggle button for directories
                                 let btn: Element<_> = button("▶")
                                     .on_press(Message::ToggleDirectory(entry.path.clone()))
-                                    .style(theme::Button::Text)
+                                    .style(Button::Text)
                                     .padding(0)
                                     .into();
                                 btn
@@ -304,7 +304,7 @@ fn explorer_panel<'a>(file_entries: &'a [core_types::workspace::DirectoryEntry])
                     })
                     .padding([6, 12])
                     .width(Length::Fill)
-                    .style(theme::Button::Secondary),
+                    .style(Button::Secondary),
                 )
                 .padding(iced::Padding::new(padding_left as f32))
                 .into()
@@ -708,7 +708,7 @@ fn search_panel<'a>() -> Element<'a, Message> {
                     .width(Length::Fill),
                 button("Find All")
                     .on_press(Message::PromptInputChanged("Find all in workspace".to_string()))
-                    .style(theme::Button::Primary)
+                    .style(Button::Primary)
                     .width(Length::Fill)
                     .padding(8),
                 container(
