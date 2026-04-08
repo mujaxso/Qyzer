@@ -4,6 +4,7 @@ use core_types::workspace::DirectoryEntry;
 use editor_buffer::buffer::TextBuffer;
 use iced::widget::text_editor;
 use iced;
+use iced_futures::SubscriptionExt;
 
 use crate::theme::NeoteTheme;
 
