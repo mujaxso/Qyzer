@@ -29,12 +29,12 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
     .on_press(Message::SaveFile)
     .padding([8, 16]);
     
-    // Status indicator
+    // Status indicator - More visible
     let status_indicator = if app.is_dirty {
         container(
             row![
                 text("●").size(12).style(iced::theme::Text::Color(style.colors.warning)),
-                text("Unsaved").size(12).style(iced::theme::Text::Color(style.colors.text_secondary)),
+                text("Unsaved").size(12).style(iced::theme::Text::Color(style.colors.text_primary)),
             ]
             .spacing(4)
             .align_items(iced::Alignment::Center)
@@ -44,7 +44,7 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
         container(
             row![
                 text("✓").size(12).style(iced::theme::Text::Color(style.colors.success)),
-                text("Saved").size(12).style(iced::theme::Text::Color(style.colors.text_muted)),
+                text("Saved").size(12).style(iced::theme::Text::Color(style.colors.text_primary)),
             ]
             .spacing(4)
             .align_items(iced::Alignment::Center)

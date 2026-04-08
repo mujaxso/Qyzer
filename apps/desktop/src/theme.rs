@@ -117,61 +117,71 @@ impl NeoteTheme {
 }
 
 impl SemanticColors {
-    /// Dark theme semantic colors
+    /// Dark theme semantic colors - Opaque and high contrast
     pub fn dark() -> Self {
         Self {
-            app_background: Color::from_rgb(0.08, 0.08, 0.10),
-            panel_background: Color::from_rgb(0.12, 0.12, 0.14),
-            elevated_panel_background: Color::from_rgb(0.16, 0.16, 0.18),
-            status_bar_background: Color::from_rgb(0.10, 0.10, 0.12),
+            // Solid opaque backgrounds with clear hierarchy
+            app_background: Color::from_rgb(0.06, 0.06, 0.08),
+            panel_background: Color::from_rgb(0.10, 0.10, 0.12),
+            elevated_panel_background: Color::from_rgb(0.14, 0.14, 0.16),
+            status_bar_background: Color::from_rgb(0.08, 0.08, 0.10),
             
-            text_primary: Color::from_rgb(0.95, 0.95, 0.95),
-            text_secondary: Color::from_rgb(0.75, 0.75, 0.75),
-            text_muted: Color::from_rgb(0.55, 0.55, 0.55),
+            // High contrast text colors
+            text_primary: Color::from_rgb(0.98, 0.98, 0.98),
+            text_secondary: Color::from_rgb(0.85, 0.85, 0.85),
+            text_muted: Color::from_rgb(0.70, 0.70, 0.70),
             text_on_accent: Color::from_rgb(1.0, 1.0, 1.0),
             
-            border: Color::from_rgb(0.25, 0.25, 0.30),
-            divider: Color::from_rgb(0.20, 0.20, 0.25),
-            accent: Color::from_rgb(0.30, 0.55, 0.95),
-            accent_secondary: Color::from_rgb(0.40, 0.65, 1.0),
+            // Clear borders and dividers
+            border: Color::from_rgb(0.20, 0.20, 0.25),
+            divider: Color::from_rgb(0.15, 0.15, 0.20),
+            accent: Color::from_rgb(0.35, 0.65, 1.0),
+            accent_secondary: Color::from_rgb(0.45, 0.75, 1.0),
             
-            hover_background: Color::from_rgba(1.0, 1.0, 1.0, 0.08),
-            active_background: Color::from_rgba(1.0, 1.0, 1.0, 0.12),
-            selected_background: Color::from_rgba(0.30, 0.55, 0.95, 0.20),
+            // Solid state backgrounds (no transparency)
+            hover_background: Color::from_rgb(0.18, 0.18, 0.22),
+            active_background: Color::from_rgb(0.22, 0.22, 0.26),
+            selected_background: Color::from_rgb(0.25, 0.40, 0.70),
             
-            success: Color::from_rgb(0.30, 0.85, 0.50),
-            warning: Color::from_rgb(1.0, 0.75, 0.30),
-            error: Color::from_rgb(1.0, 0.40, 0.40),
-            info: Color::from_rgb(0.40, 0.75, 1.0),
+            // Vibrant status colors
+            success: Color::from_rgb(0.35, 0.90, 0.55),
+            warning: Color::from_rgb(1.0, 0.80, 0.35),
+            error: Color::from_rgb(1.0, 0.45, 0.45),
+            info: Color::from_rgb(0.45, 0.80, 1.0),
         }
     }
     
-    /// Light theme semantic colors
+    /// Light theme semantic colors - Opaque and high contrast
     pub fn light() -> Self {
         Self {
-            app_background: Color::from_rgb(0.98, 0.98, 0.98),
-            panel_background: Color::from_rgb(0.96, 0.96, 0.96),
+            // Solid opaque backgrounds with clear hierarchy
+            app_background: Color::from_rgb(0.96, 0.96, 0.96),
+            panel_background: Color::from_rgb(0.98, 0.98, 0.98),
             elevated_panel_background: Color::from_rgb(1.0, 1.0, 1.0),
             status_bar_background: Color::from_rgb(0.94, 0.94, 0.94),
             
-            text_primary: Color::from_rgb(0.15, 0.15, 0.15),
-            text_secondary: Color::from_rgb(0.35, 0.35, 0.35),
-            text_muted: Color::from_rgb(0.55, 0.55, 0.55),
+            // High contrast text colors
+            text_primary: Color::from_rgb(0.10, 0.10, 0.10),
+            text_secondary: Color::from_rgb(0.30, 0.30, 0.30),
+            text_muted: Color::from_rgb(0.50, 0.50, 0.50),
             text_on_accent: Color::from_rgb(1.0, 1.0, 1.0),
             
-            border: Color::from_rgb(0.85, 0.85, 0.85),
-            divider: Color::from_rgb(0.90, 0.90, 0.90),
-            accent: Color::from_rgb(0.20, 0.50, 0.90),
-            accent_secondary: Color::from_rgb(0.30, 0.60, 1.0),
+            // Clear borders and dividers
+            border: Color::from_rgb(0.80, 0.80, 0.80),
+            divider: Color::from_rgb(0.85, 0.85, 0.85),
+            accent: Color::from_rgb(0.25, 0.55, 0.95),
+            accent_secondary: Color::from_rgb(0.35, 0.65, 1.0),
             
-            hover_background: Color::from_rgba(0.0, 0.0, 0.0, 0.05),
-            active_background: Color::from_rgba(0.0, 0.0, 0.0, 0.08),
-            selected_background: Color::from_rgba(0.20, 0.50, 0.90, 0.15),
+            // Solid state backgrounds (no transparency)
+            hover_background: Color::from_rgb(0.92, 0.92, 0.94),
+            active_background: Color::from_rgb(0.88, 0.88, 0.90),
+            selected_background: Color::from_rgb(0.20, 0.50, 0.90),
             
-            success: Color::from_rgb(0.20, 0.75, 0.40),
-            warning: Color::from_rgb(0.95, 0.65, 0.20),
-            error: Color::from_rgb(0.95, 0.30, 0.30),
-            info: Color::from_rgb(0.30, 0.65, 0.95),
+            // Vibrant status colors
+            success: Color::from_rgb(0.25, 0.80, 0.45),
+            warning: Color::from_rgb(0.95, 0.70, 0.25),
+            error: Color::from_rgb(0.95, 0.35, 0.35),
+            info: Color::from_rgb(0.35, 0.70, 0.95),
         }
     }
 }

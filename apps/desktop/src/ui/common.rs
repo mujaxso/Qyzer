@@ -57,7 +57,7 @@ pub trait ThemeConsumer {
 pub mod buttons {
     use super::*;
     
-    /// Primary button style using semantic colors
+    /// Primary button style using semantic colors - Solid and high contrast
     pub fn primary(colors: &SemanticColors) -> button::Appearance {
         button::Appearance {
             background: Some(colors.accent.into()),
@@ -71,21 +71,21 @@ pub mod buttons {
         }
     }
     
-    /// Secondary button style using semantic colors
+    /// Secondary button style using semantic colors - Solid background
     pub fn secondary(colors: &SemanticColors) -> button::Appearance {
         button::Appearance {
-            background: Some(Color::TRANSPARENT.into()),
+            background: Some(colors.elevated_panel_background.into()),
             border: iced::Border {
                 color: colors.border,
                 width: 1.0,
                 radius: RADIUS_SM.into(),
             },
-            text_color: colors.text_secondary,
+            text_color: colors.text_primary,
             ..Default::default()
         }
     }
     
-    /// Text button style (minimal appearance)
+    /// Text button style (minimal appearance) - Still readable
     pub fn text(colors: &SemanticColors) -> button::Appearance {
         button::Appearance {
             background: Some(Color::TRANSPARENT.into()),

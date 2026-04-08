@@ -16,7 +16,7 @@ pub fn status_bar(app: &App) -> Element<'_, Message> {
     } else {
         row![
             text("✓").size(12).style(iced::theme::Text::Color(style.colors.success)),
-            text(&app.status_message).size(11).style(iced::theme::Text::Color(style.colors.text_secondary)),
+            text(&app.status_message).size(11).style(iced::theme::Text::Color(style.colors.text_primary)),
         ]
         .spacing(4)
         .align_items(iced::Alignment::Center)
@@ -26,7 +26,7 @@ pub fn status_bar(app: &App) -> Element<'_, Message> {
         let file_name = active_path.split('/').last().unwrap_or(active_path);
         row![
             text("📄").size(12),
-            text(file_name).size(11).style(iced::theme::Text::Color(style.colors.text_muted)),
+            text(file_name).size(11).style(iced::theme::Text::Color(style.colors.text_secondary)),
         ]
         .spacing(4)
         .align_items(iced::Alignment::Center)

@@ -28,7 +28,7 @@ pub fn ide_layout<'a>(
     file_loading_state: &'a FileLoadingState,
     theme: NeoteTheme,
 ) -> Element<'a, Message> {
-    let _style = StyleHelpers::new(theme);
+    let style = StyleHelpers::new(theme);
     
     // Top bar
     let top_bar = top_bar(workspace_path, is_dirty);
@@ -91,9 +91,12 @@ pub fn ide_layout<'a>(
 }
 
 fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> {
+    // We need to get the theme colors, but this function doesn't have access to them
+    // We'll use the theme from the outer scope or use default colors
+    // For now, we'll keep the colors but make them more vibrant
     let status_indicator: Element<_> = if is_dirty {
         row![
-            text("●").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(255, 180, 0))),
+            text("●").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(255, 200, 50))),
             text("Unsaved").size(12)
         ]
         .spacing(4)
@@ -101,7 +104,7 @@ fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> 
         .into()
     } else {
         row![
-            text("✓").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(0, 210, 0))),
+            text("✓").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(50, 220, 100))),
             text("Saved").size(12)
         ]
         .spacing(4)

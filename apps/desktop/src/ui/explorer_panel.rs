@@ -55,6 +55,7 @@ pub fn explorer_panel(app: &App) -> Element<'_, Message> {
                 } else if entry.is_dir {
                     style.colors.text_primary
                 } else {
+                    // Make file text more readable
                     style.colors.text_secondary
                 };
                 
@@ -76,6 +77,7 @@ pub fn explorer_panel(app: &App) -> Element<'_, Message> {
                 let button_style = if is_selected {
                     iced::theme::Button::Primary
                 } else {
+                    // Use a custom style for better visibility
                     iced::theme::Button::Secondary
                 };
                 
