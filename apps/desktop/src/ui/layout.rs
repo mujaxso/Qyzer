@@ -28,9 +28,7 @@ pub fn ide_layout<'a>(
     file_loading_state: &'a FileLoadingState,
     theme: NeoteTheme,
 ) -> Element<'a, Message> {
-    let style = StyleHelpers::new(theme);
-    let colors = style.colors;
-    let _tokens = style.tokens;
+    let _style = StyleHelpers::new(theme);
     
     // Top bar
     let top_bar = top_bar(workspace_path, is_dirty);
