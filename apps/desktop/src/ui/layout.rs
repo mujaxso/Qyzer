@@ -892,11 +892,11 @@ fn explorer_panel_with_expanded<'a>(
     for entry in file_entries {
         entries_by_path.insert(entry.path.clone(), entry);
         
-        // Get parent path
+        // Get parent path and normalize it
         let parent = std::path::Path::new(&entry.path)
             .parent()
             .and_then(|p| p.to_str())
-            .map(|s| s.to_string())
+            .map(|s| normalize_path(s))
             .unwrap_or_else(|| "".to_string());
         
         children_by_parent.entry(parent).or_insert_with(Vec::new).push(entry);
@@ -1010,7 +1010,9 @@ fn render_directory_entry<'a>(
     depth: usize,
     elements: &mut Vec<Element<'a, Message>>,
 ) {
-    let is_expanded = expanded_directories.contains(&entry.path);
+    // Normalize the path for comparison
+    let normalized_path = normalize_path(&entry.path);
+    let is_expanded = expanded_directories.contains(&normalized_path);
     
     // Determine icon based on whether it's a directory and expanded
     let icon = if entry.is_dir {
@@ -1031,18 +1033,13 @@ fn render_directory_entry<'a>(
     let entry_element = container(
         button(
             row![
+                // Always show chevron for directories, space for files
                 if entry.is_dir {
-                    // Add a toggle button for directories
-                    let btn_icon = if is_expanded { "▼" } else { "▶" };
-                    let btn: Element<_> = button(btn_icon)
-                        .on_press(Message::ToggleDirectory(entry.path.clone()))
-                        .style(iced::theme::Button::Text)
-                        .padding(0)
-                        .into();
-                    btn
+                    let chevron = if is_expanded { "▼" } else { "▶" };
+                    text(chevron).size(12)
+                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
                 } else {
-                    let space: Element<_> = horizontal_space().width(20).into();
-                    space
+                    text("  ").size(12) // Space to align with directories
                 },
                 text(icon).size(14),
                 text(&entry.name).size(14)
@@ -1067,7 +1064,7 @@ fn render_directory_entry<'a>(
     
     // If this is a directory and it's expanded, render its children
     if entry.is_dir && is_expanded {
-        if let Some(children) = children_by_parent.get(&entry.path) {
+        if let Some(children) = children_by_parent.get(&normalized_path) {
             // Sort children: directories first, then alphabetically
             let mut sorted_children: Vec<&core_types::workspace::DirectoryEntry> = children.clone();
             sorted_children.sort_by(|a, b| {

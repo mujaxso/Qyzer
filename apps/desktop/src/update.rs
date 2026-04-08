@@ -3,6 +3,19 @@ use crate::state::{App, Activity, FileLoadingState, FileMetadata};
 use file_ops::{FileLoader, WorkspaceLoader};
 use iced::Command;
 
+// Helper function to normalize paths for consistent comparison
+fn normalize_path(path: &str) -> String {
+    use std::path::Path;
+    let path = Path::new(path);
+    // Remove trailing separators and normalize
+    let mut normalized = path.to_string_lossy().to_string();
+    // Remove trailing separator if present
+    while normalized.ends_with(std::path::MAIN_SEPARATOR) {
+        normalized.pop();
+    }
+    normalized
+}
+
 // File size thresholds
 const LARGE_FILE_THRESHOLD: u64 = 5 * 1024 * 1024; // 5MB
 const VERY_LARGE_FILE_THRESHOLD: u64 = 50 * 1024 * 1024; // 50MB
@@ -404,10 +417,12 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             }
         }
         Message::ToggleDirectory(path) => {
-            if app.expanded_directories.contains(&path) {
-                app.expanded_directories.remove(&path);
+            // Normalize the path to ensure consistent comparison
+            let normalized_path = normalize_path(&path);
+            if app.expanded_directories.contains(&normalized_path) {
+                app.expanded_directories.remove(&normalized_path);
             } else {
-                app.expanded_directories.insert(path);
+                app.expanded_directories.insert(normalized_path);
             }
             Command::none()
         }
