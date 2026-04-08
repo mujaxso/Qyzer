@@ -881,12 +881,10 @@ pub fn explorer_panel_with_expanded<'a>(
     expanded_directories: &'a std::collections::HashSet<String>,
     workspace_path: &'a str,
 ) -> Element<'a, Message> {
-    // Sort entries by path for consistent display
-    let mut sorted_entries = file_entries.to_vec();
-    sorted_entries.sort_by(|a, b| a.path.cmp(&b.path));
+    // Use the new explorer module to build tree and get visible nodes
+    let tree = crate::ui::explorer::build_tree(file_entries, workspace_path);
+    let visible_nodes = crate::ui::explorer::get_visible_nodes(&tree, expanded_directories, 0);
     
-    // Build a simple tree by grouping entries by their parent directory
-    // We'll show entries when their parent directory is expanded
     let content: Element<_> = if file_entries.is_empty() {
         container(
             column![
@@ -907,114 +905,58 @@ pub fn explorer_panel_with_expanded<'a>(
     } else {
         let mut elements = Vec::new();
         
-        // For each entry, determine if it should be visible
-        // An entry is visible if all its parent directories are expanded
-        for entry in &sorted_entries {
-            let entry_path = std::path::Path::new(&entry.path);
+        for (depth, node) in visible_nodes {
+            let entry = &node.entry;
+            let is_expanded = expanded_directories.contains(&entry.path);
             
-            // Get all parent directories
-            let mut current_path = entry_path;
-            let mut parents = Vec::new();
-            while let Some(parent) = current_path.parent() {
-                if let Some(parent_str) = parent.to_str() {
-                    if !parent_str.is_empty() {
-                        parents.push(parent_str);
-                    }
-                }
-                current_path = parent;
-            }
-            
-            // Check if all parent directories are expanded
-            let mut all_parents_expanded = true;
-            for parent in &parents {
-                let normalized_parent = normalize_path(parent);
-                if !expanded_directories.contains(&normalized_parent) {
-                    all_parents_expanded = false;
-                    break;
-                }
-            }
-            
-            // Also check if the entry is directly under workspace root
-            // In that case, it should always be visible
-            let workspace_root = if workspace_path.is_empty() {
-                "".to_string()
+            // Determine icon
+            let icon = if entry.is_dir {
+                if is_expanded { "📂" } else { "📁" }
             } else {
-                normalize_path(workspace_path)
+                "📄"
             };
             
-            let is_direct_child_of_workspace_root = if let Some(parent) = entry_path.parent() {
-                if let Some(parent_str) = parent.to_str() {
-                    normalize_path(parent_str) == workspace_root
-                } else {
-                    false
-                }
+            let text_color = if entry.is_dir {
+                iced::Color::from_rgb8(180, 180, 255)
             } else {
-                true
+                iced::Color::from_rgb8(220, 220, 220)
             };
             
-            if all_parents_expanded || is_direct_child_of_workspace_root {
-                // Calculate depth based on number of path components
-                let depth = if workspace_root.is_empty() {
-                    entry_path.components().count().saturating_sub(1)
-                } else {
-                    let workspace_components: Vec<_> = std::path::Path::new(&workspace_root).components().collect();
-                    entry_path.components().count().saturating_sub(workspace_components.len())
-                };
-                
-                // Normalize the path for comparison
-                let normalized_path = normalize_path(&entry.path);
-                let is_expanded = expanded_directories.contains(&normalized_path);
-                
-                // Determine icon
-                let icon = if entry.is_dir {
-                    if is_expanded { "📂" } else { "📁" }
-                } else {
-                    "📄"
-                };
-                
-                let text_color = if entry.is_dir {
-                    iced::Color::from_rgb8(180, 180, 255)
-                } else {
-                    iced::Color::from_rgb8(220, 220, 220)
-                };
-                
-                let padding_left = depth * 20;
-                
-                // Create the entry element
-                let entry_element = container(
-                    button(
-                        row![
-                            if entry.is_dir {
-                                let chevron = if is_expanded { "▼" } else { "▶" };
-                                text(chevron).size(12)
-                                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
-                            } else {
-                                text("  ").size(12)
-                            },
-                            text(icon).size(14),
-                            text(&entry.name).size(14)
-                                .style(iced::theme::Text::Color(text_color)),
-                        ]
-                        .spacing(8)
-                        .align_items(Alignment::Center),
-                    )
-                    .on_press(if entry.is_dir {
-                        Message::ToggleDirectory(entry.path.clone())
-                    } else {
-                        Message::FileSelectedByPath(entry.path.clone())
-                    })
-                    .padding([6, 12])
-                    .width(Length::Fill)
-                    .style(iced::theme::Button::Secondary),
+            let padding_left = depth * 20;
+            
+            // Create the entry element
+            let entry_element = container(
+                button(
+                    row![
+                        if entry.is_dir {
+                            let chevron = if is_expanded { "▼" } else { "▶" };
+                            text(chevron).size(12)
+                                .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
+                        } else {
+                            text("  ").size(12)
+                        },
+                        text(icon).size(14),
+                        text(&entry.name).size(14)
+                            .style(iced::theme::Text::Color(text_color)),
+                    ]
+                    .spacing(8)
+                    .align_items(Alignment::Center),
                 )
-                .padding(iced::Padding::new(padding_left as f32))
-                .into();
-                
-                elements.push(entry_element);
-            }
+                .on_press(if entry.is_dir {
+                    Message::ToggleDirectory(entry.path.clone())
+                } else {
+                    Message::FileSelectedByPath(entry.path.clone())
+                })
+                .padding([6, 12])
+                .width(Length::Fill)
+                .style(iced::theme::Button::Secondary),
+            )
+            .padding(iced::Padding::new(padding_left as f32))
+            .into();
+            
+            elements.push(entry_element);
         }
         
-        // If no elements were generated (shouldn't happen), show a message
         if elements.is_empty() {
             container(
                 text("No files to display")
@@ -1052,160 +994,6 @@ pub fn explorer_panel_with_expanded<'a>(
     .into()
 }
 
-fn render_directory_entry_simple<'a>(
-    entry: &'a core_types::workspace::DirectoryEntry,
-    all_entries: &'a [core_types::workspace::DirectoryEntry],
-    expanded_directories: &'a std::collections::HashSet<String>,
-    depth: usize,
-    elements: &mut Vec<Element<'a, Message>>,
-) {
-    // Normalize the path for comparison to match update.rs
-    let normalized_path = normalize_path(&entry.path);
-    let is_expanded = expanded_directories.contains(&normalized_path);
-    
-    // Determine icon based on whether it's a directory and expanded
-    let icon = if entry.is_dir {
-        if is_expanded { "📂" } else { "📁" }
-    } else {
-        "📄"
-    };
-    
-    let text_color = if entry.is_dir {
-        iced::Color::from_rgb8(180, 180, 255)
-    } else {
-        iced::Color::from_rgb8(220, 220, 220)
-    };
-    
-    let padding_left = depth * 20;
-    
-    // Create the entry element
-    let entry_element = container(
-        button(
-            row![
-                // Always show chevron for directories, space for files
-                if entry.is_dir {
-                    let chevron = if is_expanded { "▼" } else { "▶" };
-                    text(chevron).size(12)
-                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
-                } else {
-                    text("  ").size(12) // Space to align with directories
-                },
-                text(icon).size(14),
-                text(&entry.name).size(14)
-                    .style(iced::theme::Text::Color(text_color)),
-            ]
-            .spacing(8)
-            .align_items(Alignment::Center),
-        )
-        .on_press(if entry.is_dir {
-            Message::ToggleDirectory(entry.path.clone())
-        } else {
-            Message::FileSelectedByPath(entry.path.clone())
-        })
-        .padding([6, 12])
-        .width(Length::Fill)
-        .style(iced::theme::Button::Secondary),
-    )
-    .padding(iced::Padding::new(padding_left as f32))
-    .into();
-    
-    elements.push(entry_element);
-    
-    // If this is a directory and it's expanded, render its children
-    if entry.is_dir && is_expanded {
-        // Find children whose parent is this entry's path
-        // We need to compare paths carefully
-        let parent_path = std::path::Path::new(&entry.path);
-        let mut children: Vec<&core_types::workspace::DirectoryEntry> = all_entries
-            .iter()
-            .filter(|child| {
-                // Skip the entry itself
-                if child.path == entry.path {
-                    return false;
-                }
-                // Get the parent directory of the child
-                let child_path = std::path::Path::new(&child.path);
-                if let Some(child_parent) = child_path.parent() {
-                    // Compare the parent paths
-                    // We need to handle both absolute and relative paths
-                    // Convert both to absolute paths if possible, or compare normalized
-                    let child_parent_normalized = normalize_path(&child_parent.to_string_lossy());
-                    let parent_normalized = normalize_path(&parent_path.to_string_lossy());
-                    
-                    // Also check if the child's path starts with the parent path plus a separator
-                    let child_path_str = &child.path;
-                    let parent_path_str = &entry.path;
-                    
-                    // Check if child's path starts with parent's path and has a separator after
-                    if child_path_str.starts_with(parent_path_str) {
-                        // Get the part after parent path
-                        let remaining = &child_path_str[parent_path_str.len()..];
-                        // Check if remaining starts with a path separator and doesn't contain another separator
-                        // This ensures it's a direct child
-                        if remaining.starts_with(std::path::MAIN_SEPARATOR) {
-                            // Count separators in remaining part
-                            let separator_count = remaining.chars().filter(|c| *c == std::path::MAIN_SEPARATOR).count();
-                            // If there's exactly one separator, it's a direct child
-                            if separator_count == 1 {
-                                return true;
-                            }
-                        }
-                    }
-                    
-                    // Fall back to normalized comparison
-                    child_parent_normalized == parent_normalized
-                } else {
-                    false
-                }
-            })
-            .collect();
-        
-        // Sort children: directories first, then alphabetically
-        children.sort_by(|a, b| {
-            if a.is_dir != b.is_dir {
-                b.is_dir.cmp(&a.is_dir) // Directories first
-            } else {
-                a.name.cmp(&b.name)
-            }
-        });
-        
-        if children.is_empty() {
-            // Directory is empty
-            let placeholder = container(
-                text("(empty)")
-                    .size(12)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
-            )
-            .padding(iced::Padding::new((depth + 1) as f32 * 20.0 + 20.0))
-            .into();
-            elements.push(placeholder);
-        } else {
-            for child in children {
-                render_directory_entry_simple(
-                    child,
-                    all_entries,
-                    expanded_directories,
-                    depth + 1,
-                    elements,
-                );
-            }
-        }
-    }
-}
-
-
-// Helper function to normalize paths for consistent comparison
-fn normalize_path(path: &str) -> String {
-    use std::path::Path;
-    let path = Path::new(path);
-    // Remove trailing separators and normalize
-    let mut normalized = path.to_string_lossy().to_string();
-    // Remove trailing separator if present
-    while normalized.ends_with(std::path::MAIN_SEPARATOR) {
-        normalized.pop();
-    }
-    normalized
-}
 
 
 fn placeholder_panel<'a>(label: &str) -> Element<'a, Message> {

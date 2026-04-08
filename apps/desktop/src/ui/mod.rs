@@ -3,6 +3,7 @@ pub mod assistant_panel;
 pub mod common;
 pub mod editor;
 pub mod editor_panel;
+pub mod explorer;
 pub mod explorer_panel;
 pub mod layout;
 pub mod shell;
