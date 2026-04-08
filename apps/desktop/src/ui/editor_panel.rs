@@ -75,7 +75,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             container(editor_content)
                 .width(Length::Fill)
                 .height(Length::Fill)
-                .style(iced::theme::Container::Custom(Box::new(move |theme| {
+                .style(iced::theme::Container::Custom(Box::new(move |theme: &iced::Theme| {
                     container::Appearance {
                         background: Some(iced::Background::Color(match theme {
                             iced::Theme::Dark => iced::Color::from_rgb(0.08, 0.08, 0.10),
@@ -89,7 +89,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     )
     .width(Length::Fill)
     .height(Length::Fill)
-    .style(iced::theme::Container::Custom(Box::new(move |theme| {
+    .style(iced::theme::Container::Custom(Box::new(move |theme: &iced::Theme| {
         container::Appearance {
             background: Some(iced::Background::Color(match theme {
                 iced::Theme::Dark => iced::Color::from_rgb(0.10, 0.10, 0.12),
