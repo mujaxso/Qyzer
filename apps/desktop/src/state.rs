@@ -7,6 +7,7 @@ use iced;
 
 use crate::theme::NeoteTheme;
 use crate::explorer::state::ExplorerState;
+use crate::settings::editor::EditorTypographySettings;
 
 #[derive(Debug, Clone)]
 pub struct FileMetadata {
@@ -67,6 +68,8 @@ pub struct App {
     pub window_width: u32,
     pub window_height: u32,
     pub layout_mode: LayoutMode,
+    // Editor typography settings
+    pub editor_typography: EditorTypographySettings,
 }
 
 impl App {
