@@ -27,6 +27,7 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                 button(
                     text("📄").size(if is_compact { 12 } else { 13 })
                         .style(iced::theme::Text::Color(style.colors.text_secondary))
+                        .font(iced::font::Font::with_name("Noto Color Emoji"))
                 )
                 .on_press(Message::Explorer(ExplorerMessage::CreateFileRequested))
                 .padding(if is_compact { [2, 4] } else { [3, 6] })
@@ -35,6 +36,7 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                 button(
                     text("📁").size(if is_compact { 12 } else { 13 })
                         .style(iced::theme::Text::Color(style.colors.text_secondary))
+                        .font(iced::font::Font::with_name("Noto Color Emoji"))
                 )
                 .on_press(Message::Explorer(ExplorerMessage::CreateFolderRequested))
                 .padding(if is_compact { [2, 4] } else { [3, 6] })
@@ -204,11 +206,12 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
                 .size(9)
                 .style(iced::theme::Text::Color(style.colors.text_muted)),
             iced::widget::Space::with_width(Length::Fixed(4.0)),
-            // Icon - with explicit color
-            // Use a font that supports emoji, or fall back to default
+            // Icon - with explicit color and emoji font
+            // We need to use the emoji font for emoji characters
             text(icon)
                 .size(if is_compact { 12 } else { 13 })
-                .style(iced::theme::Text::Color(icon_color)),
+                .style(iced::theme::Text::Color(icon_color))
+                .font(iced::font::Font::with_name("Noto Color Emoji")),
             // Spacing between icon and name
             iced::widget::Space::with_width(Length::Fixed(6.0)),
             // File/folder name
@@ -223,6 +226,7 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
                     button(
                         text("✏").size(10)
                             .style(iced::theme::Text::Color(style.colors.text_secondary))
+                            .font(iced::font::Font::with_name("Noto Color Emoji"))
                     )
                     .on_press(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone())))
                     .padding([2, 4])
@@ -231,6 +235,7 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
                     button(
                         text("🗑").size(10)
                             .style(iced::theme::Text::Color(style.colors.text_secondary))
+                            .font(iced::font::Font::with_name("Noto Color Emoji"))
                     )
                     .on_press(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone())))
                     .padding([2, 4])
@@ -250,10 +255,11 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
             iced::widget::Space::with_width(Length::Fixed(indent as f32)),
             // Space for missing chevron (files don't have chevrons)
             iced::widget::Space::with_width(Length::Fixed(16.0)),
-            // Icon - with explicit color
+            // Icon - with explicit color and emoji font
             text(icon)
                 .size(if is_compact { 12 } else { 13 })
-                .style(iced::theme::Text::Color(icon_color)),
+                .style(iced::theme::Text::Color(icon_color))
+                .font(iced::font::Font::with_name("Noto Color Emoji")),
             // Spacing between icon and name
             iced::widget::Space::with_width(Length::Fixed(6.0)),
             // File/folder name
@@ -268,6 +274,7 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
                     button(
                         text("✏").size(10)
                             .style(iced::theme::Text::Color(style.colors.text_secondary))
+                            .font(iced::font::Font::with_name("Noto Color Emoji"))
                     )
                     .on_press(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone())))
                     .padding([2, 4])
@@ -276,6 +283,7 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
                     button(
                         text("🗑").size(10)
                             .style(iced::theme::Text::Color(style.colors.text_secondary))
+                            .font(iced::font::Font::with_name("Noto Color Emoji"))
                     )
                     .on_press(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone())))
                     .padding([2, 4])
@@ -370,9 +378,10 @@ fn inline_edit_row(app: &App, depth: usize, is_dir: bool) -> Element<'static, Me
             iced::widget::Space::with_width(Length::Fixed(indent as f32)),
             // Space for chevron
             iced::widget::Space::with_width(Length::Fixed(16.0)),
-            // Icon
+            // Icon with emoji font
             text(icon).size(12)
-                .style(iced::theme::Text::Color(icon_color)),
+                .style(iced::theme::Text::Color(icon_color))
+                .font(iced::font::Font::with_name("Noto Color Emoji")),
             iced::widget::Space::with_width(Length::Fixed(6.0)),
             input,
         ]
