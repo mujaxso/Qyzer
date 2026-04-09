@@ -4,7 +4,7 @@
 //! with support for developer glyphs, Nerd Fonts, and graceful fallbacks.
 
 use iced::widget::text;
-use iced::{Color, Element, Length};
+use iced::{Color, Element};
 
 use crate::settings::editor::{EditorTypographySettings, IconMode};
 use crate::ui::style::StyleHelpers;
@@ -171,6 +171,13 @@ impl Icon {
         }
     }
 
+    /// Get the appropriate font for icon rendering.
+    fn get_font(typography: &EditorTypographySettings) -> iced::Font {
+        // Use the selected font family's string representation
+        let font_name = typography.font_family.to_family_string();
+        iced::Font::with_name(font_name)
+    }
+
     /// Render this icon as a text element with appropriate styling.
     pub fn render<'a, Message>(
         &self,
@@ -190,13 +197,7 @@ impl Icon {
 
         text(icon_char)
             .size(icon_size)
-            .font(if typography.icons_enabled() {
-                // Use icon font stack
-                iced::Font::with_stack(typography.icon_font_stack())
-            } else {
-                // Use regular font stack
-                iced::Font::with_stack(typography.text_font_stack())
-            })
+            .font(Self::get_font(typography))
             .style(iced::theme::Text::Color(style.text_secondary()))
             .into()
     }
@@ -220,11 +221,7 @@ impl Icon {
 
         text(icon_char)
             .size(icon_size)
-            .font(if typography.icons_enabled() {
-                iced::Font::with_stack(typography.icon_font_stack())
-            } else {
-                iced::Font::with_stack(typography.text_font_stack())
-            })
+            .font(Self::get_font(typography))
             .style(iced::theme::Text::Color(color))
             .into()
     }
