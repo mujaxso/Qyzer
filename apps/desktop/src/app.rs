@@ -33,16 +33,28 @@ impl iced::Application for App {
             eprintln!("Warning: NotoSans-Regular.ttf not found in assets/fonts/. Run scripts/download-fonts.sh to download it.");
         }
         
-        // Try to load Noto Emoji for emoji icons
-        if let Ok(bytes) = std::fs::read("assets/fonts/NotoEmoji-Regular.ttf") {
-            font_commands.push(
-                iced::font::load(bytes)
-                    .map(|_| Message::FontLoaded)
-                    .map_err(|_| Message::FontLoadFailed)
-            );
-        } else {
+        // Try to load Noto Color Emoji for emoji icons (try multiple possible names)
+        let emoji_font_paths = [
+            "assets/fonts/NotoColorEmoji.ttf",
+            "assets/fonts/NotoEmoji-Regular.ttf",
+        ];
+        
+        let mut emoji_loaded = false;
+        for path in &emoji_font_paths {
+            if let Ok(bytes) = std::fs::read(path) {
+                font_commands.push(
+                    iced::font::load(bytes)
+                        .map(|_| Message::FontLoaded)
+                        .map_err(|_| Message::FontLoadFailed)
+                );
+                emoji_loaded = true;
+                break;
+            }
+        }
+        
+        if !emoji_loaded {
             #[cfg(debug_assertions)]
-            eprintln!("Warning: NotoEmoji-Regular.ttf not found in assets/fonts/. Run scripts/download-fonts.sh to download it.");
+            eprintln!("Warning: Emoji font not found in assets/fonts/. Run scripts/download-fonts.sh to download it.");
         }
         
         // If no fonts were loaded, we'll just use system fonts
