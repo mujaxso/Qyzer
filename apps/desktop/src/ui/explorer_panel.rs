@@ -79,43 +79,48 @@ pub fn explorer_panel(app: &App) -> Element<'_, Message> {
                     iced::Color::TRANSPARENT
                 };
                 
-                // Chevron for folders
-                let chevron = if row.is_dir {
+                // Build row content
+                let row_content = if row.is_dir {
                     let chevron_icon = if row.is_expanded { "▼" } else { "▶" };
-                    Some(
+                    row![
+                        // Indentation
+                        iced::widget::Space::with_width(Length::Fixed(indent as f32)),
+                        // Chevron for folders
                         text(chevron_icon)
                             .size(9)
-                            .style(iced::theme::Text::Color(style.colors.text_muted))
-                    )
+                            .style(iced::theme::Text::Color(style.colors.text_muted)),
+                        iced::widget::Space::with_width(Length::Fixed(4.0)),
+                        // Icon
+                        text(icon)
+                            .size(if is_compact { 12 } else { 13 }),
+                        // Spacing between icon and name
+                        iced::widget::Space::with_width(Length::Fixed(6.0)),
+                        // File/folder name
+                        text(&row.name)
+                            .size(if is_compact { 12 } else { 13 })
+                            .style(iced::theme::Text::Color(text_color)),
+                    ]
+                    .spacing(0)
+                    .align_items(iced::Alignment::Center)
                 } else {
-                    None
+                    row![
+                        // Indentation
+                        iced::widget::Space::with_width(Length::Fixed(indent as f32)),
+                        // Space for missing chevron (files don't have chevrons)
+                        iced::widget::Space::with_width(Length::Fixed(16.0)),
+                        // Icon
+                        text(icon)
+                            .size(if is_compact { 12 } else { 13 }),
+                        // Spacing between icon and name
+                        iced::widget::Space::with_width(Length::Fixed(6.0)),
+                        // File/folder name
+                        text(&row.name)
+                            .size(if is_compact { 12 } else { 13 })
+                            .style(iced::theme::Text::Color(text_color)),
+                    ]
+                    .spacing(0)
+                    .align_items(iced::Alignment::Center)
                 };
-                
-                // Build row content
-                let row_content = row![
-                    // Indentation
-                    iced::widget::Space::with_width(Length::Fixed(indent as f32)),
-                    // Chevron for folders
-                    if let Some(chevron) = chevron {
-                        row![
-                            chevron,
-                            iced::widget::Space::with_width(Length::Fixed(4.0)),
-                        ].spacing(0).into()
-                    } else {
-                        iced::widget::Space::with_width(Length::Fixed(16.0)).into()
-                    },
-                    // Icon
-                    text(icon)
-                        .size(if is_compact { 12 } else { 13 }),
-                    // Spacing between icon and name
-                    iced::widget::Space::with_width(Length::Fixed(6.0)),
-                    // File/folder name
-                    text(&row.name)
-                        .size(if is_compact { 12 } else { 13 })
-                        .style(iced::theme::Text::Color(text_color)),
-                ]
-                .spacing(0)
-                .align_items(iced::Alignment::Center);
                 
                 // Determine message
                 let message = if row.is_dir {
