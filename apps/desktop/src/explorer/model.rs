@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use core_types::workspace::DirectoryEntry;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct ExplorerNode {
@@ -10,50 +11,12 @@ pub struct ExplorerNode {
 }
 
 impl ExplorerNode {
-    pub fn from_directory_entry(entry: &DirectoryEntry, all_entries: &[DirectoryEntry]) -> Self {
-        let path = PathBuf::from(&entry.path);
-        let name = entry.name.clone();
-        let is_dir = entry.is_dir;
-        
-        // Collect children
-        let mut children = Vec::new();
-        if is_dir {
-            // First, collect all potential children
-            let mut child_entries: Vec<&DirectoryEntry> = all_entries
-                .iter()
-                .filter(|child_entry| {
-                    let child_path = PathBuf::from(&child_entry.path);
-                    if let Some(parent) = child_path.parent() {
-                        // Check if this child is directly inside the current directory
-                        parent == path
-                    } else {
-                        false
-                    }
-                })
-                .collect();
-            
-            // Sort children: directories first, then files, both alphabetically
-            child_entries.sort_by(|a, b| {
-                // Directories first
-                if a.is_dir != b.is_dir {
-                    b.is_dir.cmp(&a.is_dir) // true (dir) comes before false (file)
-                } else {
-                    // Then alphabetically
-                    a.name.to_lowercase().cmp(&b.name.to_lowercase())
-                }
-            });
-            
-            // Recursively build child nodes
-            for child_entry in child_entries {
-                children.push(ExplorerNode::from_directory_entry(child_entry, all_entries));
-            }
-        }
-        
-        ExplorerNode {
-            path,
-            name,
-            is_dir,
-            children,
+    pub fn new(entry: &DirectoryEntry) -> Self {
+        Self {
+            path: PathBuf::from(&entry.path),
+            name: entry.name.clone(),
+            is_dir: entry.is_dir,
+            children: Vec::new(),
         }
     }
 }
@@ -63,52 +26,100 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
         return Vec::new();
     }
     
-    // Find workspace root (the shortest path)
-    let workspace_root = entries
-        .iter()
-        .map(|e| PathBuf::from(&e.path))
-        .min_by_key(|p| p.components().count())
-        .unwrap_or_else(|| PathBuf::from(""));
+    // Create a map from path to node index
+    let mut nodes: Vec<ExplorerNode> = entries.iter()
+        .map(|entry| ExplorerNode::new(entry))
+        .collect();
     
-    // Find root entries (those whose parent is the workspace root or don't have a parent in the list)
-    let mut root_entries: Vec<&DirectoryEntry> = Vec::new();
-    
-    for entry in entries {
-        let path = PathBuf::from(&entry.path);
-        if let Some(parent) = path.parent() {
-            if parent == workspace_root {
-                root_entries.push(entry);
-            } else {
-                // Check if parent exists in entries
-                let parent_exists = entries.iter().any(|e| {
-                    PathBuf::from(&e.path) == parent
-                });
-                if !parent_exists {
-                    root_entries.push(entry);
-                }
-            }
-        } else {
-            // Entry has no parent (shouldn't happen with proper paths)
-            root_entries.push(entry);
-        }
-    }
-    
-    // Sort root entries: directories first, then files, both alphabetically
-    root_entries.sort_by(|a, b| {
-        // Directories first
+    // Sort nodes: directories first, then files, both alphabetically
+    nodes.sort_by(|a, b| {
         if a.is_dir != b.is_dir {
-            b.is_dir.cmp(&a.is_dir) // true (dir) comes before false (file)
+            b.is_dir.cmp(&a.is_dir) // Directories first
         } else {
-            // Then alphabetically
             a.name.to_lowercase().cmp(&b.name.to_lowercase())
         }
     });
     
-    // Build tree from root entries
-    let mut root_nodes = Vec::new();
-    for entry in root_entries {
-        root_nodes.push(ExplorerNode::from_directory_entry(entry, entries));
+    // Build a map from path string to index
+    let mut path_to_index: HashMap<String, usize> = HashMap::new();
+    for (i, node) in nodes.iter().enumerate() {
+        path_to_index.insert(node.path.to_string_lossy().to_string(), i);
     }
     
+    // Group children by parent
+    let mut children_by_parent: HashMap<String, Vec<usize>> = HashMap::new();
+    
+    for (i, node) in nodes.iter().enumerate() {
+        if let Some(parent_path) = node.path.parent() {
+            let parent_str = parent_path.to_string_lossy().to_string();
+            if path_to_index.contains_key(&parent_str) {
+                children_by_parent.entry(parent_str)
+                    .or_insert_with(Vec::new)
+                    .push(i);
+            }
+        }
+    }
+    
+    // Build tree structure
+    let mut root_indices = Vec::new();
+    let mut visited = vec![false; nodes.len()];
+    
+    for i in 0..nodes.len() {
+        if !visited[i] {
+            root_indices.push(i);
+            build_subtree(i, &mut nodes, &children_by_parent, &mut visited);
+        }
+    }
+    
+    // Collect root nodes in sorted order
+    let mut root_nodes = Vec::new();
+    for &idx in &root_indices {
+        root_nodes.push(nodes[idx].clone());
+    }
+    
+    // Sort root nodes
+    root_nodes.sort_by(|a, b| {
+        if a.is_dir != b.is_dir {
+            b.is_dir.cmp(&a.is_dir)
+        } else {
+            a.name.to_lowercase().cmp(&b.name.to_lowercase())
+        }
+    });
+    
     root_nodes
+}
+
+fn build_subtree(
+    index: usize,
+    nodes: &mut [ExplorerNode],
+    children_by_parent: &HashMap<String, Vec<usize>>,
+    visited: &mut [bool],
+) {
+    if visited[index] {
+        return;
+    }
+    visited[index] = true;
+    
+    let path_str = nodes[index].path.to_string_lossy().to_string();
+    
+    if let Some(child_indices) = children_by_parent.get(&path_str) {
+        let mut children = Vec::new();
+        for &child_idx in child_indices {
+            if !visited[child_idx] {
+                build_subtree(child_idx, nodes, children_by_parent, visited);
+                children.push(nodes[child_idx].clone());
+            }
+        }
+        
+        // Sort children: directories first, then files, alphabetically
+        children.sort_by(|a, b| {
+            if a.is_dir != b.is_dir {
+                b.is_dir.cmp(&a.is_dir)
+            } else {
+                a.name.to_lowercase().cmp(&b.name.to_lowercase())
+            }
+        });
+        
+        nodes[index].children = children;
+    }
 }
