@@ -94,6 +94,13 @@ impl iced::Application for App {
             eprintln!("No custom fonts loaded. Run `scripts/download-fonts.sh` to download required fonts.");
             (app, command)
         } else {
+            // Combine font loading commands with the initial app command
+            let mut all_commands = font_commands;
+            all_commands.push(command);
+            (app, Command::batch(all_commands))
+        }
+            (app, command)
+        } else {
             (app, Command::batch(font_commands).then(|| command))
         }
     }
