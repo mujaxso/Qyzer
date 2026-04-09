@@ -42,7 +42,6 @@ impl iced::Application for App {
                             font_commands.push(
                                 iced::font::load(bytes)
                                     .map(|_| Message::FontLoaded)
-                                    .map_err(|_| Message::FontLoadFailed)
                             );
                             #[cfg(debug_assertions)]
                             eprintln!("Loaded font: {} from {}", name, path);
@@ -65,7 +64,6 @@ impl iced::Application for App {
                             font_commands.push(
                                 iced::font::load(bytes)
                                     .map(|_| Message::FontLoaded)
-                                    .map_err(|_| Message::FontLoadFailed)
                             );
                             #[cfg(debug_assertions)]
                             eprintln!("Loaded font: {} from current directory", name);
