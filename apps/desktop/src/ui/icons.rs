@@ -142,14 +142,14 @@ impl Icon {
             Icon::Save => "",         // nf-fa-save
             Icon::Close => "",        // nf-fa-times
             
-            // Version control
-            Icon::Git => "",         // nf-dev-git
-            Icon::GitBranch => "",   // nf-dev-git_branch
-            Icon::GitCommit => "",   // nf-dev-git_commit
-            Icon::GitPullRequest => "", // nf-dev-git_pull_request
+            // Version control - using Font Awesome alternatives since nf-dev might not be in Symbols Nerd Font
+            Icon::Git => "",         // nf-fa-git (alternative)
+            Icon::GitBranch => "",    // nf-fa-code_fork (alternative)
+            Icon::GitCommit => "",    // nf-fa-history (alternative)
+            Icon::GitPullRequest => "", // nf-fa-code_fork (alternative)
             
             // Development
-            Icon::Terminal => "",     // nf-dev-terminal
+            Icon::Terminal => "",     // nf-fa-terminal (alternative)
             Icon::Debug => "",       // nf-fa-bug
             Icon::Run => "",         // nf-fa-play
             Icon::Build => "",       // nf-fa-wrench
@@ -178,16 +178,24 @@ impl Icon {
         // We'll try multiple fonts from the stack until one works
         let icon_stack = typography.icon_font_stack();
         
-        // Try each font in the stack
-        for font_name in icon_stack {
-            // iced::Font::with_name will use the font if it's available
-            // We can't check if it's available, but we can try
-            return iced::Font::with_name(font_name);
+        // Always try "Symbols Nerd Font" first since we know it works for some icons
+        // This is a hardcoded fallback to ensure consistency
+        let preferred_fonts = ["Symbols Nerd Font", "SymbolsNerdFont", "Symbols Nerd Font Mono"];
+        
+        for font_name in preferred_fonts.iter() {
+            // Check if this font is in the stack (not required, but good for consistency)
+            if icon_stack.contains(font_name) {
+                return iced::Font::with_name(font_name);
+            }
         }
         
-        // Fallback to the selected font family
-        let font_name = typography.font_family.to_family_string();
-        iced::Font::with_name(font_name)
+        // Fallback to the first font in the stack
+        if let Some(first_font) = icon_stack.first() {
+            return iced::Font::with_name(first_font);
+        }
+        
+        // Final fallback
+        iced::Font::with_name("monospace")
     }
 
     /// Render this icon as a text element with appropriate styling.
