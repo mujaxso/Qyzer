@@ -31,7 +31,8 @@ fn main() -> iced::Result {
         antialiasing: true,
         // Use a default font that should work on most systems
         // The actual icon fonts will be loaded separately in app.rs
-        default_font: iced::font::Font::MONOSPACE,
+        // Using DEFAULT is better than MONOSPACE for icons
+        default_font: iced::font::Font::DEFAULT,
         default_text_size: iced::Pixels(14.0),
         ..Default::default()
     })

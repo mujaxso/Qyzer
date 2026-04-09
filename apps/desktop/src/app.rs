@@ -19,42 +19,71 @@ impl iced::Application for App {
         // We'll try to load multiple fonts to ensure icons are visible
         let mut font_commands = Vec::new();
         
-        // Try to load Noto Sans if the file exists
-        if let Ok(bytes) = std::fs::read("assets/fonts/NotoSans-Regular.ttf") {
-            font_commands.push(
-                iced::font::load(bytes)
-                    .map(|_| Message::FontLoaded)
-                    .map_err(|_| Message::FontLoadFailed)
-            );
-        } else {
-            // Fallback: try to load from included bytes if file doesn't exist
-            // This helps during development when fonts might not be downloaded yet
-            #[cfg(debug_assertions)]
-            eprintln!("Warning: NotoSans-Regular.ttf not found in assets/fonts/. Run scripts/download-fonts.sh to download it.");
-        }
-        
-        // Try to load Noto Color Emoji for emoji icons (try multiple possible names)
-        let emoji_font_paths = [
-            "assets/fonts/NotoColorEmoji.ttf",
-            "assets/fonts/NotoEmoji-Regular.ttf",
+        // Try to load fonts from various possible locations
+        // The binary might be running from different directories
+        let possible_font_dirs = [
+            // When running from project root
+            "apps/desktop/assets/fonts",
+            // When running from desktop directory
+            "assets/fonts",
+            // When running from target directory
+            "../assets/fonts",
         ];
         
-        let mut emoji_loaded = false;
-        for path in &emoji_font_paths {
-            if let Ok(bytes) = std::fs::read(path) {
-                font_commands.push(
-                    iced::font::load(bytes)
-                        .map(|_| Message::FontLoaded)
-                        .map_err(|_| Message::FontLoadFailed)
-                );
-                emoji_loaded = true;
-                break;
+        let mut font_paths = Vec::new();
+        
+        for dir in &possible_font_dirs {
+            let sans_path = format!("{}/NotoSans-Regular.ttf", dir);
+            let emoji_path = format!("{}/NotoColorEmoji.ttf", dir);
+            let emoji_alt_path = format!("{}/NotoEmoji-Regular.ttf", dir);
+            
+            if std::path::Path::new(&sans_path).exists() {
+                font_paths.push((sans_path, "Noto Sans"));
+            }
+            if std::path::Path::new(&emoji_path).exists() {
+                font_paths.push((emoji_path, "Noto Color Emoji"));
+            } else if std::path::Path::new(&emoji_alt_path).exists() {
+                font_paths.push((emoji_alt_path, "Noto Emoji"));
             }
         }
         
-        if !emoji_loaded {
+        // If no fonts found in standard locations, try current directory
+        if font_paths.is_empty() {
+            let current_dir_fonts = [
+                "NotoSans-Regular.ttf",
+                "NotoColorEmoji.ttf",
+                "NotoEmoji-Regular.ttf",
+            ];
+            for font_file in &current_dir_fonts {
+                if std::path::Path::new(font_file).exists() {
+                    font_paths.push((font_file.to_string(), font_file));
+                }
+            }
+        }
+        
+        for (path, name) in font_paths {
+            match std::fs::read(&path) {
+                Ok(bytes) => {
+                    font_commands.push(
+                        iced::font::load(bytes)
+                            .map(|_| Message::FontLoaded)
+                            .map_err(|_| Message::FontLoadFailed)
+                    );
+                    #[cfg(debug_assertions)]
+                    eprintln!("Loaded font: {} from {}", name, path);
+                }
+                Err(e) => {
+                    #[cfg(debug_assertions)]
+                    eprintln!("Failed to load font {} from {}: {}", name, path, e);
+                }
+            }
+        }
+        
+        if font_commands.is_empty() {
             #[cfg(debug_assertions)]
-            eprintln!("Warning: Emoji font not found in assets/fonts/. Run scripts/download-fonts.sh to download it.");
+            eprintln!("Warning: No custom fonts loaded. Icons may not display correctly.");
+            #[cfg(debug_assertions)]
+            eprintln!("Run from apps/desktop directory: ./scripts/download-fonts.sh");
         }
         
         // If no fonts were loaded, we'll just use system fonts

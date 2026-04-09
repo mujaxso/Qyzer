@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-FONTS_DIR="${PROJECT_ROOT}/assets/fonts"
+# Go up one level to the desktop directory
+DESKTOP_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# Go up another level to the project root (if needed)
+PROJECT_ROOT="$(cd "${DESKTOP_DIR}/.." && pwd)"
+FONTS_DIR="${DESKTOP_DIR}/assets/fonts"
+
+echo "Script directory: ${SCRIPT_DIR}"
+echo "Desktop directory: ${DESKTOP_DIR}"
+echo "Project root: ${PROJECT_ROOT}"
+echo "Fonts directory: ${FONTS_DIR}"
 
 echo "Downloading fonts to ${FONTS_DIR}..."
 mkdir -p "${FONTS_DIR}"
@@ -11,6 +20,7 @@ mkdir -p "${FONTS_DIR}"
 # Remove placeholder files if they exist
 rm -f "${FONTS_DIR}/NotoSans-Regular.ttf"
 rm -f "${FONTS_DIR}/NotoEmoji-Regular.ttf"
+rm -f "${FONTS_DIR}/NotoColorEmoji.ttf"
 
 # Download Noto Sans Regular from a reliable source
 # Using the official Google Fonts GitHub repository
@@ -45,7 +55,9 @@ if command -v curl &> /dev/null; then
     if curl -L -o "${FONTS_DIR}/NotoColorEmoji.ttf" "${NOTO_EMOJI_URL}"; then
         echo "✓ Noto Color Emoji downloaded successfully"
         # Also create a symlink for the expected name
-        ln -sf "NotoColorEmoji.ttf" "${FONTS_DIR}/NotoEmoji-Regular.ttf"
+        cd "${FONTS_DIR}"
+        ln -sf "NotoColorEmoji.ttf" "NotoEmoji-Regular.ttf"
+        cd - > /dev/null
     else
         echo "✗ Failed to download Noto Color Emoji"
         exit 1
@@ -54,7 +66,9 @@ elif command -v wget &> /dev/null; then
     if wget -O "${FONTS_DIR}/NotoColorEmoji.ttf" "${NOTO_EMOJI_URL}"; then
         echo "✓ Noto Color Emoji downloaded successfully"
         # Also create a symlink for the expected name
-        ln -sf "NotoColorEmoji.ttf" "${FONTS_DIR}/NotoEmoji-Regular.ttf"
+        cd "${FONTS_DIR}"
+        ln -sf "NotoColorEmoji.ttf" "NotoEmoji-Regular.ttf"
+        cd - > /dev/null
     else
         echo "✗ Failed to download Noto Color Emoji"
         exit 1
@@ -71,7 +85,8 @@ if [[ -f "${FONTS_DIR}/NotoSans-Regular.ttf" ]] && [[ -f "${FONTS_DIR}/NotoColor
     echo "   Noto Sans Regular: ${FONTS_DIR}/NotoSans-Regular.ttf"
     echo "   Noto Color Emoji: ${FONTS_DIR}/NotoColorEmoji.ttf"
     echo ""
-    echo "You may need to rebuild the application for the fonts to take effect:"
+    echo "To rebuild the application with the new fonts:"
+    echo "  cd ${DESKTOP_DIR}"
     echo "  cargo build --bin desktop"
 else
     echo "❌ Error: Some font files failed to download."
