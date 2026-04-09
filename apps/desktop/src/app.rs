@@ -62,6 +62,7 @@ impl iced::Application for App {
         }
         
         // If no fonts were loaded, we'll just use system fonts
+        if font_commands.is_empty() {
             (app, command)
         } else {
             // Combine font loading commands with the initial app command
