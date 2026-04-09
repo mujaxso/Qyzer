@@ -98,7 +98,7 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                 }
             }
             
-            rows.push(explorer_row(row.clone(), app.theme, is_compact));
+            rows.push(explorer_row(row.clone(), app, is_compact));
             
             // If creating inside this directory, insert the create row after it
             if let InlineEditMode::CreateFile { ref parent } | InlineEditMode::CreateFolder { ref parent } = app.explorer_state.inline_edit {
