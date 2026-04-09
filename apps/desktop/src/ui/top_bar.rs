@@ -3,6 +3,7 @@ use crate::message::Message;
 use crate::state::App;
 use super::style::StyleHelpers;
 use crate::theme::SemanticColors;
+use crate::ui::icons;
 
 pub fn top_bar(app: &App) -> Element<'_, Message> {
     let style = StyleHelpers::new(app.theme);
@@ -123,11 +124,15 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
         colors: style.colors,
     };
     
-    // Responsive status indicator
+    // Responsive status indicator using semantic icons
     let status_indicator = if app.is_dirty {
         container(
             row![
-                text("●").size(if is_compact { 9 } else { 10 }).style(iced::theme::Text::Color(style.colors.warning)),
+                crate::ui::icons::Icon::Warning.render_with_color(
+                    &app.editor_typography,
+                    style.colors.warning,
+                    Some(if is_compact { 9 } else { 10 }),
+                ),
                 if !is_compact {
                     let txt: Element<_> = text("Unsaved").size(11).style(iced::theme::Text::Color(style.colors.text_secondary)).into();
                     txt
@@ -144,7 +149,11 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
     } else {
         container(
             row![
-                text("✓").size(if is_compact { 9 } else { 10 }).style(iced::theme::Text::Color(style.colors.success)),
+                crate::ui::icons::Icon::Success.render_with_color(
+                    &app.editor_typography,
+                    style.colors.success,
+                    Some(if is_compact { 9 } else { 10 }),
+                ),
                 if !is_compact {
                     let txt: Element<_> = text("Saved").size(11).style(iced::theme::Text::Color(style.colors.text_muted)).into();
                     txt

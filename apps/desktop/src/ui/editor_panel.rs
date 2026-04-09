@@ -3,6 +3,7 @@ use crate::message::Message;
 use crate::state::App;
 use super::style::StyleHelpers;
 use super::editor;
+use crate::ui::icons::Icon;
 
 pub fn editor_panel(app: &App) -> Element<'_, Message> {
     let style = StyleHelpers::new(app.theme);
@@ -11,17 +12,23 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         let file_name = active_path.split('/').last().unwrap_or(active_path);
         container(
             row![
-                text("📄").size(12),
+                Icon::File.render(&app.editor_typography, &style, Some(12)),
                 text(file_name)
                     .size(12)
                     .style(iced::theme::Text::Color(style.colors.text_primary)),
                 iced::widget::horizontal_space(),
                 if app.is_dirty {
-                    text("●").size(10)
-                        .style(iced::theme::Text::Color(style.colors.warning))
+                    Icon::Warning.render_with_color(
+                        &app.editor_typography,
+                        style.colors.warning,
+                        Some(10),
+                    )
                 } else {
-                    text("✓").size(10)
-                        .style(iced::theme::Text::Color(style.colors.success))
+                    Icon::Success.render_with_color(
+                        &app.editor_typography,
+                        style.colors.success,
+                        Some(10),
+                    )
                 }
             ]
             .spacing(6)
@@ -31,9 +38,14 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         .width(Length::Fill)
     } else {
         container(
-            text("No file selected")
-                .size(12)
-                .style(iced::theme::Text::Color(style.colors.text_muted))
+            row![
+                Icon::File.render(&app.editor_typography, &style, Some(12)),
+                text("No file selected")
+                    .size(12)
+                    .style(iced::theme::Text::Color(style.colors.text_muted)),
+            ]
+            .spacing(6)
+            .align_items(iced::Alignment::Center)
         )
         .padding([8, 12])
         .width(Length::Fill)

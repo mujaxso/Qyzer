@@ -3,15 +3,16 @@ use crate::message::Message;
 use crate::state::{App, Activity};
 use super::style::StyleHelpers;
 use crate::theme::SemanticColors;
+use crate::ui::icons::{Icon, icon_button};
 
 pub fn activity_bar(app: &App) -> Element<'_, Message> {
     let style = StyleHelpers::new(app.theme);
     let activities = [
-        (Activity::Explorer, "📁", "Explorer"),
-        (Activity::Search, "🔍", "Search"),
-        (Activity::Ai, "🤖", "AI"),
-        (Activity::SourceControl, "🔄", "Git"),
-        (Activity::Settings, "⚙️", "Settings"),
+        (Activity::Explorer, Icon::Folder, "Explorer"),
+        (Activity::Search, Icon::Search, "Search"),
+        (Activity::Ai, Icon::Robot, "AI"),
+        (Activity::SourceControl, Icon::Git, "Git"),
+        (Activity::Settings, Icon::Settings, "Settings"),
     ];
     
     let activity_buttons: Vec<Element<_>> = activities
@@ -84,18 +85,16 @@ pub fn activity_bar(app: &App) -> Element<'_, Message> {
                 colors: style.colors,
             };
             
-            let button = button(
-                container(
-                    text(*icon).size(16)
-                )
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .center_x()
-                .center_y()
+            // Use icon_button helper for consistent icon rendering
+            let button = icon_button(
+                *icon,
+                &app.editor_typography,
+                &style,
+                Some(message),
+                Some(16),
             )
             .width(Length::Fill)
             .height(Length::Fixed(40.0)) // Compact height
-            .on_press(message)
             .style(iced::theme::Button::Custom(Box::new(button_style)));
             
             button.into()

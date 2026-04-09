@@ -3,20 +3,29 @@ use crate::message::Message;
 use crate::state::App;
 use super::style::StyleHelpers;
 use crate::theme::SemanticColors;
+use crate::ui::icons::Icon;
 
 pub fn status_bar(app: &App) -> Element<'_, Message> {
     let style = StyleHelpers::new(app.theme);
     
     let left_status = if let Some(error) = &app.error_message {
         row![
-            text("⚠").size(10).style(iced::theme::Text::Color(style.colors.error)),
+            Icon::Error.render_with_color(
+                &app.editor_typography,
+                style.colors.error,
+                Some(10),
+            ),
             text(error).size(10).style(iced::theme::Text::Color(style.colors.error)),
         ]
         .spacing(4)
         .align_items(iced::Alignment::Center)
     } else {
         row![
-            text("✓").size(10).style(iced::theme::Text::Color(style.colors.success)),
+            Icon::Success.render_with_color(
+                &app.editor_typography,
+                style.colors.success,
+                Some(10),
+            ),
             text(&app.status_message).size(10).style(iced::theme::Text::Color(style.colors.text_secondary)),
         ]
         .spacing(4)
@@ -26,7 +35,7 @@ pub fn status_bar(app: &App) -> Element<'_, Message> {
     let center_status = if let Some(active_path) = &app.active_file_path {
         let file_name = active_path.split('/').last().unwrap_or(active_path);
         row![
-            text("📄").size(10),
+            Icon::File.render(&app.editor_typography, &style, Some(10)),
             text(file_name).size(10).style(iced::theme::Text::Color(style.colors.text_secondary)),
         ]
         .spacing(4)

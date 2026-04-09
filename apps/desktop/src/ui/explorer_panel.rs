@@ -5,6 +5,7 @@ use super::style::StyleHelpers;
 use crate::theme::{SemanticColors, NeoteTheme};
 use crate::explorer::actions::ExplorerMessage;
 use crate::explorer::state::InlineEditMode;
+use crate::ui::icons::{Icon, icon_button};
 
 pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
     let style = StyleHelpers::new(app.theme);
@@ -14,40 +15,43 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
     // Get visible rows from explorer state
     let visible_rows = app.explorer_state.visible_rows();
     
-    // Header with action buttons
+    // Header with action buttons using semantic icons
     let header = container(
         row![
             text("EXPLORER")
                 .size(if is_compact { 10 } else { 11 })
                 .style(iced::theme::Text::Color(style.colors.text_muted)),
             iced::widget::horizontal_space(),
-            // Action buttons
+            // Action buttons with semantic icons
             row![
                 // New file button
-                button(
-                    text("📄").size(if is_compact { 12 } else { 13 })
-                        .style(iced::theme::Text::Color(style.colors.text_secondary))
-                        .font(iced::font::Font::with_name("Noto Color Emoji"))
+                icon_button(
+                    Icon::Add,
+                    &app.editor_typography,
+                    &style,
+                    Some(Message::Explorer(ExplorerMessage::CreateFileRequested)),
+                    Some(if is_compact { 12 } else { 13 }),
                 )
-                .on_press(Message::Explorer(ExplorerMessage::CreateFileRequested))
                 .padding(if is_compact { [2, 4] } else { [3, 6] })
                 .style(iced::theme::Button::Secondary),
                 // New folder button
-                button(
-                    text("📁").size(if is_compact { 12 } else { 13 })
-                        .style(iced::theme::Text::Color(style.colors.text_secondary))
-                        .font(iced::font::Font::with_name("Noto Color Emoji"))
+                icon_button(
+                    Icon::Folder,
+                    &app.editor_typography,
+                    &style,
+                    Some(Message::Explorer(ExplorerMessage::CreateFolderRequested)),
+                    Some(if is_compact { 12 } else { 13 }),
                 )
-                .on_press(Message::Explorer(ExplorerMessage::CreateFolderRequested))
                 .padding(if is_compact { [2, 4] } else { [3, 6] })
                 .style(iced::theme::Button::Secondary),
-                // Refresh button - use emoji refresh symbol
-                button(
-                    text("🔄").size(if is_compact { 12 } else { 13 })
-                        .style(iced::theme::Text::Color(style.colors.text_secondary))
-                        .font(iced::font::Font::with_name("Noto Color Emoji"))
+                // Refresh button
+                icon_button(
+                    Icon::Refresh,
+                    &app.editor_typography,
+                    &style,
+                    Some(Message::Explorer(ExplorerMessage::Refresh)),
+                    Some(if is_compact { 12 } else { 13 }),
                 )
-                .on_press(Message::Explorer(ExplorerMessage::Refresh))
                 .padding(if is_compact { [2, 4] } else { [3, 6] })
                 .style(iced::theme::Button::Secondary),
             ]
@@ -160,28 +164,23 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
     .into()
 }
 
-fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_compact: bool) -> Element<'static, Message> {
-    let style = StyleHelpers::new(theme);
+fn explorer_row(row: crate::explorer::state::VisibleRow, app: &App, is_compact: bool) -> Element<'static, Message> {
+    let style = StyleHelpers::new(app.theme);
     let indent = row.depth * 12;
     
-    // Choose icon based on type and state
+    // Choose icon based on type and state using semantic icon system
     let icon = if row.is_dir {
-        if row.is_expanded { "📂" } else { "📁" }
+        if row.is_expanded {
+            Icon::FolderOpen
+        } else {
+            Icon::Folder
+        }
     } else {
-        "📄"
+        Icon::File
     };
     
     // Text color
     let text_color = if row.is_selected {
-        style.colors.text_on_accent
-    } else if row.is_dir {
-        style.colors.accent
-    } else {
-        style.colors.text_secondary
-    };
-    
-    // Icon color - always use a visible color
-    let icon_color = if row.is_selected {
         style.colors.text_on_accent
     } else if row.is_dir {
         style.colors.accent
@@ -207,12 +206,8 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
                 .size(9)
                 .style(iced::theme::Text::Color(style.colors.text_muted)),
             iced::widget::Space::with_width(Length::Fixed(4.0)),
-            // Icon - with explicit color and emoji font
-            // We need to use the emoji font for emoji characters
-            text(icon)
-                .size(if is_compact { 12 } else { 13 })
-                .style(iced::theme::Text::Color(icon_color))
-                .font(iced::font::Font::with_name("Noto Color Emoji")),
+            // Icon using semantic icon system
+            icon.render(&app.editor_typography, &style, Some(if is_compact { 12 } else { 13 })),
             // Spacing between icon and name
             iced::widget::Space::with_width(Length::Fixed(6.0)),
             // File/folder name
@@ -223,22 +218,24 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
             iced::widget::horizontal_space(),
             if row.is_hovered || row.is_selected {
                 row![
-                    // Rename button - with visible icon
-                    button(
-                        text("✏").size(10)
-                            .style(iced::theme::Text::Color(style.colors.text_secondary))
-                            .font(iced::font::Font::with_name("Noto Color Emoji"))
+                    // Rename button
+                    icon_button(
+                        Icon::Edit,
+                        &app.editor_typography,
+                        &style,
+                        Some(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone()))),
+                        Some(10),
                     )
-                    .on_press(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone())))
                     .padding([2, 4])
                     .style(iced::theme::Button::Secondary),
-                    // Delete button - with visible icon
-                    button(
-                        text("🗑").size(10)
-                            .style(iced::theme::Text::Color(style.colors.text_secondary))
-                            .font(iced::font::Font::with_name("Noto Color Emoji"))
+                    // Delete button
+                    icon_button(
+                        Icon::Delete,
+                        &app.editor_typography,
+                        &style,
+                        Some(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone()))),
+                        Some(10),
                     )
-                    .on_press(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone())))
                     .padding([2, 4])
                     .style(iced::theme::Button::Secondary),
                 ]
@@ -256,11 +253,8 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
             iced::widget::Space::with_width(Length::Fixed(indent as f32)),
             // Space for missing chevron (files don't have chevrons)
             iced::widget::Space::with_width(Length::Fixed(16.0)),
-            // Icon - with explicit color and emoji font
-            text(icon)
-                .size(if is_compact { 12 } else { 13 })
-                .style(iced::theme::Text::Color(icon_color))
-                .font(iced::font::Font::with_name("Noto Color Emoji")),
+            // Icon using semantic icon system
+            icon.render(&app.editor_typography, &style, Some(if is_compact { 12 } else { 13 })),
             // Spacing between icon and name
             iced::widget::Space::with_width(Length::Fixed(6.0)),
             // File/folder name
@@ -271,22 +265,24 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, theme: NeoteTheme, is_c
             iced::widget::horizontal_space(),
             if row.is_hovered || row.is_selected {
                 row![
-                    // Rename button - with visible icon
-                    button(
-                        text("✏").size(10)
-                            .style(iced::theme::Text::Color(style.colors.text_secondary))
-                            .font(iced::font::Font::with_name("Noto Color Emoji"))
+                    // Rename button
+                    icon_button(
+                        Icon::Edit,
+                        &app.editor_typography,
+                        &style,
+                        Some(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone()))),
+                        Some(10),
                     )
-                    .on_press(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone())))
                     .padding([2, 4])
                     .style(iced::theme::Button::Secondary),
-                    // Delete button - with visible icon
-                    button(
-                        text("🗑").size(10)
-                            .style(iced::theme::Text::Color(style.colors.text_secondary))
-                            .font(iced::font::Font::with_name("Noto Color Emoji"))
+                    // Delete button
+                    icon_button(
+                        Icon::Delete,
+                        &app.editor_typography,
+                        &style,
+                        Some(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone()))),
+                        Some(10),
                     )
-                    .on_press(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone())))
                     .padding([2, 4])
                     .style(iced::theme::Button::Secondary),
                 ]

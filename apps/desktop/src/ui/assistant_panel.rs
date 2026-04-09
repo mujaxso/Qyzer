@@ -3,6 +3,7 @@ use crate::message::Message;
 use crate::state::App;
 use super::style::StyleHelpers;
 use crate::theme::SemanticColors;
+use crate::ui::icons::{Icon, icon_button};
 
 pub fn assistant_panel(app: &App) -> Element<'_, Message> {
     let style = StyleHelpers::new(app.theme);
@@ -17,12 +18,14 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
                 .style(iced::theme::Text::Color(style.colors.text_muted)),
             iced::widget::horizontal_space(),
             if !is_compact {
-                let btn: Element<_> = button(
-                    text("⋯").size(12)
+                let btn: Element<_> = icon_button(
+                    Icon::MoreHorizontal,
+                    &app.editor_typography,
+                    &style,
+                    Some(Message::PromptInputChanged("AI options".to_string())),
+                    Some(12),
                 )
-                .on_press(Message::PromptInputChanged("AI options".to_string()))
                 .padding([2, 6])
-                .style(iced::theme::Button::Secondary)
                 .into();
                 btn
             } else {
