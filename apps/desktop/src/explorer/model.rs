@@ -84,6 +84,18 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
         build_subtree(root_idx, &mut nodes, &children_by_parent);
     }
     
+    // After building subtrees, we need to ensure nodes are sorted
+    // Sort root nodes first
+    root_indices.sort_by(|&a, &b| {
+        let node_a = &nodes[a];
+        let node_b = &nodes[b];
+        if node_a.is_dir != node_b.is_dir {
+            b.is_dir.cmp(&a.is_dir) // Directories first
+        } else {
+            node_a.name.to_lowercase().cmp(&node_b.name.to_lowercase())
+        }
+    });
+    
     // Collect root nodes
     let mut root_nodes: Vec<ExplorerNode> = root_indices
         .into_iter()
@@ -113,7 +125,14 @@ fn build_subtree(
         path_str.pop();
     }
     
-    if let Some(child_indices) = children_by_parent.get(&path_str) {
+    // Also try without normalization for comparison
+    let path_str_raw = nodes[index].path.to_string_lossy().to_string();
+    
+    // Try to get children using normalized path first
+    let child_indices = children_by_parent.get(&path_str)
+        .or_else(|| children_by_parent.get(&path_str_raw));
+    
+    if let Some(child_indices) = child_indices {
         let mut children = Vec::new();
         
         // First, collect all children

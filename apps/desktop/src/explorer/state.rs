@@ -5,13 +5,29 @@ use core_types::workspace::DirectoryEntry;
 
 // Helper function to normalize paths for consistent comparison
 fn normalize_path(path: &PathBuf) -> PathBuf {
-    // Convert to string and remove any trailing separator
-    let mut normalized = path.to_string_lossy().to_string();
-    // Remove trailing separator if present
-    while normalized.ends_with('/') || normalized.ends_with('\\') {
-        normalized.pop();
+    use std::path::Component;
+    
+    // Get the components and rebuild the path
+    let components: Vec<_> = path.components().collect();
+    
+    // Handle empty path
+    if components.is_empty() {
+        return PathBuf::new();
     }
-    PathBuf::from(normalized)
+    
+    // Rebuild path from components
+    let mut normalized = PathBuf::new();
+    for component in components {
+        normalized.push(component);
+    }
+    
+    // Convert to string and remove any trailing separator
+    let mut normalized_str = normalized.to_string_lossy().to_string();
+    while normalized_str.ends_with('/') || normalized_str.ends_with('\\') {
+        normalized_str.pop();
+    }
+    
+    PathBuf::from(normalized_str)
 }
 
 #[derive(Debug, Clone)]
