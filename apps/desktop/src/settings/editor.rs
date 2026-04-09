@@ -293,41 +293,19 @@ impl EditorTypographySettings {
         
         match self.icon_mode {
             IconMode::NerdFonts => {
-                // First, try the exact font family names that we know work
-                // Based on the logs, "Symbols Nerd Font" is being loaded
+                // Use the exact names from font loading in app.rs
+                // These must match exactly
                 stack.push("Symbols Nerd Font");
-                
-                // Try variations that might match the actual font family name
-                stack.push("SymbolsNerdFont");
-                stack.push("Symbols Nerd Font Mono");
-                stack.push("SymbolsNerdFontMono");
-                stack.push("SymbolsNerdFont-Regular");
-                stack.push("Symbols Nerd Font Regular");
-                
-                // Since refresh icon works, the font contains Font Awesome glyphs
-                // Add other Nerd Font variants that might contain more glyphs
+                stack.push("Noto Color Emoji");
                 stack.push("JetBrainsMono Nerd Font");
-                stack.push("JetBrainsMonoNerdFont");
-                stack.push("JetBrainsMonoNerdFont-Regular");
                 stack.push("FiraCode Nerd Font");
-                stack.push("FiraCodeNerdFont");
-                stack.push("FiraCodeNerdFont-Regular");
                 stack.push("CascadiaCode Nerd Font");
-                stack.push("CascadiaCodeNerdFont");
-                stack.push("CascadiaCodeNerdFont-Regular");
                 stack.push("Iosevka Nerd Font");
-                stack.push("IosevkaNerdFont");
-                stack.push("IosevkaNerdFont-Regular");
                 
-                // Add specific Nerd Font variants if applicable
+                // Add the selected Nerd Font variant if applicable
                 if self.font_family.is_nerd_font() {
                     stack.push(self.font_family.to_family_string());
                 }
-                
-                // Add emoji fonts for fallback
-                stack.push("Noto Color Emoji");
-                stack.push("Segoe UI Emoji");
-                stack.push("Apple Color Emoji");
                 
                 // Add standard fallbacks
                 stack.extend(self.font_family.fallback_stack());

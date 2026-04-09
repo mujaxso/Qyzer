@@ -175,23 +175,12 @@ impl Icon {
     fn get_font(typography: &EditorTypographySettings) -> iced::Font {
         // For icons, we need to use a font that contains the icon glyphs
         // The icon font stack is defined in EditorTypographySettings
-        // We'll try multiple fonts from the stack until one works
         let icon_stack = typography.icon_font_stack();
         
-        // Always try "Symbols Nerd Font" first since we know it works for some icons
-        // This is a hardcoded fallback to ensure consistency
-        let preferred_fonts = ["Symbols Nerd Font", "SymbolsNerdFont", "Symbols Nerd Font Mono"];
-        
-        for font_name in preferred_fonts.iter() {
-            // Check if this font is in the stack (not required, but good for consistency)
-            if icon_stack.contains(font_name) {
-                return iced::Font::with_name(font_name);
-            }
-        }
-        
-        // Fallback to the first font in the stack
-        if let Some(first_font) = icon_stack.first() {
-            return iced::Font::with_name(first_font);
+        // Try each font in the stack in order
+        for font_name in icon_stack.iter() {
+            // Return the first one - Iced will use it if available
+            return iced::Font::with_name(font_name);
         }
         
         // Final fallback
@@ -209,11 +198,14 @@ impl Icon {
         Message: 'a,
     {
         let icon_size = size.unwrap_or(typography.font_size);
-        // Always use Unicode fallback for now to debug
-        let icon_char = self.unicode_fallback();
-        // Don't use a specific font, let Iced choose
+        let icon_char = match typography.icon_mode {
+            IconMode::NerdFonts => self.nerd_font_glyph(),
+            IconMode::Unicode => self.unicode_fallback(),
+            IconMode::Disabled => " ",
+        };
         text(icon_char)
             .size(icon_size)
+            .font(Self::get_font(typography))
             .style(iced::theme::Text::Color(style.text_secondary()))
             .into()
     }
@@ -229,11 +221,14 @@ impl Icon {
         Message: 'a,
     {
         let icon_size = size.unwrap_or(typography.font_size);
-        // Always use Unicode fallback for now to debug
-        let icon_char = self.unicode_fallback();
-        // Don't use a specific font, let Iced choose
+        let icon_char = match typography.icon_mode {
+            IconMode::NerdFonts => self.nerd_font_glyph(),
+            IconMode::Unicode => self.unicode_fallback(),
+            IconMode::Disabled => " ",
+        };
         text(icon_char)
             .size(icon_size)
+            .font(Self::get_font(typography))
             .style(iced::theme::Text::Color(color))
             .into()
     }
