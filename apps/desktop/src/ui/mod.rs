@@ -5,6 +5,7 @@ pub mod editor;
 pub mod editor_panel;
 pub mod explorer;
 pub mod explorer_panel;
+pub mod icons;
 pub mod layout;
 pub mod shell;
 pub mod status_bar;

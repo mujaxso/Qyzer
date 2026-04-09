@@ -37,13 +37,21 @@ impl iced::Application for App {
             "../assets/fonts",
         ];
         
-        // Fonts to load in order of preference
+        // Fonts to load in order of preference, including Nerd Font variants
         let font_files = [
+            // Regular coding fonts
             ("JetBrainsMono-Regular.ttf", "JetBrains Mono"),
             ("FiraCode-Regular.ttf", "Fira Code"),
             ("CascadiaCode-Regular.ttf", "Cascadia Code"),
             ("Iosevka-Regular.ttf", "Iosevka"),
             ("SourceCodePro-Regular.ttf", "Source Code Pro"),
+            // Nerd Font variants
+            ("JetBrainsMonoNerdFont-Regular.ttf", "JetBrainsMono Nerd Font"),
+            ("FiraCodeNerdFont-Regular.ttf", "FiraCode Nerd Font"),
+            ("CascadiaCodeNerdFont-Regular.ttf", "CascadiaCode Nerd Font"),
+            ("IosevkaNerdFont-Regular.ttf", "Iosevka Nerd Font"),
+            // Icon fonts
+            ("SymbolsNerdFont-Regular.ttf", "Symbols Nerd Font"),
             ("NotoColorEmoji.ttf", "Noto Color Emoji"),
         ];
         

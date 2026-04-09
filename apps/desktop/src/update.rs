@@ -674,6 +674,21 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             };
             Command::none()
         }
+        // Icon settings
+        Message::IconModeChanged(icon_mode) => {
+            app.editor_typography.icon_mode = icon_mode;
+            app.status_message = format!("Icon mode changed to {}", icon_mode);
+            Command::none()
+        }
+        Message::PreferNerdFontsToggled(enabled) => {
+            app.editor_typography.prefer_nerd_fonts = enabled;
+            app.status_message = if enabled {
+                "Prefer Nerd Fonts enabled".to_string()
+            } else {
+                "Prefer Nerd Fonts disabled".to_string()
+            };
+            Command::none()
+        }
         Message::ZoomIn => {
             app.editor_typography.zoom_in();
             app.status_message = format!("Zoomed in to {}px", app.editor_typography.font_size);

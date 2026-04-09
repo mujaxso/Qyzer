@@ -45,6 +45,9 @@ pub enum Message {
     LineHeightChanged(f32),
     LetterSpacingChanged(f32),
     LigaturesToggled(bool),
+    // Icon settings
+    IconModeChanged(crate::settings::editor::IconMode),
+    PreferNerdFontsToggled(bool),
     // Zoom controls
     ZoomIn,
     ZoomOut,

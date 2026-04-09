@@ -1,7 +1,7 @@
 //! Editor typography settings model.
 //!
 //! Defines the structure and validation rules for editor font settings,
-//! including font family, size, line height, and ligature support.
+//! including font family, size, line height, ligature support, and icon capabilities.
 
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -14,6 +14,11 @@ pub enum FontFamily {
     CascadiaCode,
     Iosevka,
     SourceCodePro,
+    // Nerd Font variants
+    JetBrainsMonoNerd,
+    FiraCodeNerd,
+    CascadiaCodeNerd,
+    IosevkaNerd,
 }
 
 impl fmt::Display for FontFamily {
@@ -24,6 +29,10 @@ impl fmt::Display for FontFamily {
             FontFamily::CascadiaCode => write!(f, "Cascadia Code"),
             FontFamily::Iosevka => write!(f, "Iosevka"),
             FontFamily::SourceCodePro => write!(f, "Source Code Pro"),
+            FontFamily::JetBrainsMonoNerd => write!(f, "JetBrains Mono Nerd Font"),
+            FontFamily::FiraCodeNerd => write!(f, "Fira Code Nerd Font"),
+            FontFamily::CascadiaCodeNerd => write!(f, "Cascadia Code Nerd Font"),
+            FontFamily::IosevkaNerd => write!(f, "Iosevka Nerd Font"),
         }
     }
 }
@@ -37,31 +46,39 @@ impl FontFamily {
             FontFamily::CascadiaCode => "Cascadia Code",
             FontFamily::Iosevka => "Iosevka",
             FontFamily::SourceCodePro => "Source Code Pro",
+            FontFamily::JetBrainsMonoNerd => "JetBrainsMono Nerd Font",
+            FontFamily::FiraCodeNerd => "FiraCode Nerd Font",
+            FontFamily::CascadiaCodeNerd => "CascadiaCode Nerd Font",
+            FontFamily::IosevkaNerd => "Iosevka Nerd Font",
         }
     }
 
     /// Get the fallback font stack for this font family.
     pub fn fallback_stack(&self) -> Vec<&'static str> {
         match self {
-            FontFamily::JetBrainsMono => vec![
+            FontFamily::JetBrainsMono | FontFamily::JetBrainsMonoNerd => vec![
+                "JetBrainsMono Nerd Font",
                 "JetBrains Mono",
                 "Fira Code",
                 "Cascadia Code",
                 "monospace",
             ],
-            FontFamily::FiraCode => vec![
+            FontFamily::FiraCode | FontFamily::FiraCodeNerd => vec![
+                "FiraCode Nerd Font",
                 "Fira Code",
                 "JetBrains Mono",
                 "Cascadia Code",
                 "monospace",
             ],
-            FontFamily::CascadiaCode => vec![
+            FontFamily::CascadiaCode | FontFamily::CascadiaCodeNerd => vec![
+                "CascadiaCode Nerd Font",
                 "Cascadia Code",
                 "JetBrains Mono",
                 "Fira Code",
                 "monospace",
             ],
-            FontFamily::Iosevka => vec![
+            FontFamily::Iosevka | FontFamily::IosevkaNerd => vec![
+                "Iosevka Nerd Font",
                 "Iosevka",
                 "JetBrains Mono",
                 "Fira Code",
@@ -71,9 +88,44 @@ impl FontFamily {
                 "Source Code Pro",
                 "JetBrains Mono",
                 "Fira Code",
+                "Cascadia Code",
                 "monospace",
             ],
         }
+    }
+
+    /// Get the icon fallback stack for this font family.
+    /// This is optimized for rendering developer glyphs and icons.
+    pub fn icon_fallback_stack(&self) -> Vec<&'static str> {
+        let mut stack = Vec::new();
+        
+        // Always include Nerd Fonts first for icon support
+        stack.push("Symbols Nerd Font");
+        stack.push("Noto Color Emoji");
+        
+        // Add the primary font if it's a Nerd Font variant
+        match self {
+            FontFamily::JetBrainsMonoNerd => stack.push("JetBrainsMono Nerd Font"),
+            FontFamily::FiraCodeNerd => stack.push("FiraCode Nerd Font"),
+            FontFamily::CascadiaCodeNerd => stack.push("CascadiaCode Nerd Font"),
+            FontFamily::IosevkaNerd => stack.push("Iosevka Nerd Font"),
+            _ => {}
+        }
+        
+        // Add standard coding fonts
+        stack.extend(self.fallback_stack());
+        stack
+    }
+
+    /// Check if this font family is a Nerd Font variant
+    pub fn is_nerd_font(&self) -> bool {
+        matches!(
+            self,
+            FontFamily::JetBrainsMonoNerd |
+            FontFamily::FiraCodeNerd |
+            FontFamily::CascadiaCodeNerd |
+            FontFamily::IosevkaNerd
+        )
     }
 
     /// Get all available font families.
@@ -84,6 +136,20 @@ impl FontFamily {
             FontFamily::CascadiaCode,
             FontFamily::Iosevka,
             FontFamily::SourceCodePro,
+            FontFamily::JetBrainsMonoNerd,
+            FontFamily::FiraCodeNerd,
+            FontFamily::CascadiaCodeNerd,
+            FontFamily::IosevkaNerd,
+        ]
+    }
+
+    /// Get all Nerd Font variants
+    pub fn nerd_fonts() -> Vec<FontFamily> {
+        vec![
+            FontFamily::JetBrainsMonoNerd,
+            FontFamily::FiraCodeNerd,
+            FontFamily::CascadiaCodeNerd,
+            FontFamily::IosevkaNerd,
         ]
     }
 }
@@ -94,7 +160,34 @@ impl Default for FontFamily {
     }
 }
 
-/// Editor typography settings optimized for coding readability.
+/// Icon rendering mode for developer glyphs and UI icons
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum IconMode {
+    /// Use Nerd Font glyphs when available (recommended for developers)
+    NerdFonts,
+    /// Use Unicode fallback symbols (more compatible)
+    Unicode,
+    /// Disable icons entirely
+    Disabled,
+}
+
+impl Default for IconMode {
+    fn default() -> Self {
+        IconMode::NerdFonts
+    }
+}
+
+impl fmt::Display for IconMode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            IconMode::NerdFonts => write!(f, "Nerd Fonts"),
+            IconMode::Unicode => write!(f, "Unicode"),
+            IconMode::Disabled => write!(f, "Disabled"),
+        }
+    }
+}
+
+/// Editor typography settings optimized for coding readability with icon support.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EditorTypographySettings {
     /// Selected font family
@@ -107,6 +200,10 @@ pub struct EditorTypographySettings {
     pub ligatures_enabled: bool,
     /// Letter spacing in pixels (can be negative or positive)
     pub letter_spacing: f32,
+    /// Icon rendering mode
+    pub icon_mode: IconMode,
+    /// Whether to prefer Nerd Font variants when available
+    pub prefer_nerd_fonts: bool,
 }
 
 impl Default for EditorTypographySettings {
@@ -117,6 +214,8 @@ impl Default for EditorTypographySettings {
             line_height: 1.6, // Balanced for scanning code
             ligatures_enabled: false, // Off by default for clarity
             letter_spacing: 0.0, // Monospace fonts typically don't need extra spacing
+            icon_mode: IconMode::default(),
+            prefer_nerd_fonts: true,
         }
     }
 }
@@ -129,6 +228,8 @@ impl EditorTypographySettings {
         line_height: f32,
         ligatures_enabled: bool,
         letter_spacing: f32,
+        icon_mode: IconMode,
+        prefer_nerd_fonts: bool,
     ) -> Self {
         let font_size = font_size.clamp(10, 24);
         let line_height = line_height.clamp(1.2, 2.0);
@@ -140,6 +241,8 @@ impl EditorTypographySettings {
             line_height,
             ligatures_enabled,
             letter_spacing,
+            icon_mode,
+            prefer_nerd_fonts,
         }
     }
 
@@ -173,5 +276,23 @@ impl EditorTypographySettings {
     /// Get the effective line height in pixels
     pub fn line_height_pixels(&self) -> f32 {
         self.font_size as f32 * self.line_height
+    }
+
+    /// Get the appropriate font stack for text rendering
+    pub fn text_font_stack(&self) -> Vec<&'static str> {
+        self.font_family.fallback_stack()
+    }
+
+    /// Get the appropriate font stack for icon rendering
+    pub fn icon_font_stack(&self) -> Vec<&'static str> {
+        if self.icon_mode == IconMode::Disabled {
+            return vec!["monospace"];
+        }
+        self.font_family.icon_fallback_stack()
+    }
+
+    /// Check if icons are enabled
+    pub fn icons_enabled(&self) -> bool {
+        self.icon_mode != IconMode::Disabled
     }
 }
