@@ -17,18 +17,43 @@ impl iced::Application for App {
         
         // Load custom fonts for icon support
         // We'll try to load multiple fonts to ensure icons are visible
-        let font_commands = vec![
-            // Try to load Noto Sans first
-            iced::font::load(include_bytes!("../../assets/fonts/NotoSans-Regular.ttf"))
-                .map(|_| Message::FontLoaded)
-                .map_err(|_| Message::FontLoadFailed),
-            // Try to load Noto Emoji for emoji icons
-            iced::font::load(include_bytes!("../../assets/fonts/NotoEmoji-Regular.ttf"))
-                .map(|_| Message::FontLoaded)
-                .map_err(|_| Message::FontLoadFailed),
-        ];
+        let mut font_commands = Vec::new();
         
-        (app, Command::batch(font_commands).then(|| command))
+        // Try to load Noto Sans if the file exists
+        if let Ok(bytes) = std::fs::read("assets/fonts/NotoSans-Regular.ttf") {
+            font_commands.push(
+                iced::font::load(bytes)
+                    .map(|_| Message::FontLoaded)
+                    .map_err(|_| Message::FontLoadFailed)
+            );
+        } else {
+            // Fallback: try to load from included bytes if file doesn't exist
+            // This helps during development when fonts might not be downloaded yet
+            #[cfg(debug_assertions)]
+            eprintln!("Warning: NotoSans-Regular.ttf not found in assets/fonts/. Run scripts/download-fonts.sh to download it.");
+        }
+        
+        // Try to load Noto Emoji for emoji icons
+        if let Ok(bytes) = std::fs::read("assets/fonts/NotoEmoji-Regular.ttf") {
+            font_commands.push(
+                iced::font::load(bytes)
+                    .map(|_| Message::FontLoaded)
+                    .map_err(|_| Message::FontLoadFailed)
+            );
+        } else {
+            #[cfg(debug_assertions)]
+            eprintln!("Warning: NotoEmoji-Regular.ttf not found in assets/fonts/. Run scripts/download-fonts.sh to download it.");
+        }
+        
+        // If no fonts were loaded, we'll just use system fonts
+        if font_commands.is_empty() {
+            // Log a warning in debug mode
+            #[cfg(debug_assertions)]
+            eprintln!("No custom fonts loaded. Icons may not display correctly. Run `scripts/download-fonts.sh` to download required fonts.");
+            (app, command)
+        } else {
+            (app, Command::batch(font_commands).then(|| command))
+        }
     }
 
     fn title(&self) -> String {

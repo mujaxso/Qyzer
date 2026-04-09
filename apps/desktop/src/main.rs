@@ -29,9 +29,9 @@ fn main() -> iced::Result {
         },
         // Enable antialiasing for better text rendering
         antialiasing: true,
-        // Use a font that supports emoji and other Unicode characters
-        // Try to use Noto Color Emoji for better icon support
-        default_font: iced::font::Font::with_name("Noto Color Emoji"),
+        // Use a default font that should work on most systems
+        // The actual icon fonts will be loaded separately in app.rs
+        default_font: iced::font::Font::MONOSPACE,
         default_text_size: iced::Pixels(14.0),
         ..Default::default()
     })
