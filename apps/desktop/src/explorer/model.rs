@@ -36,13 +36,16 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
         }
     });
     
-    // Create a map from path to node
+    // Create a map from normalized path to node
     let mut path_to_node: HashMap<String, ExplorerNode> = HashMap::new();
     
     // First pass: create all nodes without children
     for entry in sorted_entries {
-        let path_str = entry.path.clone();
-        let node = ExplorerNode::new(entry);
+        // Normalize the path to ensure consistent comparison
+        let path_str = normalize_path(&PathBuf::from(&entry.path));
+        let mut node = ExplorerNode::new(entry);
+        // Ensure the node's path is normalized
+        node.path = PathBuf::from(&path_str);
         path_to_node.insert(path_str, node);
     }
     
@@ -51,9 +54,9 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
     let mut parent_to_children: HashMap<String, Vec<String>> = HashMap::new();
     
     for path in path_to_node.keys() {
-        let node_path = std::path::Path::new(path);
+        let node_path = PathBuf::from(path);
         if let Some(parent_path) = node_path.parent() {
-            let parent_str = parent_path.to_string_lossy().to_string();
+            let parent_str = normalize_path(&parent_path);
             if path_to_node.contains_key(&parent_str) {
                 parent_to_children.entry(parent_str)
                     .or_insert_with(Vec::new)
@@ -106,5 +109,16 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
     });
     
     root_nodes
+}
+
+// Helper function to normalize paths for consistent comparison
+fn normalize_path(path: &PathBuf) -> String {
+    // Convert to string and remove any trailing separator
+    let mut normalized = path.to_string_lossy().to_string();
+    // Remove trailing separator if present
+    while normalized.ends_with('/') || normalized.ends_with('\\') {
+        normalized.pop();
+    }
+    normalized
 }
 
