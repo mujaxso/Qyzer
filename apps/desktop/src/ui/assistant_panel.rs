@@ -66,7 +66,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
         container(
             column![
                 row![
-                    text("🤖").size(16),
+                    Icon::Robot.render_with_color(&app.editor_typography, style.colors.text_primary, Some(16)),
                     text("Neote AI").size(14)
                         .style(iced::theme::Text::Color(style.colors.text_primary)),
                 ]
@@ -86,7 +86,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
         container(
             column![
                 row![
-                    text("🤖").size(14),
+                    Icon::Robot.render_with_color(&app.editor_typography, style.colors.text_primary, Some(14)),
                     text("AI").size(12)
                         .style(iced::theme::Text::Color(style.colors.text_primary)),
                 ]

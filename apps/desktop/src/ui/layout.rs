@@ -11,6 +11,7 @@ use crate::message::Message;
 use crate::theme::NeoteTheme;
 use crate::ui::style::StyleHelpers;
 use crate::settings::editor::EditorTypographySettings;
+use crate::ui::icons::Icon;
 
 // Helper function to normalize paths for consistent comparison
 fn normalize_path(path: &str) -> String {
@@ -181,13 +182,13 @@ fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> 
 }
 
 fn activity_rail<'a>(active_activity: Activity) -> Element<'a, Message> {
-    // Define activities with their corresponding Activity enum values
+    // Define activities with their corresponding Activity enum values and icons
     let activities = [
-        (Activity::explorer(), "📁", "Explorer"),
-        (Activity::search(), "🔍", "Search"),
-        (Activity::ai_assistant(), "🤖", "AI"),
-        (Activity::source_control(), "🔄", "Git"),
-        (Activity::settings(), "⚙️", "Settings"),
+        (Activity::explorer(), Icon::Folder, "Explorer"),
+        (Activity::search(), Icon::Search, "Search"),
+        (Activity::ai_assistant(), Icon::Robot, "AI"),
+        (Activity::source_control(), Icon::Git, "Git"),
+        (Activity::settings(), Icon::Settings, "Settings"),
     ];
 
     let children: Vec<Element<_>> = activities
@@ -232,13 +233,25 @@ fn activity_rail<'a>(active_activity: Activity) -> Element<'a, Message> {
                 iced::widget::Space::new(Length::Fixed(0.0), Length::Fixed(0.0)).into()
             };
             
+            // Create icon element
+            // We need to create a temporary typography settings for the icon
+            // Since we don't have access to app here, we'll use defaults
+            let typography = EditorTypographySettings::default();
+            let style = StyleHelpers::new(NeoteTheme::Dark);
+            let icon_color = if is_active {
+                style.colors.accent
+            } else {
+                style.colors.text_muted
+            };
+            let icon_element = icon.render_with_color(&typography, icon_color, Some(18));
+            
             container(
                 row![
                     active_indicator,
                     container(
                         button(
                             column![
-                                text(icon).size(18),
+                                icon_element,
                                 text(label).size(11),
                             ]
                             .align_items(Alignment::Center)
@@ -703,7 +716,11 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
                     container(
                         column![
                             row![
-                                text("🤖").size(20),
+                                Icon::Robot.render_with_color(
+                                    &EditorTypographySettings::default(),
+                                    iced::Color::from_rgb8(220, 220, 255),
+                                    Some(20)
+                                ),
                                 text("Neote AI").size(16).style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 255))),
                             ]
                             .spacing(8)
