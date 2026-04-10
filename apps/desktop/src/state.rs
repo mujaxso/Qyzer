@@ -35,6 +35,120 @@ pub enum FileLoadingState {
     ReadOnlyPreview { path: String, size: u64 },
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PrimarySidebarView {
+    Explorer,
+    Search,
+    SourceControl,
+    Settings,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum AuxiliaryView {
+    AiAssistant,
+    // Future: Debug, Terminal, etc.
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Activity {
+    Primary(PrimarySidebarView),
+    Auxiliary(AuxiliaryView),
+}
+
+impl Activity {
+    pub fn explorer() -> Self {
+        Activity::Primary(PrimarySidebarView::Explorer)
+    }
+    
+    pub fn search() -> Self {
+        Activity::Primary(PrimarySidebarView::Search)
+    }
+    
+    pub fn source_control() -> Self {
+        Activity::Primary(PrimarySidebarView::SourceControl)
+    }
+    
+    pub fn settings() -> Self {
+        Activity::Primary(PrimarySidebarView::Settings)
+    }
+    
+    pub fn ai_assistant() -> Self {
+        Activity::Auxiliary(AuxiliaryView::AiAssistant)
+    }
+    
+    pub fn is_primary(&self) -> bool {
+        matches!(self, Activity::Primary(_))
+    }
+    
+    pub fn is_auxiliary(&self) -> bool {
+        matches!(self, Activity::Auxiliary(_))
+    }
+    
+    pub fn primary_view(&self) -> Option<PrimarySidebarView> {
+        match self {
+            Activity::Primary(view) => Some(*view),
+            _ => None,
+        }
+    }
+    
+    pub fn auxiliary_view(&self) -> Option<AuxiliaryView> {
+        match self {
+            Activity::Auxiliary(view) => Some(*view),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct WorkbenchLayoutState {
+    // Primary sidebar state
+    pub primary_sidebar_visible: bool,
+    pub active_primary_view: PrimarySidebarView,
+    
+    // Auxiliary sidebar state (like AI Assistant)
+    pub auxiliary_sidebar_visible: bool,
+    pub active_auxiliary_view: Option<AuxiliaryView>,
+    
+    // Activity bar hover state
+    pub hovered_activity: Option<Activity>,
+}
+
+impl Default for WorkbenchLayoutState {
+    fn default() -> Self {
+        Self {
+            primary_sidebar_visible: true,
+            active_primary_view: PrimarySidebarView::Explorer,
+            auxiliary_sidebar_visible: true,
+            active_auxiliary_view: Some(AuxiliaryView::AiAssistant),
+            hovered_activity: None,
+        }
+    }
+}
+
+impl WorkbenchLayoutState {
+    pub fn set_active_primary_view(&mut self, view: PrimarySidebarView) {
+        self.active_primary_view = view;
+        self.primary_sidebar_visible = true;
+    }
+    
+    pub fn toggle_auxiliary_sidebar(&mut self) {
+        self.auxiliary_sidebar_visible = !self.auxiliary_sidebar_visible;
+    }
+    
+    pub fn set_auxiliary_view(&mut self, view: AuxiliaryView) {
+        self.active_auxiliary_view = Some(view);
+        self.auxiliary_sidebar_visible = true;
+    }
+    
+    pub fn is_primary_view_active(&self, view: PrimarySidebarView) -> bool {
+        self.primary_sidebar_visible && self.active_primary_view == view
+    }
+    
+    pub fn is_auxiliary_view_active(&self, view: AuxiliaryView) -> bool {
+        self.auxiliary_sidebar_visible && self.active_auxiliary_view == Some(view)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LayoutMode {
     Wide,
@@ -52,8 +166,7 @@ pub struct App {
     pub status_message: String,
     pub error_message: Option<String>,
     pub workspace_state: Arc<Mutex<WorkspaceState>>,
-    pub active_activity: Activity,
-    pub ai_panel_visible: bool,
+    pub workbench_layout: WorkbenchLayoutState,
     pub prompt_input: String,
     pub text_editor: text_editor::Content,
     // Track if the current file is too large for the text editor
@@ -70,15 +183,6 @@ pub struct App {
     pub layout_mode: LayoutMode,
     // Editor typography settings
     pub editor_typography: EditorTypographySettings,
-    // Track which activity is currently hovered (for visual feedback)
-    pub hovered_activity: Option<Activity>,
-    // Track the last non-AI activity to return to when hiding AI panel
-    pub last_non_ai_activity: Activity,
-    // Track which panels are visible
-    pub explorer_panel_visible: bool,
-    pub search_panel_visible: bool,
-    pub git_panel_visible: bool,
-    pub settings_panel_visible: bool,
 }
 
 impl App {
