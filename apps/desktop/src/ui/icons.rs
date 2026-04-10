@@ -106,8 +106,8 @@ impl Icon {
             Icon::Error => "✗",
             Icon::Info => "ℹ",
             
-            // AI/Assistant - Use a brain emoji for AI
-            Icon::Robot => "🧠",       // Unicode brain emoji fallback
+            // AI/Assistant - Use a robot emoji for AI
+            Icon::Robot => "🤖",       // Unicode robot emoji fallback
             Icon::Sparkles => "✨",
             
             // UI elements
@@ -161,8 +161,8 @@ impl Icon {
             Icon::Info => "",        // nf-fa-info_circle
             
             // AI/Assistant - Use a proper Nerd Font glyph for AI
-            // nf-fa-brain (Font Awesome brain) - U+F5DC
-            Icon::Robot => "",       // nf-fa-brain
+            // nf-fa-cogs (Font Awesome cogs) - U+F085
+            Icon::Robot => "",       // nf-fa-cogs
             Icon::Sparkles => "✨",    // Unicode fallback
             
             // UI elements
