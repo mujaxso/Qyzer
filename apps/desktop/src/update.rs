@@ -4,7 +4,7 @@ use file_ops::{FileLoader, WorkspaceLoader};
 use iced::Command;
 use crate::explorer::actions::ExplorerMessage;
 use crate::explorer::state::InlineEditMode;
-// We'll use rfd directly
+use rfd::AsyncFileDialog;
 
 // Helper function to normalize paths for consistent comparison
 fn normalize_path(path: &str) -> String {
@@ -30,66 +30,92 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             Command::none()
         }
         Message::OpenWorkspace => {
-            // Check if this is being triggered during initialization
-            // We can check if the window has been shown by checking if we have a window size
-            // For now, just log where this is coming from
-            println!("DEBUG: Message::OpenWorkspace received - checking call stack");
+            println!("DEBUG: Message::OpenWorkspace received");
             
-            // Use a synchronous file dialog in a separate thread to avoid async issues
+            // Try using the async version of rfd with proper async context
             Command::perform(
                 async move {
-                    use std::sync::mpsc;
-                    use std::thread;
-                    use std::time::Duration;
+                    println!("DEBUG: Opening folder picker (async)...");
                     
-                    println!("DEBUG: Opening folder picker (sync)...");
+                    // Check if we're on Wayland
+                    let is_wayland = std::env::var("WAYLAND_DISPLAY").is_ok();
+                    println!("DEBUG: Is Wayland: {}", is_wayland);
                     
-                    // Create a channel to communicate between threads
-                    let (tx, rx) = mpsc::channel();
-                    
-                    // Spawn a thread to open the dialog
-                    thread::spawn(move || {
-                        println!("DEBUG: In dialog thread, creating file dialog...");
-                        // Use the synchronous version of rfd
-                        let dialog = rfd::FileDialog::new()
-                            .set_title("Select Workspace Directory");
+                    // On Wayland, try to force X11 for the file dialog
+                    // by setting the environment variable temporarily
+                    if is_wayland {
+                        // Save the current value
+                        let old_backend = std::env::var("WINIT_UNIX_BACKEND").ok();
+                        // Force X11 for the dialog
+                        unsafe {
+                            std::env::set_var("WINIT_UNIX_BACKEND", "x11");
+                        }
+                        println!("DEBUG: Temporarily set WINIT_UNIX_BACKEND=x11 for file dialog");
                         
-                        println!("DEBUG: Calling pick_folder()...");
-                        let result = dialog.pick_folder();
-                        println!("DEBUG: pick_folder() returned: {:?}", result);
+                        // Run the dialog
+                        let result = async {
+                            let dialog = AsyncFileDialog::new()
+                                .set_title("Select Workspace Directory");
+                            dialog.pick_folder().await
+                        }.await;
                         
-                        // Send the result back
-                        let _ = tx.send(result);
-                    });
-                    
-                    // Wait for the result with a timeout
-                    match rx.recv_timeout(Duration::from_secs(30)) {
-                        Ok(Some(folder)) => {
-                            println!("DEBUG: Folder selected: {:?}", folder);
-                            let path = folder.to_string_lossy().to_string();
-                            // Load the workspace immediately after selection
-                            match WorkspaceLoader::list_directory(&path) {
-                                Ok(entries) => {
-                                    println!("DEBUG: Workspace loaded with {} entries", entries.len());
-                                    Message::WorkspaceLoaded(Ok((path, entries)))
-                                },
-                                Err(e) => {
-                                    println!("DEBUG: Failed to load workspace: {}", e);
-                                    Message::WorkspaceLoaded(Err(format!("Failed to open workspace: {}", e)))
-                                },
+                        // Restore the original value
+                        if let Some(old) = old_backend {
+                            unsafe {
+                                std::env::set_var("WINIT_UNIX_BACKEND", &old);
+                            }
+                        } else {
+                            unsafe {
+                                std::env::remove_var("WINIT_UNIX_BACKEND");
                             }
                         }
-                        Ok(None) => {
-                            println!("DEBUG: User cancelled the dialog");
-                            Message::WorkspaceDialogCancelled
+                        
+                        match result {
+                            Some(handle) => {
+                                println!("DEBUG: Folder selected: {:?}", handle.path());
+                                let path = handle.path().to_string_lossy().to_string();
+                                // Load the workspace immediately after selection
+                                match WorkspaceLoader::list_directory(&path) {
+                                    Ok(entries) => {
+                                        println!("DEBUG: Workspace loaded with {} entries", entries.len());
+                                        Message::WorkspaceLoaded(Ok((path, entries)))
+                                    },
+                                    Err(e) => {
+                                        println!("DEBUG: Failed to load workspace: {}", e);
+                                        Message::WorkspaceLoaded(Err(format!("Failed to open workspace: {}", e)))
+                                    },
+                                }
+                            }
+                            None => {
+                                println!("DEBUG: Folder picker returned None even with X11");
+                                Message::WorkspaceDialogCancelled
+                            }
                         }
-                        Err(mpsc::RecvTimeoutError::Timeout) => {
-                            println!("DEBUG: Dialog timed out after 30 seconds");
-                            Message::WorkspaceDialogCancelled
-                        }
-                        Err(mpsc::RecvTimeoutError::Disconnected) => {
-                            println!("DEBUG: Dialog thread disconnected unexpectedly");
-                            Message::WorkspaceDialogCancelled
+                    } else {
+                        // Not Wayland, use normal approach
+                        let dialog = AsyncFileDialog::new()
+                            .set_title("Select Workspace Directory");
+                        
+                        match dialog.pick_folder().await {
+                            Some(handle) => {
+                                println!("DEBUG: Folder selected: {:?}", handle.path());
+                                let path = handle.path().to_string_lossy().to_string();
+                                // Load the workspace immediately after selection
+                                match WorkspaceLoader::list_directory(&path) {
+                                    Ok(entries) => {
+                                        println!("DEBUG: Workspace loaded with {} entries", entries.len());
+                                        Message::WorkspaceLoaded(Ok((path, entries)))
+                                    },
+                                    Err(e) => {
+                                        println!("DEBUG: Failed to load workspace: {}", e);
+                                        Message::WorkspaceLoaded(Err(format!("Failed to open workspace: {}", e)))
+                                    },
+                                }
+                            }
+                            None => {
+                                println!("DEBUG: Folder picker returned None");
+                                Message::WorkspaceDialogCancelled
+                            }
                         }
                     }
                 },
