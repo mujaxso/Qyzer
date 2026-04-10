@@ -72,7 +72,6 @@ impl iced::Application for App {
             for path in &possible_paths {
                 if std::path::Path::new(path).exists() {
                     if let Ok(bytes) = std::fs::read(path) {
-                        println!("DEBUG: Loading font: {} from {}", name, path);
                         font_commands.push(
                             iced::font::load(bytes)
                                 .map(|_| Message::FontLoaded)
@@ -83,7 +82,7 @@ impl iced::Application for App {
                 }
             }
             if !loaded {
-                println!("DEBUG: Could not load font: {}", name);
+                // Font not found, continue silently
             }
         }
         

@@ -81,7 +81,6 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
         &app.workspace_path,
     )
     .on_input(|path| {
-        println!("DEBUG: Text input on_input: {}", path);
         Message::WorkspacePathChanged(path)
     })
     .padding(if is_compact { [4, 8] } else { [6, 10] })

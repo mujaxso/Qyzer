@@ -26,7 +26,6 @@ const VERY_LARGE_FILE_THRESHOLD: u64 = 50 * 1024 * 1024; // 50MB
 pub fn update(app: &mut App, message: Message) -> Command<Message> {
     match message {
         Message::WorkspacePathChanged(path) => {
-            println!("DEBUG: WorkspacePathChanged: {}", path);
             app.workspace_path = path;
             Command::none()
         }
@@ -57,17 +56,14 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             )
         }
         Message::WorkspaceLoaded(result) => {
-            println!("DEBUG: WorkspaceLoaded result: {:?}", result);
             match result {
                 Ok((path, entries)) => {
-                    println!("DEBUG: Setting workspace path to: {}", path);
                     app.workspace_path = path.clone();
                     app.file_entries = entries.clone();
                     app.status_message = format!("Workspace loaded: {} files", app.file_entries.len());
                     app.error_message = None;
                     
                     // Update explorer state
-                    println!("DEBUG: Updating explorer state");
                     app.explorer_state.set_workspace_root(std::path::PathBuf::from(&app.workspace_path));
                     app.explorer_state.set_file_tree(entries);
                     
@@ -76,7 +72,6 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                     state.set_file_tree(app.file_entries.clone());
                 }
                 Err(e) => {
-                    println!("DEBUG: Workspace load error: {}", e);
                     app.error_message = Some(e);
                     app.status_message = "Failed to load workspace".to_string();
                 }
@@ -764,15 +759,12 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             Command::none()
         }
         Message::SubmitManualWorkspacePath(path) => {
-            println!("DEBUG: SubmitManualWorkspacePath handler called with path: {}", path);
             if path.is_empty() {
                 app.status_message = "Please enter a workspace path".to_string();
                 Command::none()
             } else {
                 // Check if the path exists
                 let path_buf = std::path::PathBuf::from(&path);
-                println!("DEBUG: Path exists? {}", path_buf.exists());
-                println!("DEBUG: Path is dir? {}", path_buf.is_dir());
                 if !path_buf.exists() {
                     app.error_message = Some(format!("Path does not exist: {}", path));
                     app.status_message = "Invalid path".to_string();
@@ -788,22 +780,16 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                 let path_clone = path.clone();
                 Command::perform(
                     async move {
-                        println!("DEBUG: Loading workspace from manual path: {}", path_clone);
                         match WorkspaceLoader::list_directory(&path_clone) {
                             Ok(entries) => {
-                                println!("DEBUG: Manual workspace load successful with {} entries", entries.len());
                                 Message::WorkspaceLoaded(Ok((path_clone, entries)))
                             },
                             Err(e) => {
-                                println!("DEBUG: Manual workspace load failed: {}", e);
                                 Message::WorkspaceLoaded(Err(format!("Manual workspace load failed: {}", e)))
                             },
                         }
                     },
-                    |result| {
-                        println!("DEBUG: Manual workspace load result: {:?}", result);
-                        result
-                    },
+                    |result| result,
                 )
             }
         }
