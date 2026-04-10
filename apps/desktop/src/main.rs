@@ -15,10 +15,8 @@ use app::App;
 use iced::{Application, Settings};
 
 fn main() -> iced::Result {
-    // Force X11 backend to avoid Wayland issues
-    unsafe {
-        std::env::set_var("WINIT_UNIX_BACKEND", "x11");
-    }
+    // Don't force any backend - let winit choose the appropriate one
+    // This should work with both X11 and Wayland
     
     // Increase memory limits for large files
     // This might help with scrolling crashes
@@ -26,6 +24,7 @@ fn main() -> iced::Result {
         window: iced::window::Settings {
             size: iced::Size::new(1400.0, 900.0),
             min_size: Some(iced::Size::new(800.0, 600.0)),
+            visible: true, // Ensure window is visible
             ..Default::default()
         },
         // Enable antialiasing for better text rendering

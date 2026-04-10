@@ -28,39 +28,47 @@
             clippy
 
             # System libraries
+            # Wayland
+            wayland
             libxkbcommon
-            fontconfig
-            freetype
-            expat
-            libglvnd
+            # X11 fallback
             libX11
             libXcursor
             libXi
             libXrandr
+            # Graphics
+            libglvnd
             vulkan-loader
-            wayland
-
-            # For workspace-daemon file operations
+            # Fonts
+            fontconfig
+            freetype
+            expat
+            # Other
             openssl
           ];
 
           # Environment variables
           env = {
-            # Force X11 backend to avoid Wayland issues
-            WINIT_UNIX_BACKEND = "x11";
+            # Don't force any backend - let winit choose the appropriate one
+            # This allows both X11 and Wayland to work
             # Ensure linker can find libraries
             LD_LIBRARY_PATH = with pkgs; lib.makeLibraryPath [
+              # Wayland dependencies
+              wayland
               libxkbcommon
-              fontconfig
-              freetype
-              expat
-              libglvnd
+              # X11 fallback dependencies
               libX11
               libXcursor
               libXi
               libXrandr
+              # Graphics
+              libglvnd
               vulkan-loader
-              wayland
+              # Fonts
+              fontconfig
+              freetype
+              expat
+              # Other
               openssl
             ];
           };
@@ -100,8 +108,8 @@
             openssl
           ];
 
-          # Force X11 backend
-          WINIT_UNIX_BACKEND = "x11";
+          # Don't force any backend - let winit choose the appropriate one
+          # This allows both X11 and Wayland to work
         };
       }
     );
