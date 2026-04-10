@@ -261,8 +261,9 @@ where
 {
     use iced::Length;
     
-    let icon_size = size.unwrap_or(typography.font_size);
-    let button_size_val = button_size.unwrap_or(BUTTON_HEIGHT_MD);
+    // Use consistent sizes: default icon size is 14px, button size is 32px
+    let icon_size = size.unwrap_or(14);
+    let button_size_val = button_size.unwrap_or(32.0);
     
     // Create the icon element
     let icon_element = icon.render(typography, style, Some(icon_size));

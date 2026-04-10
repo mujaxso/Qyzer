@@ -37,41 +37,41 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
     });
     
     // Create all nodes first, without children
-    let nodes: Vec<ExplorerNode> = sorted_entries
+    let mut nodes: Vec<ExplorerNode> = sorted_entries
         .iter()
         .map(|entry| ExplorerNode::new(entry))
         .collect();
     
-    // Build a map from path to index in nodes vector
+    // Build a map from path string to index
     let mut path_to_index: HashMap<String, usize> = HashMap::new();
     for (i, node) in nodes.iter().enumerate() {
         let path_str = node.path.to_string_lossy().to_string();
         path_to_index.insert(path_str, i);
     }
     
-    // For each node, find its parent and record the relationship
-    let mut children_by_parent: HashMap<usize, Vec<usize>> = HashMap::new();
+    // For each node, find its parent and add it as a child
+    // We need to be careful about borrowing, so we'll collect parent-child relationships first
+    let mut parent_to_children: HashMap<usize, Vec<usize>> = HashMap::new();
     
     for i in 0..nodes.len() {
         let node_path = &nodes[i].path;
         if let Some(parent_path) = node_path.parent() {
             let parent_str = parent_path.to_string_lossy().to_string();
             if let Some(&parent_idx) = path_to_index.get(&parent_str) {
-                children_by_parent.entry(parent_idx)
+                parent_to_children.entry(parent_idx)
                     .or_insert_with(Vec::new)
                     .push(i);
             }
         }
     }
     
-    // Now build the tree by moving nodes into their parent's children
-    // We need to process from leaves to root to avoid moving nodes that still need to be accessed
-    // Instead, we'll create a new tree structure
-    let mut new_nodes: Vec<ExplorerNode> = Vec::with_capacity(nodes.len());
+    // Now, build the tree by reorganizing nodes
+    // We'll create a new list of nodes with proper children
+    let mut tree_nodes: Vec<ExplorerNode> = Vec::with_capacity(nodes.len());
     
     // First, create all nodes without children
     for node in &nodes {
-        new_nodes.push(ExplorerNode {
+        tree_nodes.push(ExplorerNode {
             path: node.path.clone(),
             name: node.name.clone(),
             is_dir: node.is_dir,
@@ -80,17 +80,13 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
     }
     
     // Then, add children to their parents
-    // We need to process in a way that ensures parent nodes exist before we try to add children
-    // Since we're working with indices, we can do this directly
-    for (parent_idx, child_indices) in children_by_parent {
-        // Collect children nodes
-        let mut children = Vec::new();
-        for &child_idx in &child_indices {
-            // Take the child node from new_nodes (but we can't move out while iterating)
-            // Instead, we'll clone it for now
-            children.push(new_nodes[child_idx].clone());
-        }
-        // Sort children
+    for (parent_idx, child_indices) in parent_to_children {
+        // Sort children: directories first, then files, alphabetically
+        let mut children: Vec<ExplorerNode> = child_indices
+            .iter()
+            .map(|&idx| tree_nodes[idx].clone())
+            .collect();
+        
         children.sort_by(|a, b| {
             if a.is_dir != b.is_dir {
                 b.is_dir.cmp(&a.is_dir)
@@ -98,14 +94,14 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
                 a.name.to_lowercase().cmp(&b.name.to_lowercase())
             }
         });
-        // Set children on parent
-        new_nodes[parent_idx].children = children;
+        
+        tree_nodes[parent_idx].children = children;
     }
     
     // Collect root nodes (nodes without parents in the entries)
     let mut root_nodes = Vec::new();
-    for i in 0..new_nodes.len() {
-        let node_path = &new_nodes[i].path;
+    for i in 0..tree_nodes.len() {
+        let node_path = &tree_nodes[i].path;
         let has_parent = if let Some(parent_path) = node_path.parent() {
             let parent_str = parent_path.to_string_lossy().to_string();
             path_to_index.contains_key(&parent_str)
@@ -114,7 +110,7 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
         };
         
         if !has_parent {
-            root_nodes.push(new_nodes[i].clone());
+            root_nodes.push(tree_nodes[i].clone());
         }
     }
     

@@ -30,8 +30,8 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                     &app.editor_typography,
                     &style,
                     Some(Message::Explorer(ExplorerMessage::CreateFileRequested)),
-                    Some(if is_compact { 12 } else { 13 }),
-                    Some(if is_compact { 24.0 } else { 28.0 }),
+                    Some(14), // Consistent icon size
+                    Some(32.0), // Consistent button size
                 )
                 .style(iced::theme::Button::Secondary),
                 // New folder button
@@ -40,8 +40,8 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                     &app.editor_typography,
                     &style,
                     Some(Message::Explorer(ExplorerMessage::CreateFolderRequested)),
-                    Some(if is_compact { 12 } else { 13 }),
-                    Some(if is_compact { 24.0 } else { 28.0 }),
+                    Some(14), // Consistent icon size
+                    Some(32.0), // Consistent button size
                 )
                 .style(iced::theme::Button::Secondary),
                 // Refresh button
@@ -50,8 +50,8 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                     &app.editor_typography,
                     &style,
                     Some(Message::Explorer(ExplorerMessage::Refresh)),
-                    Some(if is_compact { 12 } else { 13 }),
-                    Some(if is_compact { 24.0 } else { 28.0 }),
+                    Some(14), // Consistent icon size
+                    Some(32.0), // Consistent button size
                 )
                 .style(iced::theme::Button::Secondary),
             ]
@@ -222,8 +222,8 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, app: &App, is_compact: 
                         &app.editor_typography,
                         &style,
                         Some(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone()))),
-                        Some(10),
-                        Some(24.0),
+                        Some(12), // Consistent icon size
+                        Some(28.0), // Consistent button size
                     )
                     .style(iced::theme::Button::Secondary),
                     // Delete button - using centered icon button
@@ -232,8 +232,8 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, app: &App, is_compact: 
                         &app.editor_typography,
                         &style,
                         Some(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone()))),
-                        Some(10),
-                        Some(24.0),
+                        Some(12), // Consistent icon size
+                        Some(28.0), // Consistent button size
                     )
                     .style(iced::theme::Button::Secondary),
                 ]
@@ -269,8 +269,8 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, app: &App, is_compact: 
                         &app.editor_typography,
                         &style,
                         Some(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone()))),
-                        Some(10),
-                        Some(24.0),
+                        Some(12), // Consistent icon size
+                        Some(28.0), // Consistent button size
                     )
                     .style(iced::theme::Button::Secondary),
                     // Delete button - using centered icon button
@@ -279,8 +279,8 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, app: &App, is_compact: 
                         &app.editor_typography,
                         &style,
                         Some(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone()))),
-                        Some(10),
-                        Some(24.0),
+                        Some(12), // Consistent icon size
+                        Some(28.0), // Consistent button size
                     )
                     .style(iced::theme::Button::Secondary),
                 ]
