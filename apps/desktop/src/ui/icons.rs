@@ -107,7 +107,7 @@ impl Icon {
             Icon::Info => "ℹ",
             
             // AI/Assistant
-            Icon::Robot => "🤖",
+            Icon::Robot => "🤖",       // Unicode robot emoji fallback
             Icon::Sparkles => "✨",
             
             // UI elements
@@ -161,7 +161,7 @@ impl Icon {
             Icon::Info => "",        // nf-fa-info_circle
             
             // AI/Assistant
-            Icon::Robot => "🤖",       // Use Unicode robot emoji directly
+            Icon::Robot => "ﮧ",       // nf-fa-android (more reliable Nerd Font glyph)
             Icon::Sparkles => "✨",    // Unicode fallback
             
             // UI elements

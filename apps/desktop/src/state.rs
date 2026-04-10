@@ -72,6 +72,8 @@ pub struct App {
     pub editor_typography: EditorTypographySettings,
     // Track which activity is currently hovered (for visual feedback)
     pub hovered_activity: Option<Activity>,
+    // Track the last non-AI activity to return to when hiding AI panel
+    pub last_non_ai_activity: Activity,
 }
 
 impl App {
@@ -100,6 +102,7 @@ impl App {
                 layout_mode: LayoutMode::Wide,
                 editor_typography: EditorTypographySettings::default(),
                 hovered_activity: None,
+                last_non_ai_activity: Activity::Explorer,
             },
             iced::Command::none(),
         )

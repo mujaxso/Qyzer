@@ -381,8 +381,17 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
         }
         Message::ToggleAiPanel => {
             app.ai_panel_visible = !app.ai_panel_visible;
-            // When toggling the AI panel, also set the active activity to AI
-            app.active_activity = Activity::Ai;
+            // When toggling the AI panel, also set the active activity to AI if showing
+            if app.ai_panel_visible {
+                // Store current activity as last non-AI if it's not AI
+                if app.active_activity != Activity::Ai {
+                    app.last_non_ai_activity = app.active_activity;
+                }
+                app.active_activity = Activity::Ai;
+            } else {
+                // If hiding AI panel, switch back to last non-AI activity
+                app.active_activity = app.last_non_ai_activity;
+            }
             Command::none()
         }
         Message::ActivitySelected(activity) => {
@@ -390,6 +399,9 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             // If the selected activity is AI, ensure the AI panel is visible
             if activity == Activity::Ai {
                 app.ai_panel_visible = true;
+            } else {
+                // Hide AI panel when other activities are selected
+                app.ai_panel_visible = false;
             }
             Command::none()
         }
