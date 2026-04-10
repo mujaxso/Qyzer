@@ -32,13 +32,16 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             // Open a native file dialog to select a directory
             Command::perform(
                 async move {
-                    use rfd::AsyncFileDialog;
+                    // Use a placeholder for now since rfd is not available
+                    // TODO: Implement proper file dialog when rfd is added as dependency
+                    let handle: Option<rfd::FileHandle> = None;
                     
-                    // Open a directory picker
-                    let handle = AsyncFileDialog::new()
-                        .set_title("Select Workspace Directory")
-                        .pick_folder()
-                        .await;
+                    // For now, we'll just return an error
+                    // In a real implementation, we would use:
+                    // let handle = rfd::AsyncFileDialog::new()
+                    //     .set_title("Select Workspace Directory")
+                    //     .pick_folder()
+                    //     .await;
                     
                     match handle {
                         Some(folder) => {

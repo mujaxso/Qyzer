@@ -4,7 +4,7 @@ use crate::explorer::model::{ExplorerNode, build_explorer_tree};
 use core_types::workspace::DirectoryEntry;
 
 // Helper function to normalize paths for consistent comparison
-fn normalize_path(path: &PathBuf) -> PathBuf {
+fn normalize_path(path: &std::path::Path) -> PathBuf {
     // Convert to string and remove any trailing separator
     let mut normalized = path.to_string_lossy().to_string();
     // Remove trailing separator if present
