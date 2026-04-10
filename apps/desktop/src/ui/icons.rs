@@ -33,6 +33,7 @@ pub enum Icon {
     Delete,
     Save,
     Close,
+    Check,
     
     // Version control
     Git,
@@ -87,6 +88,7 @@ impl Icon {
             Icon::Delete => "🗑",
             Icon::Save => "💾",
             Icon::Close => "×",
+            Icon::Check => "✓",
             
             // Version control
             Icon::Git => "🔄",
@@ -141,6 +143,7 @@ impl Icon {
             Icon::Delete => "",       // nf-fa-trash_o
             Icon::Save => "",         // nf-fa-save
             Icon::Close => "",        // nf-fa-times
+            Icon::Check => "",        // nf-fa-check
             
             // Version control - using nf-dev icons which are in Symbols Nerd Font
             Icon::Git => "",         // nf-dev-git
