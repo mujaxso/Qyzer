@@ -31,6 +31,7 @@
             # Wayland
             wayland
             libxkbcommon
+            wayland-protocols
             # X11 fallback
             libX11
             libXcursor
@@ -49,9 +50,15 @@
             xdg-desktop-portal
             xdg-desktop-portal-gtk
             xdg-desktop-portal-wlr
-            # For rfd
+            # For rfd - GTK backend
             glib
             gtk3
+            pango
+            atk
+            cairo
+            gdk-pixbuf
+            # DBus for portals
+            dbus
           ];
 
           # Environment variables
@@ -63,6 +70,7 @@
               # Wayland dependencies
               wayland
               libxkbcommon
+              wayland-protocols
               # X11 fallback dependencies
               libX11
               libXcursor
@@ -75,9 +83,21 @@
               fontconfig
               freetype
               expat
+              # GTK for file dialogs
+              glib
+              gtk3
+              pango
+              atk
+              cairo
+              gdk-pixbuf
+              # DBus
+              dbus
               # Other
               openssl
             ];
+            # For Wayland file dialogs
+            XDG_CURRENT_DESKTOP = "sway";  # or "gnome", "kde", etc.
+            GTK_USE_PORTAL = "1";
           };
 
           shellHook = ''

@@ -26,6 +26,7 @@ const VERY_LARGE_FILE_THRESHOLD: u64 = 50 * 1024 * 1024; // 50MB
 pub fn update(app: &mut App, message: Message) -> Command<Message> {
     match message {
         Message::WorkspacePathChanged(path) => {
+            println!("DEBUG: WorkspacePathChanged: {}", path);
             app.workspace_path = path;
             Command::none()
         }
@@ -774,20 +775,44 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             Command::none()
         }
         Message::SubmitManualWorkspacePath(path) => {
+            println!("DEBUG: SubmitManualWorkspacePath received: {}", path);
             if path.is_empty() {
                 app.status_message = "Please enter a workspace path".to_string();
                 Command::none()
             } else {
+                // Check if the path exists
+                let path_buf = std::path::PathBuf::from(&path);
+                if !path_buf.exists() {
+                    app.error_message = Some(format!("Path does not exist: {}", path));
+                    app.status_message = "Invalid path".to_string();
+                    return Command::none();
+                }
+                if !path_buf.is_dir() {
+                    app.error_message = Some(format!("Path is not a directory: {}", path));
+                    app.status_message = "Path must be a directory".to_string();
+                    return Command::none();
+                }
+                
                 // Load the workspace from the manually entered path
                 let path_clone = path.clone();
                 Command::perform(
                     async move {
+                        println!("DEBUG: Loading workspace from manual path: {}", path_clone);
                         match WorkspaceLoader::list_directory(&path_clone) {
-                            Ok(entries) => Message::WorkspaceLoaded(Ok((path_clone, entries))),
-                            Err(e) => Message::WorkspaceLoaded(Err(format!("Failed to open workspace: {}", e))),
+                            Ok(entries) => {
+                                println!("DEBUG: Workspace loaded successfully with {} entries", entries.len());
+                                Message::WorkspaceLoaded(Ok((path_clone, entries)))
+                            },
+                            Err(e) => {
+                                println!("DEBUG: Failed to load workspace: {}", e);
+                                Message::WorkspaceLoaded(Err(format!("Failed to open workspace: {}", e)))
+                            },
                         }
                     },
-                    |result| result,
+                    |result| {
+                        println!("DEBUG: Manual workspace load result: {:?}", result);
+                        result
+                    },
                 )
             }
         }
