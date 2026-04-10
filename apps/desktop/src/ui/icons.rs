@@ -107,7 +107,7 @@ impl Icon {
             Icon::Info => "ℹ",
             
             // AI/Assistant
-            Icon::Robot => "🤖",
+            Icon::Robot => "🚀",       // Rocket for AI
             Icon::Sparkles => "✨",
             
             // UI elements
@@ -161,7 +161,7 @@ impl Icon {
             Icon::Info => "",        // nf-fa-info_circle
             
             // AI/Assistant
-            Icon::Robot => "ﮧ",       // nf-fa-android
+            Icon::Robot => "",       // nf-oct-rocket (more likely available)
             Icon::Sparkles => "✨",    // Unicode fallback
             
             // UI elements
@@ -204,8 +204,8 @@ impl Icon {
             IconMode::Disabled => " ",
         };
         
-        // Use the default font family which should be a Nerd Font
-        let font = iced::Font::with_name(typography.font_family.to_family_string());
+        // Use the appropriate font for icon rendering
+        let font = Self::get_font(typography);
         
         text(icon_char)
             .size(icon_size)
@@ -231,8 +231,8 @@ impl Icon {
             IconMode::Disabled => " ",
         };
         
-        // Use the default font family which should be a Nerd Font
-        let font = iced::Font::with_name(typography.font_family.to_family_string());
+        // Use the appropriate font for icon rendering
+        let font = Self::get_font(typography);
         
         text(icon_char)
             .size(icon_size)
