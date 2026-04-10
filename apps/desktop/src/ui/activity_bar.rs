@@ -160,8 +160,7 @@ fn activity_button<'a>(item: &ActivityItem, app: &App, style: &StyleHelpers) -> 
     // Wrap in mouse area for hover and click
     let mouse_area = mouse_area(button_content)
         .on_press(item.activation_message())
-        .on_enter(Message::ActivityHovered(Some(item.id)))
-        .on_leave(Message::ActivityHovered(None));
+        .on_enter(Message::ActivityHovered(Some(item.id)));
     
     // Apply button styling
     container(mouse_area)
