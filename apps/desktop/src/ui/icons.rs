@@ -161,8 +161,8 @@ impl Icon {
             Icon::Info => "",        // nf-fa-info_circle
             
             // AI/Assistant - Use a proper Nerd Font glyph for AI
-            // nf-fa-brain (Font Awesome brain) - U+F5DC
-            Icon::Robot => "",       // nf-fa-brain
+            // nf-fa-robot (Font Awesome robot) - U+F544
+            Icon::Robot => "",       // nf-fa-robot
             Icon::Sparkles => "✨",    // Unicode fallback
             
             // UI elements
