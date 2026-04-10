@@ -45,6 +45,13 @@
             expat
             # Other
             openssl
+            # For file dialogs on Wayland
+            xdg-desktop-portal
+            xdg-desktop-portal-gtk
+            xdg-desktop-portal-wlr
+            # For rfd
+            glib
+            gtk3
           ];
 
           # Environment variables

@@ -17,8 +17,15 @@ use iced::{Application, Settings};
 fn main() -> iced::Result {
     println!("Starting Neote...");
     
-    // Don't force any backend - let winit choose the appropriate one
-    // This should work with both X11 and Wayland
+    // Check environment
+    println!("DEBUG: WAYLAND_DISPLAY = {:?}", std::env::var("WAYLAND_DISPLAY"));
+    println!("DEBUG: XDG_SESSION_TYPE = {:?}", std::env::var("XDG_SESSION_TYPE"));
+    println!("DEBUG: WINIT_UNIX_BACKEND = {:?}", std::env::var("WINIT_UNIX_BACKEND"));
+    
+    // Force X11 for now to see if it helps with window opening
+    // Wayland might have issues
+    std::env::set_var("WINIT_UNIX_BACKEND", "x11");
+    println!("DEBUG: Forced X11 backend");
     
     // Increase memory limits for large files
     // This might help with scrolling crashes
@@ -39,5 +46,7 @@ fn main() -> iced::Result {
     };
     
     println!("Running App::run...");
-    App::run(settings)
+    let result = App::run(settings);
+    println!("App::run returned: {:?}", result);
+    result
 }

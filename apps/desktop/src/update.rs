@@ -4,7 +4,7 @@ use file_ops::{FileLoader, WorkspaceLoader};
 use iced::Command;
 use crate::explorer::actions::ExplorerMessage;
 use crate::explorer::state::InlineEditMode;
-use rfd::AsyncFileDialog;
+use rfd;
 
 // Helper function to normalize paths for consistent comparison
 fn normalize_path(path: &str) -> String {
@@ -30,32 +30,60 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             Command::none()
         }
         Message::OpenWorkspace => {
-            // Open a native file dialog to select a directory
+            // Use a synchronous file dialog in a separate thread to avoid async issues
             Command::perform(
                 async move {
-                    // Open a directory picker
-                    let handle = AsyncFileDialog::new()
-                        .set_title("Select Workspace Directory")
-                        .pick_folder()
-                        .await;
+                    use std::sync::mpsc;
+                    use std::thread;
                     
-                    match handle {
-                        Some(folder) => {
-                            let path = folder.path().to_string_lossy().to_string();
+                    println!("DEBUG: Opening folder picker (sync)...");
+                    
+                    // Create a channel to communicate between threads
+                    let (tx, rx) = mpsc::channel();
+                    
+                    // Spawn a thread to open the dialog
+                    thread::spawn(move || {
+                        // Use the synchronous version of rfd
+                        let dialog = rfd::FileDialog::new()
+                            .set_title("Select Workspace Directory");
+                        
+                        let result = dialog.pick_folder();
+                        
+                        // Send the result back
+                        let _ = tx.send(result);
+                    });
+                    
+                    // Wait for the result
+                    match rx.recv() {
+                        Ok(Some(folder)) => {
+                            println!("DEBUG: Folder selected: {:?}", folder);
+                            let path = folder.to_string_lossy().to_string();
                             // Load the workspace immediately after selection
                             match WorkspaceLoader::list_directory(&path) {
-                                Ok(entries) => Message::WorkspaceLoaded(Ok((path, entries))),
-                                Err(e) => Message::WorkspaceLoaded(Err(format!("Failed to open workspace: {}", e))),
+                                Ok(entries) => {
+                                    println!("DEBUG: Workspace loaded with {} entries", entries.len());
+                                    Message::WorkspaceLoaded(Ok((path, entries)))
+                                },
+                                Err(e) => {
+                                    println!("DEBUG: Failed to load workspace: {}", e);
+                                    Message::WorkspaceLoaded(Err(format!("Failed to open workspace: {}", e)))
+                                },
                             }
                         }
-                        None => {
-                            // User cancelled the dialog - return a special message
-                            // that doesn't set an error
+                        Ok(None) => {
+                            println!("DEBUG: User cancelled the dialog");
+                            Message::WorkspaceDialogCancelled
+                        }
+                        Err(_) => {
+                            println!("DEBUG: Failed to receive dialog result");
                             Message::WorkspaceDialogCancelled
                         }
                     }
                 },
-                |result| result,
+                |result| {
+                    println!("DEBUG: Folder picker result: {:?}", result);
+                    result
+                },
             )
         }
         Message::WorkspaceLoaded(result) => {
