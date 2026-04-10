@@ -4,6 +4,9 @@ use file_ops::{FileLoader, WorkspaceLoader};
 use iced::Command;
 use crate::explorer::actions::ExplorerMessage;
 use crate::explorer::state::InlineEditMode;
+use rfd::AsyncFileDialog;
+use rfd::AsyncFileDialog;
+use rfd;
 
 // Helper function to normalize paths for consistent comparison
 fn normalize_path(path: &str) -> String {
@@ -32,16 +35,11 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             // Open a native file dialog to select a directory
             Command::perform(
                 async move {
-                    // Use a placeholder for now since rfd is not available
-                    // TODO: Implement proper file dialog when rfd is added as dependency
-                    let handle: Option<rfd::FileHandle> = None;
-                    
-                    // For now, we'll just return an error
-                    // In a real implementation, we would use:
-                    // let handle = rfd::AsyncFileDialog::new()
-                    //     .set_title("Select Workspace Directory")
-                    //     .pick_folder()
-                    //     .await;
+                    // Open a directory picker
+                    let handle: Option<rfd::FileHandle> = AsyncFileDialog::new()
+                        .set_title("Select Workspace Directory")
+                        .pick_folder()
+                        .await;
                     
                     match handle {
                         Some(folder) => {

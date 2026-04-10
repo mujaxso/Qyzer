@@ -18,5 +18,3 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 dirs = "5.0"
 rfd = { workspace = true }
-rfd = { workspace = true }
-rfd = "0.14"
