@@ -106,8 +106,8 @@ impl Icon {
             Icon::Error => "✗",
             Icon::Info => "ℹ",
             
-            // AI/Assistant - Use a robot emoji for AI (more widely supported)
-            Icon::Robot => "🤖",       // Unicode robot emoji fallback
+            // AI/Assistant - Use a brain emoji for AI
+            Icon::Robot => "🧠",       // Unicode brain emoji fallback
             Icon::Sparkles => "✨",
             
             // UI elements
@@ -161,8 +161,8 @@ impl Icon {
             Icon::Info => "",        // nf-fa-info_circle
             
             // AI/Assistant - Use a proper Nerd Font glyph for AI
-            // nf-fa-android (Font Awesome android) - U+F17B
-            Icon::Robot => "",       // nf-fa-android
+            // nf-md-artificial_intelligence (Material Design AI) - U+F5E0
+            Icon::Robot => "󰗀",       // nf-md-artificial_intelligence
             Icon::Sparkles => "✨",    // Unicode fallback
             
             // UI elements
