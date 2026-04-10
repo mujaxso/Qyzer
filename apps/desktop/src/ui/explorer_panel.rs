@@ -22,37 +22,37 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                 .size(if is_compact { 10 } else { 11 })
                 .style(iced::theme::Text::Color(style.colors.text_muted)),
             iced::widget::horizontal_space(),
-            // Action buttons with semantic icons
+            // Action buttons with semantic icons - using centered icon buttons
             row![
                 // New file button
-                icon_button(
+                super::common::centered_icon_button(
                     Icon::Add,
                     &app.editor_typography,
                     &style,
                     Some(Message::Explorer(ExplorerMessage::CreateFileRequested)),
                     Some(if is_compact { 12 } else { 13 }),
+                    Some(if is_compact { 24.0 } else { 28.0 }),
                 )
-                .padding(if is_compact { [2, 4] } else { [3, 6] })
                 .style(iced::theme::Button::Secondary),
                 // New folder button
-                icon_button(
+                super::common::centered_icon_button(
                     Icon::Folder,
                     &app.editor_typography,
                     &style,
                     Some(Message::Explorer(ExplorerMessage::CreateFolderRequested)),
                     Some(if is_compact { 12 } else { 13 }),
+                    Some(if is_compact { 24.0 } else { 28.0 }),
                 )
-                .padding(if is_compact { [2, 4] } else { [3, 6] })
                 .style(iced::theme::Button::Secondary),
                 // Refresh button
-                icon_button(
+                super::common::centered_icon_button(
                     Icon::Refresh,
                     &app.editor_typography,
                     &style,
                     Some(Message::Explorer(ExplorerMessage::Refresh)),
                     Some(if is_compact { 12 } else { 13 }),
+                    Some(if is_compact { 24.0 } else { 28.0 }),
                 )
-                .padding(if is_compact { [2, 4] } else { [3, 6] })
                 .style(iced::theme::Button::Secondary),
             ]
             .spacing(if is_compact { 2 } else { 4 })
@@ -216,25 +216,25 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, app: &App, is_compact: 
             iced::widget::horizontal_space(),
             if row.is_hovered || row.is_selected {
                 row![
-                    // Rename button
-                    icon_button(
+                    // Rename button - using centered icon button
+                    super::common::centered_icon_button(
                         Icon::Edit,
                         &app.editor_typography,
                         &style,
                         Some(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone()))),
                         Some(10),
+                        Some(24.0),
                     )
-                    .padding([2, 4])
                     .style(iced::theme::Button::Secondary),
-                    // Delete button
-                    icon_button(
+                    // Delete button - using centered icon button
+                    super::common::centered_icon_button(
                         Icon::Delete,
                         &app.editor_typography,
                         &style,
                         Some(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone()))),
                         Some(10),
+                        Some(24.0),
                     )
-                    .padding([2, 4])
                     .style(iced::theme::Button::Secondary),
                 ]
                 .spacing(2)
@@ -263,25 +263,25 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, app: &App, is_compact: 
             iced::widget::horizontal_space(),
             if row.is_hovered || row.is_selected {
                 row![
-                    // Rename button
-                    icon_button(
+                    // Rename button - using centered icon button
+                    super::common::centered_icon_button(
                         Icon::Edit,
                         &app.editor_typography,
                         &style,
                         Some(Message::Explorer(ExplorerMessage::RenameRequested(row.path.clone()))),
                         Some(10),
+                        Some(24.0),
                     )
-                    .padding([2, 4])
                     .style(iced::theme::Button::Secondary),
-                    // Delete button
-                    icon_button(
+                    // Delete button - using centered icon button
+                    super::common::centered_icon_button(
                         Icon::Delete,
                         &app.editor_typography,
                         &style,
                         Some(Message::Explorer(ExplorerMessage::DeleteRequested(row.path.clone()))),
                         Some(10),
+                        Some(24.0),
                     )
-                    .padding([2, 4])
                     .style(iced::theme::Button::Secondary),
                 ]
                 .spacing(2)

@@ -1,6 +1,9 @@
 // Common UI primitives and helpers for Neote - designed for both core and extensions
 use iced::{Color, widget::{button, container, text}};
 use crate::theme::SemanticColors;
+use crate::settings::editor::EditorTypographySettings;
+use crate::ui::icons::Icon;
+use crate::ui::style::StyleHelpers;
 
 /// Common spacing constants for compact IDE rhythm
 pub const SPACING_XS: f32 = 4.0;
@@ -241,5 +244,45 @@ pub mod texts {
         text::Appearance {
             color: Some(colors.error),
         }
+    }
+}
+
+/// Create a centered icon button with consistent styling
+pub fn centered_icon_button<'a, Message>(
+    icon: Icon,
+    typography: &EditorTypographySettings,
+    style: &StyleHelpers,
+    on_press: Option<Message>,
+    size: Option<u16>,
+    button_size: Option<f32>,
+) -> iced::widget::Button<'a, Message>
+where
+    Message: Clone + 'a,
+{
+    use iced::{Alignment, Length};
+    
+    let icon_size = size.unwrap_or(typography.font_size);
+    let button_size_val = button_size.unwrap_or(BUTTON_HEIGHT_MD);
+    
+    // Create the icon element
+    let icon_element = icon.render(typography, style, Some(icon_size));
+    
+    // Center the icon in a container
+    let centered_icon = container(icon_element)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x()
+        .center_y();
+    
+    let button = iced::widget::button(centered_icon)
+        .width(Length::Fixed(button_size_val))
+        .height(Length::Fixed(button_size_val))
+        .padding(0)
+        .style(iced::theme::Button::Text);
+    
+    if let Some(message) = on_press {
+        button.on_press(message)
+    } else {
+        button
     }
 }
