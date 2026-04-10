@@ -5,8 +5,6 @@ use iced::Command;
 use crate::explorer::actions::ExplorerMessage;
 use crate::explorer::state::InlineEditMode;
 use rfd::AsyncFileDialog;
-use rfd::AsyncFileDialog;
-use rfd;
 
 // Helper function to normalize paths for consistent comparison
 fn normalize_path(path: &str) -> String {
