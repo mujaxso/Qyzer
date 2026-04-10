@@ -145,29 +145,33 @@ fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> 
         .align_items(Alignment::Center),
         horizontal_space(),
         // Workspace path display (read-only)
-        let workspace_display = if workspace_path.is_empty() {
+        if workspace_path.is_empty() {
             container(
-                text("No workspace open - click Open to select")
-                    .size(14)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
+                container(
+                    text("No workspace open - click Open to select")
+                        .size(14)
+                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
+                )
+                .padding([10, 12])
+                .width(Length::Fill)
+                .style(iced::theme::Container::Box)
             )
-            .padding([10, 12])
-            .width(Length::Fill)
+            .width(Length::FillPortion(3))
             .style(iced::theme::Container::Box)
         } else {
             container(
-                text(workspace_path)
-                    .size(14)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 220)))
+                container(
+                    text(workspace_path)
+                        .size(14)
+                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 220)))
+                )
+                .padding([10, 12])
+                .width(Length::Fill)
+                .style(iced::theme::Container::Box)
             )
-            .padding([10, 12])
-            .width(Length::Fill)
-            .style(iced::theme::Container::Box)
-        };
-        
-        container(workspace_display)
             .width(Length::FillPortion(3))
-            .style(iced::theme::Container::Box),
+            .style(iced::theme::Container::Box)
+        },
         // Buttons
         row![
             button("Open Workspace...")
