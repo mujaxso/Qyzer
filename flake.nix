@@ -16,6 +16,8 @@
           nativeBuildInputs = with pkgs; [
             pkg-config
             cmake
+            clang
+            lld
           ];
 
           buildInputs = with pkgs; [
@@ -25,57 +27,42 @@
             rustfmt
             clippy
 
-            # Essential system libraries
-            # For windowing (both X11 and Wayland)
+            # System libraries
             libxkbcommon
-            # X11 fallback (important for compatibility)
+            fontconfig
+            freetype
+            expat
+            libglvnd
             libX11
             libXcursor
             libXi
             libXrandr
-            # Wayland (optional, but good to have)
+            vulkan-loader
             wayland
-            # Graphics
-            libglvnd
-            # Fonts
-            fontconfig
-            freetype
-            # Other
+
+            # For workspace-daemon file operations
             openssl
-            # For file dialogs - minimal GTK dependencies
-            gtk3
-            glib
-            # xdg-desktop-portal for Wayland file dialogs
-            xdg-desktop-portal
           ];
 
           # Environment variables
           env = {
+            # Force X11 backend to avoid Wayland issues
+            WINIT_UNIX_BACKEND = "x11";
             # Ensure linker can find libraries
             LD_LIBRARY_PATH = with pkgs; lib.makeLibraryPath [
-              # Essential libraries
               libxkbcommon
-              # X11
+              fontconfig
+              freetype
+              expat
+              libglvnd
               libX11
               libXcursor
               libXi
               libXrandr
-              # Wayland
+              vulkan-loader
               wayland
-              # Graphics
-              libglvnd
-              # Fonts
-              fontconfig
-              freetype
-              # GTK for file dialogs
-              gtk3
-              glib
-              # Other
               openssl
             ];
-            # For Wayland file dialogs
-            # This helps rfd work better on Wayland
-            GTK_USE_PORTAL = "1";
           };
 
           shellHook = ''
@@ -99,24 +86,22 @@
           ];
 
           buildInputs = with pkgs; [
-            # Essential libraries
             libxkbcommon
             fontconfig
             freetype
+            expat
             libglvnd
             libX11
             libXcursor
             libXi
             libXrandr
+            vulkan-loader
             wayland
             openssl
-            # For file dialogs
-            gtk3
-            glib
           ];
 
-          # Don't force any backend - let winit choose the appropriate one
-          # This allows both X11 and Wayland to work
+          # Force X11 backend
+          WINIT_UNIX_BACKEND = "x11";
         };
       }
     );
