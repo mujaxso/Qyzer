@@ -42,13 +42,22 @@
 
             # For workspace-daemon file operations
             openssl
+            
+            # D-Bus for xdg-desktop-portal (RFD xdg-portal feature)
+            dbus
+            
+            # D-Bus for xdg-desktop-portal (RFD xdg-portal feature)
+            dbus
 
-            # GLib and GTK3 for RFD file dialogs (gtk3 feature)
+            # xdg-desktop-portal for RFD file dialogs (xdg-portal feature)
+            # Note: xdg-desktop-portal needs to be running at runtime
+            # These are development libraries for building
             glib
-            gtk3
+            gtk3  # Still needed for some dependencies
             pango
             atk
             gdk-pixbuf
+            xdg-desktop-portal
           ];
 
           # Environment variables
@@ -71,7 +80,8 @@
               vulkan-loader
               wayland
               openssl
-              # GLib/GTK3 for RFD
+              # D-Bus and portal dependencies for RFD
+              dbus
               glib
               gtk3
               pango
@@ -115,7 +125,8 @@
             vulkan-loader
             wayland
             openssl
-            # GLib/GTK3 for RFD
+            # D-Bus and portal dependencies for RFD
+            dbus
             glib
             gtk3
             pango
