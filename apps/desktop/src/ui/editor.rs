@@ -92,7 +92,6 @@ pub fn editor<'a>(
             .width(Length::Shrink)  // Allow the editor to expand beyond viewport
             .height(Length::Fill)
     )
-    .horizontal_scroll(iced::widget::scrollable::Properties::new())
     .width(Length::Fill)
     .height(Length::Fill);
     

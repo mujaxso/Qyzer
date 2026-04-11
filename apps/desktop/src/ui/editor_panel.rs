@@ -109,11 +109,10 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     container(
         column![
             header,
-            // Editor content should fill all remaining space with proper clipping
+            // Editor content should fill all remaining space
             container(editor_content)
                 .width(Length::Fill)
                 .height(Length::Fill)
-                .clip(true)  // Clip content to prevent overflow
                 .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
                     container::Appearance {
                         background: Some(style.colors.editor_background.into()),
@@ -132,7 +131,6 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     )
     .width(Length::Fill)
     .height(Length::Fill)
-    .clip(true)  // Ensure outer container also clips
     .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
         container::Appearance {
             background: Some(style.colors.editor_background.into()),
