@@ -45,9 +45,6 @@
             
             # D-Bus for xdg-desktop-portal (RFD xdg-portal feature)
             dbus
-            
-            # D-Bus for xdg-desktop-portal (RFD xdg-portal feature)
-            dbus
 
             # xdg-desktop-portal for RFD file dialogs (xdg-portal feature)
             # Note: xdg-desktop-portal needs to be running at runtime
