@@ -108,6 +108,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     // The editor should directly fill the area without extra containers
     // Use a column that expands to fill its container
     // Ensure proper clipping to prevent text overflow
+    // Set background to editor_background to match theme
     container(
         column![
             header,
@@ -118,7 +119,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                 .clip(true)  // Clip content to prevent overflow
                 .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
                     container::Appearance {
-                        background: None,
+                        background: Some(style.colors.editor_background.into()),
                         border: iced::Border {
                             color: Color::TRANSPARENT,
                             width: 0.0,
@@ -137,7 +138,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     .clip(true)  // Ensure outer container also clips
     .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
         container::Appearance {
-            background: None,
+            background: Some(style.colors.editor_background.into()),
             border: iced::Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
