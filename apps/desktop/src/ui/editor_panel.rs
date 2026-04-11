@@ -12,33 +12,33 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         let file_name = active_path.split('/').last().unwrap_or(active_path);
         container(
             row![
-                Icon::File.render(&app.editor_typography, &style, Some(14)),
+                Icon::File.render(&app.editor_typography, &style, Some(12)),
                 text(file_name)
-                    .size(12)
-                    .style(iced::theme::Text::Color(style.colors.text_primary)),
+                    .size(11)
+                    .style(iced::theme::Text::Color(style.colors.text_secondary)),
                 iced::widget::horizontal_space(),
                 if app.is_dirty {
                     Icon::Warning.render_with_color(
                         &app.editor_typography,
                         style.colors.warning,
-                        Some(12),
+                        Some(10),
                     )
                 } else {
                     Icon::Success.render_with_color(
                         &app.editor_typography,
                         style.colors.success,
-                        Some(12),
+                        Some(10),
                     )
                 }
             ]
-            .spacing(8)  // More spacing for better balance
+            .spacing(4)  // Less spacing
             .align_items(iced::Alignment::Center)
         )
-        .padding([8, 16])  // More padding for better spacing
+        .padding([2, 8])  // Even less padding
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
-                background: Some(style.colors.editor_background.into()),  // Match editor background
+                background: None,  // No background to blend with editor
                 border: iced::Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
@@ -50,19 +50,19 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     } else {
         container(
             row![
-                Icon::File.render(&app.editor_typography, &style, Some(14)),
+                Icon::File.render(&app.editor_typography, &style, Some(12)),
                 text("No file selected")
-                    .size(12)
+                    .size(11)
                     .style(iced::theme::Text::Color(style.colors.text_muted)),
             ]
-            .spacing(8)  // More spacing for better balance
+            .spacing(4)  // Less spacing
             .align_items(iced::Alignment::Center)
         )
-        .padding([8, 16])  // More padding for better spacing
+        .padding([2, 8])  // Even less padding
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
-                background: Some(style.colors.editor_background.into()),  // Match editor background
+                background: None,  // No background to blend with editor
                 border: iced::Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
@@ -106,29 +106,14 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     
     // Create a clean, borderless editor area that fills available space
     // The editor should directly fill the area without extra containers
-    // Use a container with transparent background and no borders
-    container(
-        column![
-            header,
-            // Editor content should fill all remaining space
-            editor_content
-        ]
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .spacing(0)  // No spacing between header and editor
-    )
+    // Use a column that expands to fill its container
+    column![
+        header,
+        // Editor content should fill all remaining space
+        editor_content
+    ]
     .width(Length::Fill)
     .height(Length::Fill)
-    .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-        container::Appearance {
-            background: Some(style.colors.editor_background.into()),
-            border: iced::Border {
-                color: Color::TRANSPARENT,
-                width: 0.0,
-                radius: 0.0.into(),
-            },
-            ..Default::default()
-        }
-    })))
+    .spacing(0)  // No spacing between header and editor
     .into()
 }
