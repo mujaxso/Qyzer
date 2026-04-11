@@ -14,7 +14,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             row![
                 Icon::File.render(&app.editor_typography, &style, Some(11)),
                 text(file_name)
-                    .size(11)
+                    .size(10)
                     .style(iced::theme::Text::Color(style.colors.text_primary)),
                 iced::widget::horizontal_space(),
                 if app.is_dirty {
@@ -34,7 +34,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             .spacing(4)
             .align_items(iced::Alignment::Center)
         )
-        .padding([6, 16])  // Less padding for more compact header
+        .padding([4, 12])  // Even less padding for more compact header
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
@@ -52,13 +52,13 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             row![
                 Icon::File.render(&app.editor_typography, &style, Some(11)),
                 text("No file selected")
-                    .size(11)
+                    .size(10)
                     .style(iced::theme::Text::Color(style.colors.text_muted)),
             ]
             .spacing(4)
             .align_items(iced::Alignment::Center)
         )
-        .padding([6, 16])  // Less padding for more compact header
+        .padding([4, 12])  // Even less padding for more compact header
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
@@ -105,29 +105,27 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     };
     
     // Create a clean, borderless editor area that fills available space
-    // Use a column that expands to fill its container without extra borders
-    let content = column![
+    // The editor should directly fill the area without extra containers
+    column![
         header,
         // Editor content should fill all remaining space
-        editor_content
+        // Use a container that matches the editor background exactly
+        container(editor_content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
+                container::Appearance {
+                    background: Some(style.colors.editor_background.into()),
+                    border: iced::Border {
+                        color: Color::TRANSPARENT,
+                        width: 0.0,
+                        radius: 0.0.into(),
+                    },
+                    ..Default::default()
+                }
+            }))),
     ]
     .width(Length::Fill)
-    .height(Length::Fill);
-
-    // Wrap in a container to ensure proper background, but without borders
-    container(content)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-            container::Appearance {
-                background: Some(style.colors.editor_background.into()),
-                border: iced::Border {
-                    color: Color::TRANSPARENT,
-                    width: 0.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            }
-        })))
-        .into()
+    .height(Length::Fill)
+    .into()
 }

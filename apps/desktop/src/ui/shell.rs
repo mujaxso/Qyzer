@@ -117,7 +117,7 @@ pub fn shell(app: &App) -> Element<'_, Message> {
         None
     };
     
-    // Build the main content row without spacing between panels
+    // Build the main content row without any spacing or borders between panels
     let mut main_content_row = iced::widget::row![
         activity_bar,
     ];
@@ -129,7 +129,7 @@ pub fn shell(app: &App) -> Element<'_, Message> {
         }
     }
     
-    // Editor area should expand to fill remaining space without gaps
+    // Editor area should expand to fill remaining space without any gaps
     main_content_row = main_content_row.push(main_editor_area);
     
     // Only show auxiliary sidebar if not in settings mode
@@ -141,7 +141,8 @@ pub fn shell(app: &App) -> Element<'_, Message> {
     
     let main_content = main_content_row
         .height(Length::Fill)
-        .spacing(0);  // Remove spacing between panels
+        .spacing(0)  // No spacing between panels
+        .align_items(iced::Alignment::Stretch);  // Make all panels stretch to fill height
     
     let status_bar = container(status_bar(app))
         .width(Length::Fill)
