@@ -162,12 +162,6 @@ impl StyleHelpers {
                 width: 0.0,
                 radius: 0.0.into(),
             },
-            cursor: iced::widget::text_editor::Cursor::default(),
-            selection: iced::widget::text_editor::Selection::default(),
-            placeholder: iced::widget::text_editor::Placeholder::default(),
-            line_numbers: iced::widget::text_editor::LineNumbers::default(),
-            scrollbar: iced::widget::text_editor::Scrollbar::default(),
-            handle: iced::widget::text_editor::Handle::default(),
         }
     }
 }
