@@ -83,7 +83,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
         ]
         .align_items(iced::Alignment::Center)
     )
-    .padding(if is_compact { [7, 9] } else { [9, 12] })
+    .padding(if is_compact { [7, 12] } else { [9, 16] })
     .width(Length::Fill);
     
     struct WelcomeCardStyle {
@@ -125,7 +125,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
                     .style(iced::theme::Text::Color(style.colors.text_secondary)),
             ]
             .spacing(8)
-            .padding(16)
+            .padding([16, 20])
         )
         .style(iced::theme::Container::Custom(Box::new(welcome_card_style)))
         .into()
@@ -142,7 +142,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
                 .align_items(iced::Alignment::Center),
             ]
             .spacing(4)
-            .padding(12)
+            .padding([12, 16])
         )
         .style(iced::theme::Container::Custom(Box::new(welcome_card_style)))
         .into()
@@ -186,7 +186,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
             .spacing(if is_compact { 2 } else { 4 }),
         ]
         .spacing(if is_compact { 4 } else { 8 })
-        .padding(if is_compact { 8 } else { 12 })
+        .padding(if is_compact { [8, 12] } else { [12, 16] })
     );
     
     struct AssistantInputStyle {
@@ -270,7 +270,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
         ]
         .spacing(if is_compact { 8 } else { 12 })
     )
-    .padding(if is_compact { 8 } else { 16 })
+    .padding(if is_compact { [8, 8, 8, 8] } else { [16, 16, 16, 16] })
     .width(Length::Fill);
     
     struct AssistantPanelContainerStyle {
@@ -306,19 +306,24 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
                     quick_actions,
                 ]
                 .spacing(if is_compact { 8 } else { 16 })
-                .padding(if is_compact { [0, 8] } else { [0, 16] })
+                .padding(if is_compact { [0, 12] } else { [0, 20] })
             )
             .height(Length::Fill)
             .style(iced::theme::Scrollable::Custom(Box::new(AssistantScrollableStyle {
                 colors: style.colors,
-            }))),
+            })))
+            .scrollable_properties(
+                iced::widget::scrollable::Properties::new()
+                    .scroller_width(6)
+                    .scrollbar_margin(2)
+            ),
             input_area,
         ]
         .height(Length::Fill)
     )
     .width(Length::Fill)
     .height(Length::Fill)
-    .clip(true) // Clip content to prevent overlap from adjacent panels
+    .padding([0, 0, 0, 0]) // Ensure no padding that could hide content
     .style(iced::theme::Container::Custom(Box::new(container_style)))
     .into()
 }
