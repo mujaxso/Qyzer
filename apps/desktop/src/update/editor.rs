@@ -17,7 +17,7 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             
             // Only update the document for edit actions to improve performance
             match &action {
-                iced::widget::text_editor::Action::Edit(edit) => {
+                iced::widget::text_editor::Action::Edit(_edit) => {
                     if let Some(ref mut editor_state) = app.editor_state {
                         // For any edit, update the entire document text
                         // This is simpler and ensures consistency
@@ -76,13 +76,19 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
         }
         Message::EditorSetDocument(document) => {
             let editor_state = EditorState::from_document(document);
+            // Get the text before moving editor_state
+            let text = editor_state.document().text();
             app.editor_state = Some(editor_state);
             
             // Update the text editor content efficiently
             // Only update if the document is not too large
             if !app.is_file_too_large_for_editor {
-                let text = editor_state.document().text();
+                // Check if the text is reasonably sized to prevent performance issues
+                // For now, we'll always update, but we could add a size check here
                 app.text_editor = iced::widget::text_editor::Content::with_text(&text);
+            } else {
+                // Clear the text editor for large files
+                app.text_editor = iced::widget::text_editor::Content::new();
             }
             Command::none()
         }
