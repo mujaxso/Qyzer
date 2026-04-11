@@ -134,17 +134,6 @@ pub fn shell(app: &App) -> Element<'_, Message> {
         container(main_editor_area)
             .width(Length::Fill)
             .height(Length::Fill)
-            .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-                container::Appearance {
-                    background: None,
-                    border: iced::Border {
-                        color: Color::TRANSPARENT,
-                        width: 0.0,
-                        radius: 0.0.into(),
-                    },
-                    ..Default::default()
-                }
-            })))
     );
     
     // Only show auxiliary sidebar if not in settings mode
