@@ -9,4 +9,4 @@ tokio = { workspace = true, features = ["full"] }
 thiserror = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 core-types = { path = "../core-types" }
-editor-buffer = { path = "../editor-buffer" }
+editor-core = { path = "../editor-core" }
