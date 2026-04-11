@@ -10,6 +10,36 @@ use crate::ui::icons::Icon;
 pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
     let style = StyleHelpers::new(app.theme);
     
+    struct ScrollableStyle {
+        colors: SemanticColors,
+    }
+    
+    impl iced::widget::scrollable::StyleSheet for ScrollableStyle {
+        type Style = iced::Theme;
+        
+        fn active(&self, _style: &Self::Style) -> iced::widget::scrollable::Scrollbar {
+            iced::widget::scrollable::Scrollbar {
+                background: None,
+                border: iced::Border::default(),
+                scroller: iced::widget::scrollable::Scroller {
+                    color: self.colors.border,
+                    border: iced::Border::default(),
+                },
+            }
+        }
+        
+        fn hovered(&self, _style: &Self::Style) -> iced::widget::scrollable::Scrollbar {
+            iced::widget::scrollable::Scrollbar {
+                background: None,
+                border: iced::Border::default(),
+                scroller: iced::widget::scrollable::Scroller {
+                    color: self.colors.accent,
+                    border: iced::Border::default(),
+                },
+            }
+        }
+    }
+    
     let is_compact = matches!(app.layout_mode, crate::state::LayoutMode::Medium | crate::state::LayoutMode::Narrow);
     
     // Get visible rows from explorer state
@@ -60,7 +90,7 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
         ]
         .align_items(iced::Alignment::Center)
     )
-    .padding(if is_compact { [6, 10] } else { [8, 12] })
+    .padding(if is_compact { [8, 12] } else { [10, 16] })
     .width(Length::Fill);
     
     let content: Element<_> = if visible_rows.is_empty() {
@@ -122,6 +152,9 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                 .width(Length::Fill)
         )
         .height(Length::Fill)
+        .style(iced::theme::Scrollable::Custom(Box::new(ScrollableStyle {
+            colors: style.colors,
+        })))
         .into()
     };
     
@@ -343,9 +376,9 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, app: &App, is_compact: 
         mouse_area(
             button(row_content)
                 .on_press(message)
-                .padding(if is_compact { [3, 6] } else { [5, 10] })
+                .padding(if is_compact { [5, 8] } else { [7, 12] })
                 .width(Length::Fill)
-                .height(Length::Fixed(if is_compact { 26.0 } else { 30.0 }))
+                .height(Length::Fixed(if is_compact { 28.0 } else { 32.0 }))
                 .style(iced::theme::Button::Custom(Box::new(button_style)))
         )
         .on_enter(Message::ExplorerHoverChanged(Some(row.path.clone())))

@@ -145,8 +145,8 @@ impl SemanticColors {
             text_on_accent: Color::from_rgb(1.0, 1.0, 1.0),            // #FFFFFF
             
             // UI elements
-            border: Color::from_rgb(0.129, 0.148, 0.211),              // #212536 - darker, more subtle
-            divider: Color::from_rgb(0.129, 0.148, 0.211),             // #212536 - darker, more subtle
+            border: Color::from_rgb(0.169, 0.188, 0.251),              // #2B3040 - subtle but visible
+            divider: Color::from_rgb(0.169, 0.188, 0.251),             // #2B3040 - subtle but visible
             accent: Color::from_rgb(0.298, 0.435, 1.0),                // #4C6FFF
             accent_hover: Color::from_rgb(0.353, 0.482, 1.0),          // #5A7BFF
             accent_soft_background: Color::from_rgba(0.298, 0.435, 1.0, 0.16), // rgba(76, 111, 255, 0.16)

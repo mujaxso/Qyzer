@@ -16,11 +16,11 @@ use super::{
 pub fn shell(app: &App) -> Element<'_, Message> {
     let style = StyleHelpers::new(app.theme);
     
-    // Get panel widths based on layout mode - more compact
+    // Get panel widths based on layout mode - reasonable widths
     let (explorer_width, assistant_width) = match app.layout_mode {
-        LayoutMode::Wide => (200.0, 300.0),      // More compact widths
-        LayoutMode::Medium => (160.0, 260.0),    // More compact
-        LayoutMode::Narrow => (120.0, 220.0),    // More compact
+        LayoutMode::Wide => (240.0, 320.0),      // Reasonable widths
+        LayoutMode::Medium => (200.0, 280.0),    // Reasonable
+        LayoutMode::Narrow => (160.0, 240.0),    // Reasonable
     };
     
     // Build panels with responsive sizing
@@ -150,7 +150,7 @@ pub fn shell(app: &App) -> Element<'_, Message> {
     
     let status_bar = container(status_bar(app))
         .width(Length::Fill)
-        .height(Length::Fixed(crate::ui::common::STATUS_BAR_HEIGHT));
+        .height(Length::Fixed(24.0)); // Use fixed height instead of constant
     
     // Combine everything with subtle spacing
     iced::widget::column![
