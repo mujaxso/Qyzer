@@ -76,20 +76,37 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
         }
         Message::EditorSetDocument(document) => {
             let editor_state = EditorState::from_document(document);
-            // Get the text before moving editor_state
-            let text = editor_state.document().text();
-            app.editor_state = Some(editor_state);
+            let char_count = editor_state.document().len_chars();
             
-            // Update the text editor content efficiently
-            // Only update if the document is not too large
-            if !app.is_file_too_large_for_editor {
-                // Check if the text is reasonably sized to prevent performance issues
-                // For now, we'll always update, but we could add a size check here
-                app.text_editor = iced::widget::text_editor::Content::with_text(&text);
-            } else {
-                // Clear the text editor for large files
+            // Set thresholds for performance
+            const MODERATE_THRESHOLD: usize = 500_000; // 500k characters
+            const LARGE_THRESHOLD: usize = 1_000_000; // 1M characters
+            
+            if char_count > LARGE_THRESHOLD {
+                app.is_file_too_large_for_editor = true;
                 app.text_editor = iced::widget::text_editor::Content::new();
+                app.status_message = format!(
+                    "File is too large ({} chars) - editing disabled",
+                    char_count
+                );
+            } else if char_count > MODERATE_THRESHOLD {
+                // For moderate files, load but show a warning
+                app.is_file_too_large_for_editor = false;
+                let text = editor_state.document().text();
+                app.text_editor = iced::widget::text_editor::Content::with_text(&text);
+                app.status_message = format!(
+                    "File is moderate size ({} chars) - editing may be slow",
+                    char_count
+                );
+            } else {
+                // For small files, load normally
+                app.is_file_too_large_for_editor = false;
+                let text = editor_state.document().text();
+                app.text_editor = iced::widget::text_editor::Content::with_text(&text);
+                app.status_message = format!("Loaded file ({} chars)", char_count);
             }
+            
+            app.editor_state = Some(editor_state);
             Command::none()
         }
         Message::EditorUpdateState(editor_state) => {

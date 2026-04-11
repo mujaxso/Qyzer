@@ -74,8 +74,37 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     };
     
     let editor_content = if let Some(_) = &app.active_file_path {
-        // Use the existing editor component with typography settings
-        editor::editor(&app.text_editor, &app.editor_typography, style.colors.editor_background)
+        if app.is_file_too_large_for_editor {
+            // Show a message for large files instead of the editor
+            container(
+                column![
+                    Icon::Warning.render_with_color(
+                        &app.editor_typography,
+                        style.colors.warning,
+                        Some(24),
+                    ),
+                    text("File is too large for editing")
+                        .size(16)
+                        .style(iced::theme::Text::Color(style.colors.text_primary)),
+                    text("The file is too large to open in the editor for performance reasons.")
+                        .size(12)
+                        .style(iced::theme::Text::Color(style.colors.text_secondary)),
+                    text("Consider using a different tool for very large files.")
+                        .size(12)
+                        .style(iced::theme::Text::Color(style.colors.text_muted)),
+                ]
+                .spacing(12)
+                .align_items(iced::Alignment::Center)
+            )
+            .center_y()
+            .center_x()
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into()
+        } else {
+            // Use the existing editor component with typography settings
+            editor::editor(&app.text_editor, &app.editor_typography, style.colors.editor_background)
+        }
     } else {
         // Welcome screen
         container(
