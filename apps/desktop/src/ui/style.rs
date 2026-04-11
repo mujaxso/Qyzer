@@ -56,9 +56,17 @@ impl StyleHelpers {
         common::containers::shell(&self.colors)
     }
     
-    /// Editor container style
+    /// Editor container style - more premium and focused
     pub fn editor_container(&self) -> container::Appearance {
-        common::containers::editor(&self.colors)
+        container::Appearance {
+            background: Some(self.colors.editor_background.into()),
+            border: iced::Border {
+                color: Color::TRANSPARENT,  // No border for cleaner look
+                width: 0.0,
+                radius: 0.0.into(),
+            },
+            ..Default::default()
+        }
     }
     
     /// Input container style

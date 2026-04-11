@@ -12,42 +12,42 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         let file_name = active_path.split('/').last().unwrap_or(active_path);
         container(
             row![
-                Icon::File.render(&app.editor_typography, &style, Some(12)),
+                Icon::File.render(&app.editor_typography, &style, Some(11)),
                 text(file_name)
-                    .size(12)
+                    .size(11)
                     .style(iced::theme::Text::Color(style.colors.text_primary)),
                 iced::widget::horizontal_space(),
                 if app.is_dirty {
                     Icon::Warning.render_with_color(
                         &app.editor_typography,
                         style.colors.warning,
-                        Some(10),
+                        Some(9),
                     )
                 } else {
                     Icon::Success.render_with_color(
                         &app.editor_typography,
                         style.colors.success,
-                        Some(10),
+                        Some(9),
                     )
                 }
             ]
-            .spacing(6)
+            .spacing(4)
             .align_items(iced::Alignment::Center)
         )
-        .padding([8, 12])
+        .padding([6, 10])  // Reduced padding
         .width(Length::Fill)
     } else {
         container(
             row![
-                Icon::File.render(&app.editor_typography, &style, Some(12)),
+                Icon::File.render(&app.editor_typography, &style, Some(11)),
                 text("No file selected")
-                    .size(12)
+                    .size(11)
                     .style(iced::theme::Text::Color(style.colors.text_muted)),
             ]
-            .spacing(6)
+            .spacing(4)
             .align_items(iced::Alignment::Center)
         )
-        .padding([8, 12])
+        .padding([6, 10])  // Reduced padding
         .width(Length::Fill)
     };
     
@@ -91,7 +91,11 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                 .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
                     container::Appearance {
                         background: Some(style.colors.editor_background.into()),
-                        border: iced::Border::default(),
+                        border: iced::Border {
+                            color: style.colors.border,
+                            width: 0.0,  // Remove border for cleaner look
+                            radius: 0.0.into(),
+                        },
                         ..Default::default()
                     }
                 }))),
@@ -101,10 +105,10 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     .height(Length::Fill)
     .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
         container::Appearance {
-            background: Some(style.colors.panel_background.into()),
+            background: Some(style.colors.editor_background.into()),  // Use editor background for outer container too
             border: iced::Border {
                 color: style.colors.border,
-                width: 1.0,
+                width: 0.0,  // Remove outer border
                 radius: 0.0.into(),
             },
             ..Default::default()

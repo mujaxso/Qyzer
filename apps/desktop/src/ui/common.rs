@@ -173,14 +173,14 @@ pub mod containers {
         }
     }
     
-    /// Editor container style - Main editor surface
+    /// Editor container style - Main editor surface, cleaner and more focused
     pub fn editor(colors: &SemanticColors) -> container::Appearance {
         container::Appearance {
             background: Some(colors.editor_background.into()),
             border: iced::Border {
-                color: colors.border,
-                width: 1.0,
-                radius: RADIUS_SM.into(),
+                color: Color::TRANSPARENT,  // Remove border for cleaner look
+                width: 0.0,
+                radius: 0.0.into(),
             },
             ..Default::default()
         }

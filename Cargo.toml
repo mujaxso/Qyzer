@@ -3,7 +3,7 @@ resolver = "3"
 members = [
   "apps/desktop",
   "crates/core-types",
-  "crates/editor-buffer",
+  "crates/editor-core",
   "crates/workspace-model",
   "crates/lsp-client",
   "crates/ai-context",

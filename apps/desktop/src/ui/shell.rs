@@ -13,11 +13,11 @@ use super::{
 
 /// Main shell that composes all UI components - Premium compact layout
 pub fn shell(app: &App) -> Element<'_, Message> {
-    // Get panel widths based on layout mode
+    // Get panel widths based on layout mode - editor gets more space
     let (explorer_width, assistant_width) = match app.layout_mode {
-        LayoutMode::Wide => (260.0, 300.0),
-        LayoutMode::Medium => (220.0, 240.0),
-        LayoutMode::Narrow => (180.0, 200.0),
+        LayoutMode::Wide => (220.0, 260.0),      // Reduced from 260,300
+        LayoutMode::Medium => (180.0, 220.0),    // Reduced from 220,240
+        LayoutMode::Narrow => (140.0, 180.0),    // Reduced from 180,200
     };
     
     // Build panels with responsive sizing
