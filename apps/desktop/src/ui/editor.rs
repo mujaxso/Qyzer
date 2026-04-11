@@ -23,11 +23,22 @@ pub fn editor<'a>(
         .font(font)
         .height(Length::Fill);
     
-    // Place the editor in a container with padding
+    // Place the editor in a container with minimal padding
     // The text_editor widget will handle its own scrolling
     container(editor)
-        .padding([12, 20, 20, 20]) // Comfortable padding for coding
+        .padding([8, 16, 16, 16]) // Reduced padding for more code space
         .width(Length::Fill)
         .height(Length::Fill)
+        .style(iced::theme::Container::Custom(Box::new(|_theme: &iced::Theme| {
+            container::Appearance {
+                background: None, // Let parent handle background
+                border: iced::Border {
+                    color: Color::TRANSPARENT,
+                    width: 0.0,
+                    radius: 0.0.into(),
+                },
+                ..Default::default()
+            }
+        })))
         .into()
 }
