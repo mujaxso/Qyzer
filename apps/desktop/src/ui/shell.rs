@@ -1,4 +1,4 @@
-use iced::{Element, Length, Color, widget::{container, text}};
+use iced::{Element, Length, widget::{container, text}};
 use crate::message::Message;
 use crate::state::{App, LayoutMode, PrimarySidebarView, AuxiliaryView};
 use super::{

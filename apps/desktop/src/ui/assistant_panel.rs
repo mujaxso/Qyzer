@@ -23,7 +23,11 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
                     border: iced::Border::default(),
                     scroller: iced::widget::scrollable::Scroller {
                         color: self.colors.border,
-                        border: iced::Border::default(),
+                        border: iced::Border {
+                            color: Color::TRANSPARENT,
+                            width: 0.0,
+                            radius: 4.0.into(),
+                        },
                     },
                 },
                 gap: None,
@@ -48,7 +52,11 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
                     border: iced::Border::default(),
                     scroller: iced::widget::scrollable::Scroller {
                         color: scroller_color,
-                        border: iced::Border::default(),
+                        border: iced::Border {
+                            color: Color::TRANSPARENT,
+                            width: 0.0,
+                            radius: 4.0.into(),
+                        },
                     },
                 },
                 gap: None,
@@ -257,7 +265,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
         column![
             text_input(if is_compact { "Ask..." } else { "Ask Neote AI..." }, &app.prompt_input)
                 .on_input(Message::PromptInputChanged)
-                .padding(if is_compact { [10, 16] } else { [14, 20] })
+                .padding(if is_compact { [10, 20] } else { [14, 24] })
                 .width(Length::Fill)
                 .style(iced::theme::TextInput::Custom(Box::new(input_style))),
             row![
@@ -306,17 +314,12 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
                     quick_actions,
                 ]
                 .spacing(if is_compact { 8 } else { 16 })
-                .padding(if is_compact { [0, 16, 0, 16] } else { [0, 24, 0, 24] })
+                .padding(if is_compact { [0, 16, 0, 20] } else { [0, 24, 0, 28] })
             )
             .height(Length::Fill)
             .style(iced::theme::Scrollable::Custom(Box::new(AssistantScrollableStyle {
                 colors: style.colors,
             })))
-            .scrollable_properties(
-                iced::widget::scrollable::Properties::new()
-                    .scroller_width(10)
-                    .scrollbar_margin(2)
-            ),
             input_area,
         ]
         .height(Length::Fill)
