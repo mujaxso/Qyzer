@@ -86,11 +86,12 @@ pub fn editor<'a>(
     
     // The text editor widget has built-in scrolling capabilities
     // We need to ensure it's properly contained and can handle long lines
-    // by using Fill width and height
+    // by using Fill width and height, and clip content to prevent overflow
     container(editor)
         .padding(0) // No padding
         .width(Length::Fill)
         .height(Length::Fill)
+        .clip(true) // Clip content to prevent overflow into adjacent panels
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
                 background: Some(background_color.into()),

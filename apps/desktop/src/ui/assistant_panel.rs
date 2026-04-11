@@ -318,6 +318,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
     )
     .width(Length::Fill)
     .height(Length::Fill)
+    .clip(true) // Clip content to prevent overlap from adjacent panels
     .style(iced::theme::Container::Custom(Box::new(container_style)))
     .into()
 }

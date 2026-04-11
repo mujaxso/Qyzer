@@ -211,6 +211,7 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
     )
     .width(Length::Fill)
     .height(Length::Fill)
+    .clip(true) // Clip content to prevent overlap from adjacent panels
     .style(iced::theme::Container::Custom(Box::new(container_style)))
     .into()
 }
