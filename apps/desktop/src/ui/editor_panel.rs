@@ -12,33 +12,33 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         let file_name = active_path.split('/').last().unwrap_or(active_path);
         container(
             row![
-                Icon::File.render(&app.editor_typography, &style, Some(9)),
+                Icon::File.render(&app.editor_typography, &style, Some(14)),
                 text(file_name)
-                    .size(9)
+                    .size(12)
                     .style(iced::theme::Text::Color(style.colors.text_primary)),
                 iced::widget::horizontal_space(),
                 if app.is_dirty {
                     Icon::Warning.render_with_color(
                         &app.editor_typography,
                         style.colors.warning,
-                        Some(7),
+                        Some(12),
                     )
                 } else {
                     Icon::Success.render_with_color(
                         &app.editor_typography,
                         style.colors.success,
-                        Some(7),
+                        Some(12),
                     )
                 }
             ]
-            .spacing(1)  // Even less spacing
+            .spacing(8)  // More spacing for better balance
             .align_items(iced::Alignment::Center)
         )
-        .padding([0, 4])  // No vertical padding
+        .padding([8, 16])  // More padding for better spacing
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
-                background: None,  // No background to blend with editor
+                background: Some(style.colors.editor_background.into()),  // Match editor background
                 border: iced::Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
@@ -50,19 +50,19 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     } else {
         container(
             row![
-                Icon::File.render(&app.editor_typography, &style, Some(9)),
+                Icon::File.render(&app.editor_typography, &style, Some(14)),
                 text("No file selected")
-                    .size(9)
+                    .size(12)
                     .style(iced::theme::Text::Color(style.colors.text_muted)),
             ]
-            .spacing(1)  // Even less spacing
+            .spacing(8)  // More spacing for better balance
             .align_items(iced::Alignment::Center)
         )
-        .padding([0, 4])  // No vertical padding
+        .padding([8, 16])  // More padding for better spacing
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
-                background: None,  // No background to blend with editor
+                background: Some(style.colors.editor_background.into()),  // Match editor background
                 border: iced::Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
@@ -106,13 +106,29 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     
     // Create a clean, borderless editor area that fills available space
     // The editor should directly fill the area without extra containers
-    column![
-        header,
-        // Editor content should fill all remaining space
-        editor_content
-    ]
+    // Use a container with transparent background and no borders
+    container(
+        column![
+            header,
+            // Editor content should fill all remaining space
+            editor_content
+        ]
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .spacing(0)  // No spacing between header and editor
+    )
     .width(Length::Fill)
     .height(Length::Fill)
-    .spacing(0)  // No spacing between header and editor
+    .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
+        container::Appearance {
+            background: Some(style.colors.editor_background.into()),
+            border: iced::Border {
+                color: Color::TRANSPARENT,
+                width: 0.0,
+                radius: 0.0.into(),
+            },
+            ..Default::default()
+        }
+    })))
     .into()
 }

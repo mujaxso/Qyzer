@@ -23,10 +23,10 @@ pub fn editor<'a>(
         .font(font)
         .height(Length::Fill);
     
-    // Place the editor in a container with NO padding
+    // Place the editor in a container with minimal padding
     // The text_editor widget will handle its own scrolling
     container(editor)
-        .padding(0) // No padding at all
+        .padding([0, 8, 0, 8]) // Minimal horizontal padding
         .width(Length::Fill)
         .height(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(|_theme: &iced::Theme| {
