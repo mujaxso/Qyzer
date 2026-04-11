@@ -16,8 +16,8 @@ use iced::{Application, Settings};
 
 fn main() -> iced::Result {
     // Check if we're in a Wayland environment
-    let wayland_display = std::env::var("WAYLAND_DISPLAY").is_ok();
-    let xdg_session_type = std::env::var("XDG_SESSION_TYPE").unwrap_or_default();
+    let _wayland_display = std::env::var("WAYLAND_DISPLAY").is_ok();
+    let _xdg_session_type = std::env::var("XDG_SESSION_TYPE").unwrap_or_default();
     
     // If we're on Wayland and having file picker issues, suggest using X11
     // Note: This is handled in the UI with better error messages

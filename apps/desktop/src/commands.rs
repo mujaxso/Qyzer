@@ -13,10 +13,10 @@ impl Command {
 
     pub fn execute(&self) {
         match &self.command {
-            EditorCommand::OpenWorkspace { path } => {
+            EditorCommand::OpenWorkspace { path: _ } => {
                 // TODO: Actually open the workspace
             }
-            EditorCommand::OpenFile { path } => {
+            EditorCommand::OpenFile { path: _ } => {
                 // TODO: Actually open the file
             }
             EditorCommand::SaveActiveFile => {
