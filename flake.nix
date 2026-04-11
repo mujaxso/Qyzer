@@ -63,6 +63,11 @@
             WINIT_UNIX_BACKEND = "x11";
             # Set GDK backend to x11 for GTK3
             GDK_BACKEND = "x11";
+            # GTK3 theme settings for Nix environment
+            GTK_THEME = "Adwaita";
+            GTK_DATA_PREFIX = "${pkgs.gtk3}";
+            # Ensure GTK can find its modules
+            GTK_PATH = "${pkgs.gtk3}/lib/gtk-3.0:${pkgs.gtk3}/lib/gtk-3.0/3.0.0";
             # Ensure linker can find libraries
             LD_LIBRARY_PATH = with pkgs; lib.makeLibraryPath [
               libxkbcommon
@@ -77,13 +82,14 @@
               vulkan-loader
               wayland
               openssl
-              # D-Bus and portal dependencies for RFD
-              dbus
+              # GTK3 dependencies for RFD
               glib
               gtk3
               pango
               atk
               gdk-pixbuf
+              # D-Bus may still be needed
+              dbus
             ];
           };
 
@@ -122,13 +128,14 @@
             vulkan-loader
             wayland
             openssl
-            # D-Bus and portal dependencies for RFD
-            dbus
+            # GTK3 dependencies for RFD
             glib
             gtk3
             pango
             atk
             gdk-pixbuf
+            # D-Bus may still be needed
+            dbus
           ];
 
           # Force X11 backend

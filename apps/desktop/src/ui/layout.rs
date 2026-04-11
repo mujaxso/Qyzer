@@ -144,21 +144,29 @@ fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> 
         .spacing(0)
         .align_items(Alignment::Center),
         horizontal_space(),
-        // Workspace path display (read-only)
+        // Workspace path display with manual entry option
         if workspace_path.is_empty() {
+            // When no workspace is open, show an input field for manual entry
             container(
-                container(
-                    text("No workspace open - click Open to select")
-                        .size(14)
-                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
-                )
-                .padding([10, 12])
-                .width(Length::Fill)
-                .style(iced::theme::Container::Box)
+                row![
+                    text_input("Enter workspace path manually...", workspace_path)
+                        .on_input(Message::WorkspacePathChanged)
+                        .on_submit(Message::SubmitManualWorkspacePath(workspace_path.to_string()))
+                        .padding([10, 12])
+                        .width(Length::Fill)
+                        .style(iced::theme::TextInput::Boxed),
+                    button("Open")
+                        .on_press(Message::SubmitManualWorkspacePath(workspace_path.to_string()))
+                        .padding([10, 14])
+                        .style(iced::theme::Button::Secondary),
+                ]
+                .spacing(8)
+                .align_items(Alignment::Center)
             )
             .width(Length::FillPortion(3))
-            .style(iced::theme::Container::Box)
+            .into()
         } else {
+            // When workspace is open, show it as read-only
             container(
                 container(
                     text(workspace_path)

@@ -129,14 +129,36 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                                     }
                                     Err(e) => {
                                         eprintln!("[DIAG] OpenWorkspace: Sync dialog also failed: {}", e);
-                                        // Provide helpful error message
-                                        Message::WorkspaceLoaded(Err(
-                                            "Folder picker failed to open. This may be due to:\n\
-                                            1. Missing xdg-desktop-portal service (for Wayland)\n\
-                                            2. Dialog opened behind main window\n\
-                                            3. Platform compatibility issue\n\n\
-                                            Try: Install and start xdg-desktop-portal, or use manual workspace path entry.".to_string()
-                                        ))
+                                        // Check if we're in a Nix environment
+                                        let nix_env = std::env::var("NIX_PROFILES").is_ok() 
+                                            || std::env::var("IN_NIX_SHELL").is_ok()
+                                            || std::path::Path::new("/nix/store").exists();
+                                        
+                                        let error_msg = if nix_env {
+                                            format!(
+                                                "Folder picker failed to open. This is common in Nix environments.\n\
+                                                \n\
+                                                Possible solutions:\n\
+                                                1. Ensure GTK3 libraries are available (they should be in nix-shell)\n\
+                                                2. Use manual workspace entry below\n\
+                                                3. Try running outside nix-shell: nix develop --command cargo run\n\
+                                                \n\
+                                                Error: {}",
+                                                e
+                                            )
+                                        } else {
+                                            format!(
+                                                "Folder picker failed to open. This may be due to:\n\
+                                                1. Missing GTK3 libraries\n\
+                                                2. Dialog opened behind main window\n\
+                                                3. Platform compatibility issue\n\n\
+                                                Try: Install GTK3 development packages, or use manual workspace path entry.\n\
+                                                \n\
+                                                Error: {}",
+                                                e
+                                            )
+                                        };
+                                        Message::WorkspaceLoaded(Err(error_msg))
                                     }
                                 }
                             } else {
