@@ -139,9 +139,9 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                                                 "Folder picker failed to open. This is common in Nix environments.\n\
                                                 \n\
                                                 Possible solutions:\n\
-                                                1. Ensure GTK3 libraries are available (they should be in nix-shell)\n\
+                                                1. Ensure xdg-desktop-portal is running: systemctl --user status xdg-desktop-portal\n\
                                                 2. Use manual workspace entry below\n\
-                                                3. Try running outside nix-shell: nix develop --command cargo run\n\
+                                                3. Try running outside nix-shell with: nix develop --command cargo run\n\
                                                 \n\
                                                 Error: {}",
                                                 e
@@ -149,10 +149,10 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                                         } else {
                                             format!(
                                                 "Folder picker failed to open. This may be due to:\n\
-                                                1. Missing GTK3 libraries\n\
+                                                1. Missing xdg-desktop-portal service (for Wayland)\n\
                                                 2. Dialog opened behind main window\n\
                                                 3. Platform compatibility issue\n\n\
-                                                Try: Install GTK3 development packages, or use manual workspace path entry.\n\
+                                                Try: Install and start xdg-desktop-portal, or use manual workspace path entry.\n\
                                                 \n\
                                                 Error: {}",
                                                 e
