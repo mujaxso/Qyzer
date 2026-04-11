@@ -57,6 +57,10 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
         Message::OpenWorkspace => {
             Command::perform(
                 async move {
+                    // Add a longer delay to ensure the window is properly focused
+                    // This can help with Wayland focus issues
+                    tokio::time::sleep(std::time::Duration::from_millis(300)).await;
+                    
                     // Try the async dialog first
                     let dialog = AsyncFileDialog::new()
                         .set_title("Select Workspace Directory - Neote");
@@ -71,6 +75,9 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                         }
                         None => {
                             // If async dialog fails, try synchronous dialog as fallback
+                            // Add another delay before trying the fallback
+                            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+                            
                             match try_sync_dialog().await {
                                 Ok(path) => {
                                     match WorkspaceLoader::list_directory(&path) {
@@ -84,13 +91,31 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                                         || std::env::var("IN_NIX_SHELL").is_ok()
                                         || std::path::Path::new("/nix/store").exists();
                                     
-                                    let error_msg = if nix_env {
+                                    // Check if we're in a Wayland environment
+                                    let wayland = std::env::var("WAYLAND_DISPLAY").is_ok()
+                                        || std::env::var("XDG_SESSION_TYPE").unwrap_or_default() == "wayland";
+                                    
+                                    let error_msg = if nix_env && wayland {
+                                        "Folder picker failed to open. This is common in Nix+Wayland environments.\n\
+                                        \n\
+                                        Possible solutions:\n\
+                                        1. Try running with X11: NEOTE_FORCE_X11=1 cargo run\n\
+                                        2. Use manual workspace entry below\n\
+                                        3. Ensure xdg-desktop-portal-hyprland is properly configured"
+                                    } else if nix_env {
                                         "Folder picker failed to open. This is common in Nix environments.\n\
                                         \n\
                                         Possible solutions:\n\
                                         1. Ensure xdg-desktop-portal is running: systemctl --user status xdg-desktop-portal\n\
                                         2. Use manual workspace entry below\n\
                                         3. Try running outside nix-shell with: nix develop --command cargo run"
+                                    } else if wayland {
+                                        "Folder picker failed to open. This may be a Wayland compatibility issue.\n\
+                                        \n\
+                                        Possible solutions:\n\
+                                        1. Try running with X11: NEOTE_FORCE_X11=1 cargo run\n\
+                                        2. Use manual workspace entry below\n\
+                                        3. Ensure xdg-desktop-portal-hyprland is properly configured"
                                     } else {
                                         "Folder picker failed to open. This may be due to:\n\
                                         1. Missing xdg-desktop-portal service (for Wayland)\n\
