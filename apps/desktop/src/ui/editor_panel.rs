@@ -1,4 +1,4 @@
-use iced::{Element, Length, Color, widget::{column, container, row, text}};
+use iced::{Element, Length, Color, widget::{column, container, row, text, rule}};
 use crate::message::Message;
 use crate::state::App;
 use super::style::StyleHelpers;
@@ -138,6 +138,17 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     container(
         column![
             header,
+            // Add a subtle separator line between header and editor content
+            // Use a horizontal rule with the border color
+            iced::widget::horizontal_rule(1)
+                .style(iced::theme::Rule::Custom(Box::new(move || {
+                    iced::widget::rule::Appearance {
+                        color: style.colors.border,
+                        width: 1,
+                        radius: 0.0.into(),
+                        fill_mode: iced::widget::rule::FillMode::Full,
+                    }
+                }))),
             // Editor content should fill all remaining space
             // The text editor handles its own scrolling, so we don't need extra containers
             container(editor_content)
@@ -147,7 +158,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         ]
         .width(Length::Fill)
         .height(Length::Fill)
-        .spacing(0)  // No spacing between header and editor
+        .spacing(0)  // No spacing between header, separator, and editor
     )
     .width(Length::Fill)
     .height(Length::Fill)
