@@ -319,7 +319,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
             .height(Length::Fill)
             .style(iced::theme::Scrollable::Custom(Box::new(AssistantScrollableStyle {
                 colors: style.colors,
-            })))
+            }))),
             input_area,
         ]
         .height(Length::Fill)
