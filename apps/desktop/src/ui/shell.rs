@@ -130,7 +130,7 @@ pub fn shell(app: &App) -> Element<'_, Message> {
     
     // Editor area should expand to fill remaining space without any gaps
     // Make sure the editor fills all available space with proper clipping
-    // Remove any borders that might be visible
+    // Add a subtle border to match other panels
     main_content_row = main_content_row.push(
         container(main_editor_area)
             .width(Length::Fill)
@@ -140,8 +140,8 @@ pub fn shell(app: &App) -> Element<'_, Message> {
                 container::Appearance {
                     background: Some(style.colors.editor_background.into()),
                     border: iced::Border {
-                        color: Color::TRANSPARENT,
-                        width: 0.0,
+                        color: style.colors.border,
+                        width: 1.0,
                         radius: 0.0.into(),
                     },
                     ..Default::default()
