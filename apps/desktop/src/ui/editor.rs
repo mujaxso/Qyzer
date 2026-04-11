@@ -18,16 +18,15 @@ pub fn editor<'a>(
     // Create a text editor with its own built-in scrolling
     // The text_editor widget handles scrolling internally, so we should NOT wrap it
     // in an outer scrollable container to avoid conflicts that cause crashes
-    // Set width to Fill to ensure it expands properly
     let editor = text_editor::TextEditor::new(text_editor_content)
         .on_action(Message::EditorContentChanged)
         .font(font)
-        .width(Length::Fill)
         .height(Length::Fill);
     
     // Place the editor in a container with NO padding
     // The text_editor widget will handle its own scrolling
     // Ensure the editor is properly constrained and clipped
+    // The container sets the width to Fill, which constrains the text editor
     container(editor)
         .padding(0) // No padding
         .width(Length::Fill)

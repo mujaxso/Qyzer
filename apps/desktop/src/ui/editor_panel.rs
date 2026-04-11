@@ -38,7 +38,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
-                background: None,  // No background to blend with editor
+                background: Some(style.colors.editor_background.into()),  // Match editor background
                 border: iced::Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
@@ -62,7 +62,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
-                background: None,  // No background to blend with editor
+                background: Some(style.colors.editor_background.into()),  // Match editor background
                 border: iced::Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
