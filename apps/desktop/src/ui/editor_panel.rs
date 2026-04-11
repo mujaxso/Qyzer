@@ -34,7 +34,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             .spacing(2)  // Reduced spacing
             .align_items(iced::Alignment::Center)
         )
-        .padding([2, 8])  // Minimal padding
+        .padding([1, 4])  // Minimal padding
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
@@ -58,7 +58,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             .spacing(2)  // Reduced spacing
             .align_items(iced::Alignment::Center)
         )
-        .padding([2, 8])  // Minimal padding
+        .padding([1, 4])  // Minimal padding
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
@@ -91,10 +91,10 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                     text("Ask AI about the workspace")
                         .style(iced::theme::Text::Color(style.colors.text_muted)),
                 ]
-                .spacing(8)
-                .padding(16),
+                .spacing(4)
+                .padding(8),
             ]
-            .spacing(16)
+            .spacing(8)
             .align_items(iced::Alignment::Center)
         )
         .center_y()
@@ -106,29 +106,13 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     
     // Create a clean, borderless editor area that fills available space
     // The editor should directly fill the area without extra containers
-    let content = column![
+    column![
         header,
         // Editor content should fill all remaining space
         editor_content
     ]
     .width(Length::Fill)
     .height(Length::Fill)
-    .spacing(0);  // No spacing between header and editor
-
-    // Wrap in a container to ensure proper background, but without borders
-    container(content)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-            container::Appearance {
-                background: Some(style.colors.editor_background.into()),
-                border: iced::Border {
-                    color: Color::TRANSPARENT,
-                    width: 0.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            }
-        })))
-        .into()
+    .spacing(0)  // No spacing between header and editor
+    .into()
 }
