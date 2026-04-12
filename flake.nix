@@ -58,6 +58,9 @@
             # Hyprland-specific portal implementation
             xdg-desktop-portal-hyprland
             gsettings-desktop-schemas  # For GTK3 settings
+
+            # Tree-sitter for syntax highlighting
+            tree-sitter
           ];
 
           # Environment variables
@@ -96,6 +99,8 @@
               dbus
               # Hyprland portal
               xdg-desktop-portal-hyprland
+              # Tree-sitter
+              tree-sitter
             ];
           };
 
@@ -145,6 +150,8 @@
             dbus
             # Hyprland portal
             xdg-desktop-portal-hyprland
+            # Tree-sitter
+            tree-sitter
           ];
 
         };
