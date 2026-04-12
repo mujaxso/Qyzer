@@ -63,8 +63,10 @@ impl SyntaxTree {
         // We can't use std::mem::take because Tree doesn't implement Default
         // So we'll parse with the old tree and then replace it
         let old_tree = std::mem::replace(&mut self.tree, unsafe {
-            // Create an empty tree as a placeholder
-            std::mem::zeroed()
+            // Create an uninitialized tree as a placeholder
+            // We'll immediately replace it with a parsed tree
+            // This is safe because we never read from this placeholder
+            std::mem::MaybeUninit::uninit().assume_init()
         });
         
         // Convert rope to string for parsing

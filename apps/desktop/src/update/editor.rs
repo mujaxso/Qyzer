@@ -30,7 +30,7 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                         // Update syntax document
                         if let Some(path) = &app.active_file_path {
                             let doc_id = path.clone();
-                            let mut syntax_manager = app.syntax_manager.lock();
+                            let mut syntax_manager = app.syntax_manager.lock().unwrap();
                             if let Err(e) = syntax_manager.update_document(&doc_id, &current_text, Path::new(path)) {
                                 app.status_message = format!("Syntax update failed: {}", e);
                             }
@@ -54,7 +54,7 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                         // Update syntax document with incremental edit
                         if let Some(path) = &app.active_file_path {
                             let doc_id = path.clone();
-                            let mut syntax_manager = app.syntax_manager.lock();
+                            let mut syntax_manager = app.syntax_manager.lock().unwrap();
                             if let Err(e) = syntax_manager.edit_document(&doc_id, start_byte, old_end_byte, &new_text) {
                                 app.status_message = format!("Syntax edit failed: {}", e);
                             }
@@ -77,7 +77,7 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                         // Update syntax document with incremental edit
                         if let Some(path) = &app.active_file_path {
                             let doc_id = path.clone();
-                            let mut syntax_manager = app.syntax_manager.lock();
+                            let mut syntax_manager = app.syntax_manager.lock().unwrap();
                             if let Err(e) = syntax_manager.edit_document(&doc_id, start_byte, old_end_byte, "") {
                                 app.status_message = format!("Syntax edit failed: {}", e);
                             }
@@ -100,7 +100,7 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                         // Update syntax document with incremental edit
                         if let Some(path) = &app.active_file_path {
                             let doc_id = path.clone();
-                            let mut syntax_manager = app.syntax_manager.lock();
+                            let mut syntax_manager = app.syntax_manager.lock().unwrap();
                             if let Err(e) = syntax_manager.edit_document(&doc_id, start_byte, old_end_byte, "") {
                                 app.status_message = format!("Syntax edit failed: {}", e);
                             }
@@ -155,7 +155,7 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             // Initialize syntax document
             if let Some(path) = editor_state.path() {
                 let doc_id = path.to_string();
-                let mut syntax_manager = app.syntax_manager.lock();
+                let mut syntax_manager = app.syntax_manager.lock().unwrap();
                 if let Err(e) = syntax_manager.update_document(&doc_id, &editor_state.text(), Path::new(path)) {
                     app.status_message = format!("Syntax init failed: {}", e);
                 }

@@ -38,9 +38,9 @@ impl LanguageId {
             LanguageId::Rust => {
                 #[cfg(feature = "rust")]
                 {
-                    // For now, return None to avoid compilation issues
-                    // TODO: Fix tree_sitter_rust::LANGUAGE usage
-                    None
+                    // tree_sitter_rust::LANGUAGE is a function pointer that returns Language
+                    // We need to call it to get the Language
+                    Some(unsafe { tree_sitter_rust::LANGUAGE() })
                 }
                 #[cfg(not(feature = "rust"))]
                 {
