@@ -57,17 +57,15 @@ impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
     }
 }
 
-// Custom style sheet for text editor
-struct EditorStyleSheet {
-    background_color: Color,
-}
+// Transparent style sheet for text editor (background comes from container)
+struct TransparentStyle;
 
-impl iced::widget::text_editor::StyleSheet for EditorStyleSheet {
+impl iced::widget::text_editor::StyleSheet for TransparentStyle {
     type Style = iced::Theme;
 
     fn active(&self, _style: &Self::Style) -> iced::widget::text_editor::Appearance {
         iced::widget::text_editor::Appearance {
-            background: self.background_color.into(),
+            background: Color::TRANSPARENT.into(),
             border: iced::Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
@@ -78,7 +76,7 @@ impl iced::widget::text_editor::StyleSheet for EditorStyleSheet {
 
     fn hovered(&self, _style: &Self::Style) -> iced::widget::text_editor::Appearance {
         iced::widget::text_editor::Appearance {
-            background: self.background_color.into(),
+            background: Color::TRANSPARENT.into(),
             border: iced::Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
@@ -89,7 +87,7 @@ impl iced::widget::text_editor::StyleSheet for EditorStyleSheet {
 
     fn focused(&self, _style: &Self::Style) -> iced::widget::text_editor::Appearance {
         iced::widget::text_editor::Appearance {
-            background: self.background_color.into(),
+            background: Color::TRANSPARENT.into(),
             border: iced::Border {
                 color: Color::TRANSPARENT,
                 width: 0.0,
@@ -133,32 +131,19 @@ pub fn editor<'a>(
     line_cache: Option<Vec<Vec<(Range<usize>, Color)>>>,
 ) -> Element<'a, Message> {
     // Create font based on selected font family
-    // Note: Iced's font support is limited, so we use the first font in the fallback stack
     let font_family = typography.font_family.to_family_string();
     let font = Font::with_name(font_family);
     
-    // Create a custom style sheet
-    let style_sheet = EditorStyleSheet {
-        background_color,
-    };
-    let custom_style: iced::theme::TextEditor = 
-        iced::theme::TextEditor::Custom(Box::new(style_sheet) as Box<dyn iced::widget::text_editor::StyleSheet<Style = iced::Theme>>);
+    // Use a transparent style for the editor; background is provided by the container
+    let custom_style = iced::theme::TextEditor::Custom(Box::new(TransparentStyle));
     
-    let mut editor = text_editor::TextEditor::new(text_editor_content)
+    let editor = text_editor::TextEditor::new(text_editor_content)
         .on_action(Message::EditorContentChanged)
         .font(font)
         .style(custom_style);
-
-    // Apply syntax highlighting if a line cache is provided
-    if let Some(cache) = line_cache {
-        let highlighter = SyntaxHighlighter::new(&cache);
-        editor = editor.highlight(highlighter, |_settings: &Vec<Vec<(Range<usize>, Color)>>, color| {
-            Format {
-                color: Some(*color),
-                font: None,
-            }
-        });
-    }
+    
+    // Note: syntax highlighting via line_cache is currently disabled due to compilation issues
+    // Will be integrated in a future update.
     
     // The text editor widget has built-in scrolling capabilities
     // It handles both vertical and horizontal scrolling automatically
