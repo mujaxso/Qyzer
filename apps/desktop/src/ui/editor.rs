@@ -17,7 +17,7 @@ struct SyntaxHighlighter {
 impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
     type Settings = Vec<Vec<(Range<usize>, Color)>>;
     type Highlight = Color;
-    type Iterator<'a> = std::vec::IntoIter<(usize, Self::Highlight)>;
+    type Iterator<'a> = std::vec::IntoIter<(Range<usize>, Color)>;
 
     fn new(settings: &Self::Settings) -> Self {
         Self {
@@ -40,20 +40,20 @@ impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
 
     fn highlight_line(&mut self, line: &str) -> Self::Iterator<'_> {
         let line_index = self.current_line;
-        let mut highlights = Vec::new();
+        let mut ranges = Vec::new();
         if let Some(line_highlights) = self.line_cache.get(line_index) {
             for (range, color) in line_highlights {
                 // Ensure range is within line bytes length.
                 let end = range.end.min(line.len());
                 let start = range.start.min(end);
                 if start < end {
-                    highlights.push((start, *color));
+                    ranges.push((start..end, *color));
                 }
             }
         }
         // The iterator must be sorted by position ascending.
-        highlights.sort_by_key(|(pos, _)| *pos);
-        highlights.into_iter()
+        ranges.sort_by_key(|(range, _)| range.start);
+        ranges.into_iter()
     }
 }
 
