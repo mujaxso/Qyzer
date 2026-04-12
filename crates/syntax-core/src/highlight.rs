@@ -1,26 +1,16 @@
 //! Syntax highlighting using Tree-sitter queries.
 
+use std::sync::Arc;
 use tree_sitter::{Query, QueryCursor, Tree};
 use ropey::Rope;
 
 /// Highlight configuration for a language
+#[derive(Clone)]
 pub struct HighlightConfiguration {
-    /// Tree-sitter query for highlighting
-    query: Query,
+    /// Tree-sitter query for highlighting (wrapped in Arc for cloning)
+    query: Arc<Query>,
     /// Capture names for highlighting
     capture_names: Vec<String>,
-}
-
-impl Clone for HighlightConfiguration {
-    fn clone(&self) -> Self {
-        // Since Query doesn't implement Clone, we need to recreate it
-        // This is a bit inefficient, but necessary
-        // We'll need to store the query string to recreate it
-        // For now, we'll panic if cloning is attempted, or implement a different approach
-        // Since this is for internal use, we can avoid cloning in most cases
-        // Let's implement a workaround by storing the query string
-        unimplemented!("HighlightConfiguration cloning not supported due to Query limitations")
-    }
 }
 
 impl HighlightConfiguration {
@@ -37,7 +27,7 @@ impl HighlightConfiguration {
         let capture_names = query.capture_names().iter().map(|s| s.to_string()).collect();
         
         Ok(Self {
-            query,
+            query: Arc::new(query),
             capture_names,
         })
     }
