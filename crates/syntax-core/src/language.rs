@@ -42,9 +42,8 @@ impl LanguageId {
             #[cfg(feature = "rust")]
             LanguageId::Rust => {
                 // The tree‑sitter‑rust crate exposes LANGUAGE as a LanguageFn,
-                // which is a newtype wrapper around an unsafe extern "C" fn.
-                // Access the inner function via the public .0 field.
-                Some(unsafe { tree_sitter_rust::LANGUAGE.0() })
+                // which provides a safe(ish) call method.
+                Some(unsafe { tree_sitter_rust::LANGUAGE.call() })
             }
             #[cfg(not(feature = "rust"))]
             LanguageId::Rust => None,
