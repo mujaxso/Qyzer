@@ -41,9 +41,10 @@ impl LanguageId {
         match self {
             #[cfg(feature = "rust")]
             LanguageId::Rust => {
-                // The tree‑sitter‑rust crate exposes LANGUAGE as a LanguageFn,
-                // which has a call method returning Language.
-                Some(unsafe { tree_sitter_rust::LANGUAGE.call() })
+                // The tree‑sitter‑rust 0.20 crate exposes LANGUAGE as a function pointer.
+                let raw_ptr = unsafe { tree_sitter_rust::LANGUAGE() };
+                // Convert raw pointer to tree_sitter::Language using from (as suggested by compiler)
+                Some(unsafe { tree_sitter::Language::from(raw_ptr) })
             }
             #[cfg(not(feature = "rust"))]
             LanguageId::Rust => None,
