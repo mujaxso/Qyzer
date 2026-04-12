@@ -267,6 +267,17 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             .width(Length::Fill)
             .height(Length::Fill)
             .clip(true) // Ensure content doesn't overflow
+            .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
+                container::Appearance {
+                    background: Some(iced::Color::from_rgb(0.1, 0.1, 0.1).into()), // Dark background
+                    border: iced::Border {
+                        color: iced::Color::from_rgb(1.0, 0.0, 0.0),
+                        width: 2.0,
+                        radius: 0.0.into(),
+                    },
+                    ..Default::default()
+                }
+            })))
             .into()
     );
 
