@@ -40,12 +40,7 @@ impl LanguageId {
     pub fn tree_sitter_language(&self) -> Option<tree_sitter::Language> {
         match self {
             #[cfg(feature = "rust")]
-            LanguageId::Rust => {
-                // The tree‑sitter‑rust 0.20 crate exposes LANGUAGE as a function pointer.
-                let raw_ptr = unsafe { tree_sitter_rust::LANGUAGE() };
-                // Convert raw pointer to tree_sitter::Language using from (as suggested by compiler)
-                Some(unsafe { tree_sitter::Language::from(raw_ptr) })
-            }
+            LanguageId::Rust => Some(tree_sitter_rust::language()),
             #[cfg(not(feature = "rust"))]
             LanguageId::Rust => None,
             LanguageId::Toml => None, // TOML support not currently compiled
