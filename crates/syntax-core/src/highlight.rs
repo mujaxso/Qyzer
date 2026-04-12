@@ -2,10 +2,8 @@
 
 use tree_sitter::{Query, QueryCursor, Tree};
 use ropey::Rope;
-use std::sync::Arc;
 
 /// Highlight configuration for a language
-#[derive(Clone)]
 pub struct HighlightConfiguration {
     /// Tree-sitter query for highlighting
     query: Query,
@@ -16,7 +14,7 @@ pub struct HighlightConfiguration {
 impl HighlightConfiguration {
     /// Create a new highlight configuration
     pub fn new(
-        language: tree_sitter::Language,
+        language: &tree_sitter::Language,
         highlights_query: &str,
         _locals_query: &str,
         _injections_query: &str,
@@ -24,7 +22,7 @@ impl HighlightConfiguration {
         let query = Query::new(language, highlights_query)
             .map_err(|e| crate::SyntaxError::QueryError(e.to_string()))?;
         
-        let capture_names = query.capture_names().to_vec();
+        let capture_names = query.capture_names().iter().map(|s| s.to_string()).collect();
         
         Ok(Self {
             query,
@@ -90,7 +88,7 @@ pub fn highlight_tree(
     
     let mut highlights = Vec::new();
     
-    for match_ in cursor.matches(&config.query, root_node, text.as_bytes()) {
+    for match_ in cursor.matches(&config.query, root_node, text.bytes()) {
         for capture in match_.captures {
             let node = capture.node;
             let start = node.start_byte();

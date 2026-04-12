@@ -57,11 +57,9 @@ impl SyntaxDocument {
 
         // Update syntax tree if it exists
         if let Some(tree) = &mut self.syntax_tree {
-            // Calculate positions for the edit
+            // Calculate positions for the edit before borrowing tree
             let start_position = self.byte_to_point(start_byte);
             let old_end_position = self.byte_to_point(old_end_byte);
-            
-            // Calculate new end position
             let new_end_byte = start_byte + new_text.len();
             let new_end_position = self.byte_to_point(new_end_byte);
             

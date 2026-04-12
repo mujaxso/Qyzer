@@ -38,7 +38,7 @@ impl SyntaxSnapshot {
             current_byte += line.len() + 1; // +1 for newline
         }
         
-        for span in highlights {
+        for span in &highlights {
             // Find which line this span starts in
             if let Some(line_idx) = line_starts.iter().position(|&start| start <= span.start) {
                 let line_start = line_starts[line_idx];

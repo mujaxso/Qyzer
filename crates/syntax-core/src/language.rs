@@ -38,7 +38,7 @@ impl LanguageId {
             LanguageId::Rust => {
                 #[cfg(feature = "rust")]
                 {
-                    Some(tree_sitter_rust::language())
+                    Some(tree_sitter_rust::LANGUAGE())
                 }
                 #[cfg(not(feature = "rust"))]
                 {
@@ -86,7 +86,7 @@ impl LanguageRegistry {
         // Register Rust if available
         if let Some(lang) = LanguageId::Rust.tree_sitter_language() {
             if let Ok(config) = HighlightConfiguration::new(
-                lang,
+                &lang,
                 LanguageId::Rust.highlight_query(),
                 "",
                 "",
@@ -108,7 +108,7 @@ impl LanguageRegistry {
         let mut parser = Parser::new();
         
         if let Some(lang) = lang_id.tree_sitter_language() {
-            if parser.set_language(lang).is_ok() {
+            if parser.set_language(&lang).is_ok() {
                 return Some(parser);
             }
         }

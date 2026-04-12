@@ -60,14 +60,19 @@ impl SyntaxTree {
     /// Reparse the tree incrementally after edits
     pub fn reparse(&mut self) -> Result<(), crate::SyntaxError> {
         let mut parser = self.parser.lock();
-        let old_tree = std::mem::take(&mut self.tree);
+        // We can't use std::mem::take because Tree doesn't implement Default
+        // So we'll parse with the old tree and then replace it
+        let old_tree = std::mem::replace(&mut self.tree, unsafe {
+            // Create an empty tree as a placeholder
+            std::mem::zeroed()
+        });
         
         let new_tree = parser
             .parse_with(
                 &mut |byte: usize, _| {
                     if byte < self.text.len_bytes() {
                         let chunk = self.text.byte_slice(byte..byte + 1);
-                        chunk.as_bytes()
+                        chunk.bytes()
                     } else {
                         &[]
                     }

@@ -95,7 +95,7 @@ impl EditorState {
         self.document.insert(cursor_pos, text)?;
         
         // Calculate edit information for syntax updates
-        let new_end_byte = self.document.char_to_byte(cursor_pos + text.len());
+        let _new_end_byte = self.document.char_to_byte(cursor_pos + text.len());
         let old_end_byte = start_byte; // No text was removed
         
         // Move cursor forward by the length of inserted text
