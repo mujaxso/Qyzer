@@ -39,13 +39,16 @@ impl LanguageId {
                 #[cfg(feature = "rust")]
                 {
                     // Use the raw C function to get the language pointer
-                    extern "C" {
+                    unsafe extern "C" {
                         fn tree_sitter_rust() -> *const ();
                     }
                     let ptr = unsafe { tree_sitter_rust() };
                     // Convert raw pointer to Language using from_raw
                     // Safety: tree_sitter_rust() returns a valid language pointer
-                    Some(unsafe { std::mem::transmute(ptr) })
+                    // We need to cast *const () to *const tree_sitter::ffi::TSLanguage
+                    use tree_sitter::ffi::TSLanguage;
+                    let lang_ptr = ptr as *const TSLanguage;
+                    Some(unsafe { TsLanguage::from_raw(lang_ptr) })
                 }
                 #[cfg(not(feature = "rust"))]
                 {
