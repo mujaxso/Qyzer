@@ -68,7 +68,7 @@ impl LanguageId {
                 // Fallback to static linking (if feature enabled)
                 #[cfg(feature = "rust")]
                 {
-                    return Some(tree_sitter_rust::LANGUAGE);
+                    return Some(tree_sitter_rust::LANGUAGE());
                 }
                 #[cfg(not(feature = "rust"))]
                 None
