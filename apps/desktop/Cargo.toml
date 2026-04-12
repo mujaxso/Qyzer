@@ -19,3 +19,37 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 dirs = "5.0"
 rfd = { workspace = true }
+[package]
+name = "desktop"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+iced = { version = "0.12", features = ["image", "svg"] }
+syntax-core = { path = "../../crates/syntax-core", features = ["rust", "toml"] }
+editor-core = { path = "../../crates/editor-core" }
+core-types = { path = "../../crates/core-types" }
+workspace-model = { path = "../../crates/workspace-model" }
+file-ops = { path = "../../crates/file-ops" }
+settings = { path = "../../crates/settings" }
+rpc = { path = "../../crates/rpc" }
+
+[build-dependencies]
+anyhow = "1"
+[package]
+name = "desktop"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+iced = { version = "0.12", features = ["image", "svg"] }
+syntax-core = { path = "../../crates/syntax-core", features = ["rust", "toml"] }
+editor-core = { path = "../../crates/editor-core" }
+core-types = { path = "../../crates/core-types" }
+workspace-model = { path = "../../crates/workspace-model" }
+file-ops = { path = "../../crates/file-ops" }
+settings = { path = "../../crates/settings" }
+rpc = { path = "../../crates/rpc" }
+
+[build-dependencies]
+anyhow = "1"

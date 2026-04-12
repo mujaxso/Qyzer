@@ -56,68 +56,83 @@ fn main() {
         println!("cargo:warning=  ./scripts/download-fonts.sh");
     }
 
-    // Determine if we are statically linking tree‑sitter grammars via Cargo features.
-    // If the Rust and/or TOML features are enabled, we don't need external .so files.
-    let static_rust = std::env::var("CARGO_FEATURE_RUST").is_ok();
-    let static_toml = std::env::var("CARGO_FEATURE_TOML").is_ok();
+    // We'll attempt to download grammars regardless of static linking detection,
+    // because static linking detection is unreliable across crates.
+    // The script will place libraries in the appropriate target-specific directory.
+    let runtime_root = std::path::Path::new("runtime/treesitter");
+    let target = std::env::var("TARGET").unwrap_or_default();
+    let os = if target.contains("linux") {
+        "linux"
+    } else if target.contains("darwin") {
+        "macos"
+    } else if target.contains("windows") {
+        "windows"
+    } else {
+        // unknown, default to linux
+        "linux"
+    };
+    let arch = if target.contains("x86_64") {
+        "x86_64"
+    } else if target.contains("aarch64") || target.contains("arm64") {
+        "aarch64"
+    } else {
+        "x86_64"
+    };
+    let grammar_dir = runtime_root.join("grammars").join(format!("{}-{}", os, arch));
+    // Check for at least Rust and TOML grammars (most essential)
+    let rust_grammar = grammar_dir.join("libtree-sitter-rust.so");
+    let toml_grammar = grammar_dir.join("libtree-sitter-toml.so");
 
-    // Only warn about missing .so files for languages that aren't statically linked.
-    if !static_rust || !static_toml {
-        let runtime_root = std::path::Path::new("runtime/treesitter");
-        let target = std::env::var("TARGET").unwrap_or_default();
-        let os = if target.contains("linux") {
-            "linux"
-        } else if target.contains("darwin") {
-            "macos"
-        } else if target.contains("windows") {
-            "windows"
-        } else {
-            // unknown, default to linux
-            "linux"
-        };
-        let arch = if target.contains("x86_64") {
-            "x86_64"
-        } else if target.contains("aarch64") || target.contains("arm64") {
-            "aarch64"
-        } else {
-            "x86_64"
-        };
-        let grammar_dir = runtime_root.join("grammars").join(format!("{}-{}", os, arch));
-        let rust_grammar = grammar_dir.join("libtree-sitter-rust.so");
-        let toml_grammar = grammar_dir.join("libtree-sitter-toml.so");
+    // Determine library extension based on OS
+    let lib_ext = match os {
+        "macos" => "dylib",
+        "windows" => "dll",
+        _ => "so",
+    };
+    let rust_grammar_with_ext = grammar_dir.join(format!("libtree-sitter-rust.{}", lib_ext));
+    let toml_grammar_with_ext = grammar_dir.join(format!("libtree-sitter-toml.{}", lib_ext));
 
-        let mut missing = Vec::new();
-        if !static_rust && !rust_grammar.exists() {
-            missing.push("rust");
-        }
-        if !static_toml && !toml_grammar.exists() {
-            missing.push("toml");
-        }
+    let grammars_exist = (rust_grammar.exists() || rust_grammar_with_ext.exists())
+        && (toml_grammar.exists() || toml_grammar_with_ext.exists());
 
-        if !missing.is_empty() {
-            println!("cargo:warning=Tree‑sitter grammar libraries missing for {} (dynamic linking).", missing.join(", "));
-            println!("cargo:warning=Attempting to download via fetch‑grammars.sh…");
-            // Try to run the existing fetch script
-            let script_path = runtime_root.join("fetch-grammars.sh");
-            if script_path.exists() {
-                use std::process::Command;
-                let status = Command::new("bash")
-                    .arg(script_path)
-                    .status();
-                match status {
-                    Ok(exit_status) if exit_status.success() => {
-                        println!("cargo:warning=Successfully downloaded grammar libraries.");
-                    }
-                    _ => {
-                        println!("cargo:warning=Failed to run fetch-grammars.sh. Grammars may be missing.");
-                    }
-                }
-            } else {
-                println!("cargo:warning=fetch-grammars.sh not found at {:?}. Grammars will be missing.", script_path);
+    if !grammars_exist {
+        println!("cargo:warning=Tree‑sitter grammar libraries missing for rust, toml. Attempting to download…");
+        // Try to locate the fetch script in multiple locations
+        let possible_script_paths = [
+            runtime_root.join("fetch-grammars.sh"),
+            std::path::Path::new("runtime").join("fetch-grammars.sh"),
+            std::path::Path::new("runtime/treesitter").join("fetch-grammars.sh"),
+        ];
+        let mut script_found = None;
+        for path in &possible_script_paths {
+            if path.exists() {
+                script_found = Some(path);
+                break;
             }
         }
+        if let Some(script_path) = script_found {
+            use std::process::Command;
+            // Pass TARGET environment variable to the script
+            let status = Command::new("bash")
+                .arg(script_path)
+                .env("TARGET", &target)
+                .status();
+            match status {
+                Ok(exit_status) if exit_status.success() => {
+                    println!("cargo:warning=Successfully downloaded grammar libraries.");
+                }
+                Ok(exit_status) => {
+                    println!("cargo:warning=fetch-grammars.sh exited with status {}", exit_status);
+                }
+                Err(e) => {
+                    println!("cargo:warning=Failed to run fetch-grammars.sh: {}", e);
+                }
+            }
+        } else {
+            println!("cargo:warning=fetch-grammars.sh not found. Grammars will be missing.");
+            println!("cargo:warning=Please run the script manually from runtime/treesitter/");
+        }
     } else {
-        // Static linking enabled for both Rust and TOML – no need for external .so files.
-        println!("cargo:warning=Static tree‑sitter linking enabled (rust={}, toml={}).", static_rust, static_toml);
+        println!("cargo:warning=Tree‑sitter grammars are present.");
     }
 }

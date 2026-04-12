@@ -9,8 +9,10 @@ tree-sitter-rust = { version = "0.20", optional = true }
 tree-sitter-toml = { version = "0.20", optional = true }
 ropey = "1.6"
 thiserror = "1.0"
+libloading = { version = "0.8", optional = true }
 
 [features]
-default = ["rust", "toml"]
+default = ["rust", "toml", "dynamic-loading"]
 rust = ["tree-sitter-rust"]
 toml = ["tree-sitter-toml"]
+dynamic-loading = ["libloading"]
