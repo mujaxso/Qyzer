@@ -176,6 +176,16 @@ impl Document {
     pub fn is_very_large(&self) -> bool {
         self.len_chars() > 10_000_000
     }
+
+    /// Get byte offset for character position
+    pub fn char_to_byte(&self, char_idx: usize) -> usize {
+        self.rope.char_to_byte(char_idx)
+    }
+
+    /// Get character offset for byte position
+    pub fn byte_to_char(&self, byte_idx: usize) -> usize {
+        self.rope.byte_to_char(byte_idx)
+    }
 }
 
 impl Default for Document {

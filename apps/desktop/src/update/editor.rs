@@ -2,6 +2,7 @@ use crate::message::Message;
 use crate::state::App;
 use iced::Command;
 use editor_core::EditorState;
+use std::path::Path;
 
 pub fn update(app: &mut App, message: Message) -> Command<Message> {
     match message {
@@ -25,6 +26,15 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                         editor_state.document_mut().replace_all(&current_text);
                         app.is_dirty = editor_state.document().is_dirty();
                         app.status_message = "Text updated".to_string();
+                        
+                        // Update syntax document
+                        if let Some(path) = &app.active_file_path {
+                            let doc_id = path.clone();
+                            let mut syntax_manager = app.syntax_manager.lock();
+                            if let Err(e) = syntax_manager.update_document(&doc_id, &current_text, Path::new(path)) {
+                                app.status_message = format!("Syntax update failed: {}", e);
+                            }
+                        }
                     }
                 }
                 _ => {
@@ -36,33 +46,69 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
         }
         Message::EditorInsertText(text) => {
             if let Some(ref mut editor_state) = app.editor_state {
-                if let Err(e) = editor_state.insert_text(&text) {
-                    app.status_message = format!("Failed to insert text: {}", e);
-                } else {
-                    app.is_dirty = editor_state.document().is_dirty();
-                    app.status_message = "Text inserted".to_string();
+                match editor_state.insert_text(&text) {
+                    Ok((start_byte, old_end_byte, new_text)) => {
+                        app.is_dirty = editor_state.document().is_dirty();
+                        app.status_message = "Text inserted".to_string();
+                        
+                        // Update syntax document with incremental edit
+                        if let Some(path) = &app.active_file_path {
+                            let doc_id = path.clone();
+                            let mut syntax_manager = app.syntax_manager.lock();
+                            if let Err(e) = syntax_manager.edit_document(&doc_id, start_byte, old_end_byte, &new_text) {
+                                app.status_message = format!("Syntax edit failed: {}", e);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        app.status_message = format!("Failed to insert text: {}", e);
+                    }
                 }
             }
             Command::none()
         }
         Message::EditorDeleteBackward => {
             if let Some(ref mut editor_state) = app.editor_state {
-                if let Err(e) = editor_state.delete_backward() {
-                    app.status_message = format!("Failed to delete: {}", e);
-                } else {
-                    app.is_dirty = editor_state.document().is_dirty();
-                    app.status_message = "Deleted backward".to_string();
+                match editor_state.delete_backward() {
+                    Ok((start_byte, old_end_byte, _)) => {
+                        app.is_dirty = editor_state.document().is_dirty();
+                        app.status_message = "Deleted backward".to_string();
+                        
+                        // Update syntax document with incremental edit
+                        if let Some(path) = &app.active_file_path {
+                            let doc_id = path.clone();
+                            let mut syntax_manager = app.syntax_manager.lock();
+                            if let Err(e) = syntax_manager.edit_document(&doc_id, start_byte, old_end_byte, "") {
+                                app.status_message = format!("Syntax edit failed: {}", e);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        app.status_message = format!("Failed to delete: {}", e);
+                    }
                 }
             }
             Command::none()
         }
         Message::EditorDeleteForward => {
             if let Some(ref mut editor_state) = app.editor_state {
-                if let Err(e) = editor_state.delete_forward() {
-                    app.status_message = format!("Failed to delete: {}", e);
-                } else {
-                    app.is_dirty = editor_state.document().is_dirty();
-                    app.status_message = "Deleted forward".to_string();
+                match editor_state.delete_forward() {
+                    Ok((start_byte, old_end_byte, _)) => {
+                        app.is_dirty = editor_state.document().is_dirty();
+                        app.status_message = "Deleted forward".to_string();
+                        
+                        // Update syntax document with incremental edit
+                        if let Some(path) = &app.active_file_path {
+                            let doc_id = path.clone();
+                            let mut syntax_manager = app.syntax_manager.lock();
+                            if let Err(e) = syntax_manager.edit_document(&doc_id, start_byte, old_end_byte, "") {
+                                app.status_message = format!("Syntax edit failed: {}", e);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        app.status_message = format!("Failed to delete: {}", e);
+                    }
                 }
             }
             Command::none()
@@ -104,6 +150,15 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                 let text = editor_state.document().text();
                 app.text_editor = iced::widget::text_editor::Content::with_text(&text);
                 app.status_message = format!("Loaded file ({} chars)", char_count);
+            }
+            
+            // Initialize syntax document
+            if let Some(path) = editor_state.path() {
+                let doc_id = path.to_string();
+                let mut syntax_manager = app.syntax_manager.lock();
+                if let Err(e) = syntax_manager.update_document(&doc_id, &editor_state.text(), Path::new(path)) {
+                    app.status_message = format!("Syntax init failed: {}", e);
+                }
             }
             
             app.editor_state = Some(editor_state);

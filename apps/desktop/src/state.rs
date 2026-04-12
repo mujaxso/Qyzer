@@ -8,6 +8,7 @@ use iced;
 use crate::theme::NeoteTheme;
 use crate::explorer::state::ExplorerState;
 use crate::settings::editor::EditorTypographySettings;
+use syntax_core;
 
 #[derive(Debug, Clone)]
 pub struct FileMetadata {
@@ -185,6 +186,8 @@ pub struct App {
     pub layout_mode: LayoutMode,
     // Editor typography settings
     pub editor_typography: EditorTypographySettings,
+    // Syntax manager for Tree-sitter integration
+    pub syntax_manager: Arc<Mutex<syntax_core::SyntaxManager>>,
 }
 
 impl App {
@@ -211,6 +214,7 @@ impl App {
                 window_height: 800,
                 layout_mode: LayoutMode::Wide,
                 editor_typography: EditorTypographySettings::default(),
+                syntax_manager: Arc::new(Mutex::new(syntax_core::SyntaxManager::new())),
             },
             iced::Command::none(),
         )

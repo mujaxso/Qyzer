@@ -89,32 +89,50 @@ impl EditorState {
     }
 
     /// Insert text at the cursor position.
-    pub fn insert_text(&mut self, text: &str) -> Result<(), String> {
+    pub fn insert_text(&mut self, text: &str) -> Result<(usize, usize, String), String> {
         let cursor_pos = self.cursor.position();
+        let start_byte = self.document.char_to_byte(cursor_pos);
         self.document.insert(cursor_pos, text)?;
+        
+        // Calculate edit information for syntax updates
+        let new_end_byte = self.document.char_to_byte(cursor_pos + text.len());
+        let old_end_byte = start_byte; // No text was removed
         
         // Move cursor forward by the length of inserted text
         self.cursor.move_by(CursorMovement::Right(text.len()), &self.document);
-        Ok(())
+        
+        Ok((start_byte, old_end_byte, text.to_string()))
     }
 
     /// Delete the character before the cursor (backspace).
-    pub fn delete_backward(&mut self) -> Result<(), String> {
+    pub fn delete_backward(&mut self) -> Result<(usize, usize, String), String> {
         let cursor_pos = self.cursor.position();
         if cursor_pos > 0 {
+            let start_byte = self.document.char_to_byte(cursor_pos - 1);
+            let old_end_byte = self.document.char_to_byte(cursor_pos);
+            
             self.document.delete(cursor_pos - 1, cursor_pos)?;
             self.cursor.move_by(CursorMovement::Left(1), &self.document);
+            
+            Ok((start_byte, old_end_byte, String::new()))
+        } else {
+            Err("Cannot delete before start of document".to_string())
         }
-        Ok(())
     }
 
     /// Delete the character after the cursor (delete).
-    pub fn delete_forward(&mut self) -> Result<(), String> {
+    pub fn delete_forward(&mut self) -> Result<(usize, usize, String), String> {
         let cursor_pos = self.cursor.position();
         if cursor_pos < self.document.len_chars() {
+            let start_byte = self.document.char_to_byte(cursor_pos);
+            let old_end_byte = self.document.char_to_byte(cursor_pos + 1);
+            
             self.document.delete(cursor_pos, cursor_pos + 1)?;
+            
+            Ok((start_byte, old_end_byte, String::new()))
+        } else {
+            Err("Cannot delete after end of document".to_string())
         }
-        Ok(())
     }
 
     /// Move the cursor.
@@ -141,6 +159,16 @@ impl EditorState {
             }
         }
         lines
+    }
+
+    /// Get document text
+    pub fn text(&self) -> String {
+        self.document.text()
+    }
+
+    /// Get document path
+    pub fn path(&self) -> Option<&str> {
+        self.document.path()
     }
 }
 
