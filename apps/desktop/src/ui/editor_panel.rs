@@ -99,7 +99,7 @@ pub fn syntax_highlighted_view(
 
             // Join all segments into a Row.
             let row = Row::with_children(
-                segments.into_iter().map(Element::from).collect()
+                segments.into_iter().map(Element::from)
             )
             .spacing(0);
 
@@ -353,7 +353,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             .height(Length::Fixed(0.5))
             .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
                 container::Appearance {
-                    background: Some(style.colors.divider.into()),  // Use divider color
+                    background: Some(style.colors.border.into()),  // Use divider color
                     border: iced::Border {
                         color: Color::TRANSPARENT,
                         width: 0.0,

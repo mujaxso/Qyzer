@@ -101,7 +101,7 @@ pub fn syntax_highlighted_view(
 
             // Join all segments into a Row.
             let row = Row::with_children(
-                segments.into_iter().map(Element::from).collect()
+                segments.into_iter().map(Element::from)
             )
             .spacing(0);
 
