@@ -237,31 +237,12 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             .height(Length::Fill)
             .into()
         } else {
-            // Use syntax‑highlighted view (read‑only for now)
-            let raw_text = app.text_editor.text();
-            let spans = &app.syntax_highlight_spans;
-            let view = syntax_highlighted_view(
-                &raw_text,
-                spans,
+            // Use the interactive text editor (editable)
+            editor::editor(
+                &app.text_editor,
                 &app.editor_typography,
-                &style,
-            );
-            container(view)
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .clip(true)
-                .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-                    container::Appearance {
-                        background: Some(style.colors.editor_background.into()),
-                        border: iced::Border {
-                            color: Color::TRANSPARENT,
-                            width: 0.0,
-                            radius: 0.0.into(),
-                        },
-                        ..Default::default()
-                    }
-                })))
-                .into()
+                style.colors.editor_background,
+            )
         }
     } else {
         // Welcome screen
@@ -383,27 +364,6 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                 }
             })));
         column_children.push(separator.into());
-            
-        // Add a note about editing being disabled for syntax highlighting
-        let note = container(
-            text("Syntax highlighting enabled — editing temporarily disabled")
-                .size(10)
-                .style(iced::theme::Text::Color(style.colors.text_muted))
-        )
-        .padding([2, 8])
-        .width(Length::Fill)
-        .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-            container::Appearance {
-                background: Some(style.colors.elevated_panel_background.into()),
-                border: iced::Border {
-                    color: Color::TRANSPARENT,
-                    width: 0.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            }
-        })));
-        column_children.push(note.into());
     }
     
     // Add editor content
