@@ -3,6 +3,7 @@ use syntax_core::{Highlight, HighlightSpan};
 use crate::message::Message;
 use crate::state::App;
 use super::style::StyleHelpers;
+use super::editor;
 use crate::ui::icons::Icon;
 
 /// Build a column of syntax‑highlighted text lines from the given raw text and highlight spans.
@@ -233,14 +234,11 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
             .height(Length::Fill)
             .into()
         } else {
-            // Use the new syntax‑highlighting editor view
-            let raw_text = app.text_editor.text();
-            let spans = &app.syntax_highlight_spans;
-            syntax_highlighted_view(
-                &raw_text,
-                spans,
+            // Use the interactive text editor (syntax highlighting computed but not applied visually)
+            editor::editor(
+                &app.text_editor,
                 &app.editor_typography,
-                &style,
+                style.colors.editor_background,
             )
         }
     } else {
