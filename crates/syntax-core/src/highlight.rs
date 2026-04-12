@@ -4,6 +4,7 @@ use tree_sitter::{Query, QueryCursor, Tree};
 use ropey::Rope;
 
 /// Highlight configuration for a language
+#[derive(Clone)]
 pub struct HighlightConfiguration {
     /// Tree-sitter query for highlighting
     query: Query,
