@@ -297,8 +297,8 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         container::Appearance {
             background: Some(style.colors.editor_background.into()),
             border: iced::Border {
-                color: style.colors.border,
-                width: 1.0,
+                color: iced::Color::from_rgb(1.0, 0.0, 0.0), // Red border
+                width: 3.0,
                 radius: 0.0.into(),
             },
             ..Default::default()
