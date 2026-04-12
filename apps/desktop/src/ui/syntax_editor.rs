@@ -46,8 +46,8 @@ pub fn syntax_highlighted_view(
 
             // Collect spans that overlap this line.
             for span in spans.iter() {
-                let span_start = span.start_byte as usize;
-                let span_end = span.end_byte as usize;
+                let span_start = span.start;
+                let span_end = span.end;
 
                 // Skip spans that end before this line or start after this line.
                 if span_end <= line_start || span_start >= line_end {
@@ -61,7 +61,7 @@ pub fn syntax_highlighted_view(
                         segments.push(Text::new(plain.to_string())
                             .font(font)
                             .size(typography.font_size)
-                            .color(default_color));
+                            .style(iced::theme::Text::Color(default_color)));
                     }
                 }
 
@@ -74,7 +74,7 @@ pub fn syntax_highlighted_view(
                     segments.push(Text::new(seg_text.to_string())
                         .font(font)
                         .size(typography.font_size)
-                        .color(color));
+                        .style(iced::theme::Text::Color(color)));
                 }
                 current_pos = seg_end;
             }
@@ -86,7 +86,7 @@ pub fn syntax_highlighted_view(
                     segments.push(Text::new(plain.to_string())
                         .font(font)
                         .size(typography.font_size)
-                        .color(default_color));
+                        .style(iced::theme::Text::Color(default_color)));
                 }
             }
 
@@ -96,7 +96,7 @@ pub fn syntax_highlighted_view(
                 segments.push(Text::new(whole_line.to_string())
                     .font(font)
                     .size(typography.font_size)
-                    .color(default_color));
+                    .style(iced::theme::Text::Color(default_color)));
             }
 
             // Join all segments into a Row.
