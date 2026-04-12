@@ -59,8 +59,15 @@ fn highlight_with_query(
         .tree_sitter_language()
         .ok_or_else(|| SyntaxError::LanguageNotSupported(language.as_str().to_string()))?;
 
-    let query = Query::new(ts_lang, query_str)
-        .map_err(|e| SyntaxError::QueryError(e.to_string()))?;
+    // If the query fails (e.g., because of unrecognized node types), we return empty highlights
+    // rather than propagating an error. This allows the editor to keep working without syntax
+    // highlighting for that particular language.
+    let query = match Query::new(ts_lang, query_str) {
+        Ok(q) => q,
+        Err(_) => {
+            return Ok(Vec::new());
+        }
+    };
 
     let mut cursor = QueryCursor::new();
     let root_node = tree.root_node();

@@ -19,7 +19,15 @@
             clang
             lld
             tree-sitter
+            llvmPackages.libclang
           ];
+
+          # Environment variables for bindgen (used by tree‑sitter‑cli and other crates)
+          env = {
+            LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+          } // (if pkgs.stdenv.isDarwin then {
+            # macOS specific
+          } else {});
 
           buildInputs = with pkgs; [
             # Rust toolchain
