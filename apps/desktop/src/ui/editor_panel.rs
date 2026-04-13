@@ -41,65 +41,6 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                     .size(11)
                     .style(iced::theme::Text::Color(style.colors.text_secondary)),
                 iced::widget::horizontal_space(),
-                // Show syntax highlight indicator - only for files with syntax highlighting enabled
-                if app.syntax_highlighting_enabled {
-                    if app.syntax_highlight_span_count > 0 {
-                        container(
-                            row![
-                                text("●")
-                                    .size(10)
-                                    .style(iced::theme::Text::Color(style.colors.accent)),
-                                text(format!("{} spans", app.syntax_highlight_span_count.min(9999)))
-                                    .size(9)
-                                    .style(iced::theme::Text::Color(style.colors.accent)),
-                            ]
-                            .spacing(4)
-                            .align_items(iced::Alignment::Center)
-                        )
-                        .padding([3, 8])
-                        .style(iced::theme::Container::Custom(Box::new(SyntaxIndicatorStyle {
-                            colors: style.colors,
-                            is_active: true,
-                        })))
-                    } else {
-                        container(
-                            row![
-                                text("○")
-                                    .size(10)
-                                    .style(iced::theme::Text::Color(style.colors.text_muted)),
-                                text("No syntax")
-                                    .size(9)
-                                    .style(iced::theme::Text::Color(style.colors.text_muted)),
-                            ]
-                            .spacing(4)
-                            .align_items(iced::Alignment::Center)
-                        )
-                        .padding([3, 8])
-                        .style(iced::theme::Container::Custom(Box::new(SyntaxIndicatorStyle {
-                            colors: style.colors,
-                            is_active: false,
-                        })))
-                    }
-                } else {
-                    // For files without syntax highlighting, show a simple indicator
-                    container(
-                        row![
-                            text("—")
-                                .size(10)
-                                .style(iced::theme::Text::Color(style.colors.text_muted)),
-                            text("Plain text")
-                                .size(9)
-                                .style(iced::theme::Text::Color(style.colors.text_muted)),
-                        ]
-                        .spacing(4)
-                        .align_items(iced::Alignment::Center)
-                    )
-                    .padding([3, 8])
-                    .style(iced::theme::Container::Custom(Box::new(SyntaxIndicatorStyle {
-                        colors: style.colors,
-                        is_active: false,
-                    })))
-                },
                 if app.is_dirty {
                     Icon::Warning.render_with_color(
                         &app.editor_typography,
@@ -114,14 +55,14 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                     )
                 }
             ]
-            .spacing(4)  // Less spacing
+            .spacing(4)
             .align_items(iced::Alignment::Center)
         )
-        .padding([3, 8])  // Reasonable padding
+        .padding([3, 8])
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
-                background: Some(style.colors.editor_background.into()),  // Match editor background
+                background: Some(style.colors.editor_background.into()),
                 border: iced::Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
@@ -138,14 +79,14 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                     .size(11)
                     .style(iced::theme::Text::Color(style.colors.text_muted)),
             ]
-            .spacing(4)  // Less spacing
+            .spacing(4)
             .align_items(iced::Alignment::Center)
         )
-        .padding([3, 8])  // Reasonable padding
+        .padding([3, 8])
         .width(Length::Fill)
         .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
             container::Appearance {
-                background: Some(style.colors.editor_background.into()),  // Match editor background
+                background: Some(style.colors.editor_background.into()),
                 border: iced::Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
@@ -157,76 +98,54 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
     };
     
     let editor_content: Element<'_, Message> = if let Some(_active_path) = &app.active_file_path {
-        // Check if we're in a loading state
-        match &app.file_loading_state {
-            FileLoadingState::LoadingMetadata { .. } |
-            FileLoadingState::LoadingContent { .. } |
-            FileLoadingState::LargeFileWarning { .. } |
-            FileLoadingState::VeryLargeFileWarning { .. } |
-            FileLoadingState::ReadOnlyPreview { .. } => {
-                // Show simple loading indicator to reduce UI complexity
-                container(
-                    text("Loading...")
-                        .size(14)
-                        .style(iced::theme::Text::Color(style.colors.text_secondary))
-                )
-                .center_y()
-                .center_x()
-                .width(Length::Fill)
-                .height(Length::Fill)
-                .into()
-            }
-            FileLoadingState::Idle => {
-                // File is loaded, check if it's too large
-                if app.is_file_too_large_for_editor {
-                    // Very large files (> 100 MB): show read-only preview with message
-                    container(
-                        column![
-                            Icon::Warning.render_with_color(
-                                &app.editor_typography,
-                                style.colors.warning,
-                                Some(24),
-                            ),
-                            text("File opened in read-only mode")
-                                .size(16)
-                                .style(iced::theme::Text::Color(style.colors.text_primary)),
-                            text("This file is very large (> 100 MB). Editing is disabled for performance.")
-                                .size(12)
-                                .style(iced::theme::Text::Color(style.colors.text_secondary)),
-                            text("You can view the first 100KB of the file.")
-                                .size(12)
-                                .style(iced::theme::Text::Color(style.colors.text_muted)),
-                        ]
-                        .spacing(12)
-                        .align_items(iced::Alignment::Center)
-                    )
-                    .center_y()
-                    .center_x()
-                    .width(Length::Fill)
-                    .height(Length::Fill)
-                    .into()
-                } else {
-                    // Use the interactive text editor (editable) with syntax highlighting
-                    // Only pass the cache if it's ready (non-empty) and the file is loaded
-                    // This prevents rendering with empty cache during file load
-                    let cache_ready = !app.syntax_highlight_cache.is_empty();
-                    
-                    // Only pass the cache if it's ready
-                    let line_cache = if cache_ready {
-                        Some(app.syntax_highlight_cache.clone())
-                    } else {
-                        None
-                    };
-                    
-                    editor::editor(
-                        &app.text_editor,
+        // File is loaded, check if it's too large
+        if app.is_file_too_large_for_editor {
+            // Very large files (> 100 MB): show read-only preview
+            container(
+                column![
+                    Icon::Warning.render_with_color(
                         &app.editor_typography,
-                        style.colors.editor_background,
-                        style.colors.text_primary,
-                        line_cache,
-                    )
-                }
-            }
+                        style.colors.warning,
+                        Some(24),
+                    ),
+                    text("File opened in read-only mode")
+                        .size(16)
+                        .style(iced::theme::Text::Color(style.colors.text_primary)),
+                    text("This file is very large (> 100 MB). Editing is disabled for performance.")
+                        .size(12)
+                        .style(iced::theme::Text::Color(style.colors.text_secondary)),
+                    text("You can view the first 100KB of the file.")
+                        .size(12)
+                        .style(iced::theme::Text::Color(style.colors.text_muted)),
+                ]
+                .spacing(12)
+                .align_items(iced::Alignment::Center)
+            )
+            .center_y()
+            .center_x()
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into()
+        } else {
+            // Use the interactive text editor (editable) with syntax highlighting
+            // Only pass the cache if it's ready (non-empty) and the file is loaded
+            // This prevents rendering with empty cache during file load
+            let cache_ready = !app.syntax_highlight_cache.is_empty();
+            
+            // Only pass the cache if it's ready
+            let line_cache = if cache_ready {
+                Some(app.syntax_highlight_cache.clone())
+            } else {
+                None
+            };
+            
+            editor::editor(
+                &app.text_editor,
+                &app.editor_typography,
+                style.colors.editor_background,
+                style.colors.text_primary,
+                line_cache,
+            )
         }
     } else {
         // Welcome screen
@@ -256,75 +175,10 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         .into()
     };
     
-    // Syntax highlight legend - only show for small files with syntax highlighting enabled
-    let legend = if app.syntax_highlighting_enabled && !app.syntax_highlight_spans.is_empty() {
-        use std::collections::HashSet;
-        let mut unique_highlights = HashSet::new();
-        // Limit the number of spans we process for performance
-        for span in app.syntax_highlight_spans.iter().take(1000) {
-            unique_highlights.insert(span.highlight);
-        }
-        let mut items = Vec::new();
-        for &hl in unique_highlights.iter() {
-            let color = match hl {
-                Highlight::Comment => Color::from_rgb(0.5, 0.5, 0.5),
-                Highlight::String => Color::from_rgb(0.0, 0.6, 0.0),
-                Highlight::Keyword => Color::from_rgb(0.9, 0.2, 0.2),
-                Highlight::Function => Color::from_rgb(0.0, 0.4, 0.8),
-                Highlight::Variable => Color::from_rgb(0.8, 0.5, 0.0),
-                Highlight::Type => Color::from_rgb(0.4, 0.2, 0.8),
-                Highlight::Constant => Color::from_rgb(0.8, 0.0, 0.8),
-                Highlight::Attribute => Color::from_rgb(0.2, 0.7, 0.7),
-                Highlight::Operator => Color::from_rgb(0.7, 0.7, 0.2),
-                Highlight::Number => Color::from_rgb(0.9, 0.6, 0.0),
-                Highlight::Property => Color::from_rgb(0.2, 0.8, 0.5),
-                Highlight::Namespace => Color::from_rgb(0.5, 0.5, 0.8),
-                Highlight::Plain => Color::TRANSPARENT,
-            };
-            let item = container(iced::widget::Space::with_width(Length::Fixed(8.0)))
-                .height(Length::Fixed(8.0))
-                .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-                    container::Appearance {
-                        background: Some(color.into()),
-                        border: iced::Border {
-                            color: style.colors.border,
-                            width: 1.0,
-                            radius: 1.0.into(),
-                        },
-                        ..Default::default()
-                    }
-                })));
-            items.push(item.into());
-        }
-        container(
-            row![
-                text(format!("{} spans", app.syntax_highlight_span_count.min(1000)))
-                    .size(9)
-                    .style(iced::theme::Text::Color(style.colors.text_muted)),
-                iced::widget::Space::with_width(Length::Fixed(4.0)),
-                row(items).spacing(2)
-            ]
-            .align_items(iced::Alignment::Center)
-        )
-        .padding([2, 8])
+    // No syntax highlight legend - professional editors don't show this
+    let legend = container(iced::widget::Space::with_height(Length::Fixed(0.0)))
         .width(Length::Fill)
-        .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-            container::Appearance {
-                background: Some(style.colors.elevated_panel_background.into()),
-                border: iced::Border {
-                    color: Color::TRANSPARENT,
-                    width: 0.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            }
-        })))
-        .into()
-    } else {
-        container(iced::widget::Space::with_height(Length::Fixed(0.0)))
-            .width(Length::Fill)
-            .into()
-    };
+        .into();
 
     // Create an editor panel with a border to match other panels
     // The panel should have a visible border like the explorer and assistant panels

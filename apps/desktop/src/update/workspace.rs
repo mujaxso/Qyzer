@@ -143,61 +143,27 @@ fn handle_file_selected_by_path(app: &mut App, path: String) -> Command<Message>
 fn handle_file_metadata_loaded(app: &mut App, result: Result<FileMetadata, String>) -> Command<Message> {
     match result {
         Ok(metadata) => {
+            // Always proceed to load the file
+            app.file_loading_state = FileLoadingState::LoadingContent {
+                path: metadata.path.clone(),
+                size: metadata.size,
+            };
+            app.status_message = format!("Loading file...");
             
-            // Always proceed to load the file, but track which mode we're in
-            if metadata.size > VERY_LARGE_FILE_THRESHOLD {
-                app.file_loading_state = FileLoadingState::VeryLargeFileWarning {
-                    path: metadata.path.clone(),
-                    size: metadata.size,
-                };
-                app.status_message = format!("Very large file detected ({} MB) - opening in read-only mode", 
-                                           metadata.size / (1024 * 1024));
-                // For very large files, open in read-only mode
-                return Command::perform(
-                    async move {
-                        // Small delay to show the warning
-                        time::sleep(std::time::Duration::from_millis(100)).await;
-                        Message::OpenLargeFileReadOnly(metadata.path)
-                    },
-                    |msg| msg,
-                );
-            } else if metadata.size > LARGE_FILE_THRESHOLD {
-                app.file_loading_state = FileLoadingState::LargeFileWarning {
-                    path: metadata.path.clone(),
-                    size: metadata.size,
-                };
-                app.status_message = format!("Large file detected ({} MB) - editing enabled, some features reduced", 
-                                           metadata.size / (1024 * 1024));
-                // For large files, still load normally but we'll disable expensive features
-                return Command::perform(
-                    async move {
-                        Message::ConfirmOpenLargeFile(metadata.path, metadata.size)
-                    },
-                    |msg| msg,
-                );
-            } else {
-                // Normal file, proceed with full features
-                app.file_loading_state = FileLoadingState::LoadingContent {
-                    path: metadata.path.clone(),
-                    size: metadata.size,
-                };
-                app.status_message = format!("Loading file...");
-                
-                return Command::perform(
-                    async move {
-                        let path = metadata.path;
-                        match FileLoader::load_file(&path) {
-                            Ok((content, _)) => {
-                                // Create a Document from the content
-                                let document = Document::from_text_with_path(&content, path.clone());
-                                Message::FileLoaded(Ok((path, content, document)))
-                            }
-                            Err(e) => Message::FileLoaded(Err(format!("Failed to load file: {}", e))),
+            return Command::perform(
+                async move {
+                    let path = metadata.path;
+                    match FileLoader::load_file(&path) {
+                        Ok((content, _)) => {
+                            // Create a Document from the content
+                            let document = Document::from_text_with_path(&content, path.clone());
+                            Message::FileLoaded(Ok((path, content, document)))
                         }
-                    },
-                    |result| result,
-                );
-            }
+                        Err(e) => Message::FileLoaded(Err(format!("Failed to load file: {}", e))),
+                    }
+                },
+                |result| result,
+            );
         }
         Err(e) => {
             app.file_loading_state = FileLoadingState::Idle;
@@ -213,7 +179,7 @@ fn handle_confirm_open_large_file(app: &mut App, path: String, size: u64) -> Com
         path: path.clone(),
         size,
     };
-    app.status_message = format!("Loading large file...");
+    app.status_message = format!("Loading file...");
     
     Command::perform(
         async move {
@@ -230,11 +196,11 @@ fn handle_confirm_open_large_file(app: &mut App, path: String, size: u64) -> Com
 }
 
 fn handle_open_large_file_read_only(app: &mut App, path: String) -> Command<Message> {
-    app.file_loading_state = FileLoadingState::ReadOnlyPreview {
+    app.file_loading_state = FileLoadingState::LoadingContent {
         path: path.clone(),
-        size: 0, // We'll get this from metadata
+        size: 0,
     };
-    app.status_message = format!("Opening in read-only mode...");
+    app.status_message = format!("Loading file...");
     app.active_file_path = Some(path.clone());
     app.is_file_too_large_for_editor = true;
     app.is_file_read_only = true;
@@ -350,7 +316,8 @@ fn handle_file_loaded(app: &mut App, result: Result<(String, String, Document), 
                     Command::none()
                 }
             } else {
-                // Don't trigger syntax highlighting for large files
+                // For files without syntax highlighting, just update the editor state
+                // without triggering expensive syntax processing
                 Command::none()
             }
         }
