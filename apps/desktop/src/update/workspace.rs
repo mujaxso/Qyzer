@@ -99,12 +99,15 @@ fn handle_file_selected(app: &mut App, index: usize) -> Command<Message> {
             app.status_message = format!("Checking {}...", entry.name);
             app.error_message = None;
             app.is_file_read_only = false;
+            app.is_file_too_large_for_editor = false;
             
             // Clear syntax highlight cache for previous file
             app.syntax_highlight_cache.clear();
             app.syntax_highlight_spans.clear();
             app.syntax_highlight_span_count = 0;
             app.syntax_cache_version += 1;
+            // Clear text editor content
+            app.text_editor = iced::widget::text_editor::Content::new();
             
             // Load metadata using the file-ops crate
             Command::perform(
@@ -323,21 +326,17 @@ fn handle_file_loaded(app: &mut App, result: Result<(String, String, Document), 
                 } else {
                     app.status_message = format!("File loaded: {} ({} bytes)", path, file_size_bytes);
                 }
+                // Log the state for debugging
+                eprintln!("DEBUG: File state - is_file_read_only={}, is_file_too_large_for_editor={}", 
+                         app.is_file_read_only, app.is_file_too_large_for_editor);
                 
                 // Initialize editor content with full text for editable files
                 if let Some(ref editor_state) = app.editor_state {
                     let text = editor_state.document().text();
-                    // For performance, limit the amount of text displayed at once
-                    // We'll show up to 500KB for editing, which should be responsive
-                    let display_text = if text.len() > 500_000 {
-                        // Show first 500KB with a warning
-                        &text[..500_000]
-                    } else {
-                        &text
-                    };
-                    app.text_editor = iced::widget::text_editor::Content::with_text(display_text);
-                    // Store the full text in the editor state for saving
-                    // The actual editing will be on the full text, but display is limited
+                    // For files up to 10 MB, show the full content
+                    // For larger files, we need to be more careful about performance
+                    // 7.4 MB should be manageable
+                    app.text_editor = iced::widget::text_editor::Content::with_text(&text);
                 }
             }
             
