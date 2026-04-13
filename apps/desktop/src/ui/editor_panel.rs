@@ -264,11 +264,12 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         column_children.push(separator.into());
     }
     
-    // Add editor content
+    // Add editor content with explicit minimum height
     column_children.push(
         container(editor_content)
             .width(Length::Fill)
             .height(Length::Fill)
+            .min_height(400) // Ensure editor has enough height to show multiple lines
             .clip(true) // Ensure content doesn't overflow
             .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
                 container::Appearance {
