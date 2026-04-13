@@ -107,7 +107,7 @@ fn map_capture_name(name: &str) -> Highlight {
         "function" | "function.call" | "function.method" => Highlight::Function,
         "function.macro" | "macro" => Highlight::Function, // Macros use function color
         "variable" | "variable.parameter" => Highlight::Variable,
-        "variable.builtin" => Highlight::Constant, // Built-in variables like 'self' use constant color
+        "variable.builtin" => Highlight::Type, // Built-in variables like 'self' use type color (amber in dark theme)
         "type" | "type.builtin" => Highlight::Type,
         "constant" | "constant.builtin" => Highlight::Constant,
         "attribute" => Highlight::Attribute,
@@ -119,6 +119,7 @@ fn map_capture_name(name: &str) -> Highlight {
         "label" => Highlight::Variable,
         "escape" => Highlight::String,
         "mutable_specifier" => Highlight::Keyword,
+        "lifetime" => Highlight::Type,  // Lifetimes use type color
         _ => Highlight::Plain,
     }
 }
