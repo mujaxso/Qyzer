@@ -1,4 +1,4 @@
-use iced::{Element, Length, Color, widget::{column, container, row, text, scrollable}};
+use iced::{Element, Length, Color, widget::{column, container, row, text}};
 use syntax_core::Highlight;
 use crate::message::Message;
 use crate::state::App;
@@ -264,27 +264,24 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         column_children.push(separator.into());
     }
     
-    // Add editor content in a scrollable container to ensure it has enough height
+    // Add editor content - the editor widget has its own scrolling
     column_children.push(
-        container(
-            scrollable(editor_content)
-                .height(Length::Fill)
-        )
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .clip(true) // Ensure content doesn't overflow
-        .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-            container::Appearance {
-                background: Some(style.colors.editor_background.into()),
-                border: iced::Border {
-                    color: Color::TRANSPARENT,
-                    width: 0.0,
-                    radius: 0.0.into(),
-                },
-                ..Default::default()
-            }
-        })))
-        .into()
+        container(editor_content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .clip(true) // Ensure content doesn't overflow
+            .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
+                container::Appearance {
+                    background: Some(style.colors.editor_background.into()),
+                    border: iced::Border {
+                        color: Color::TRANSPARENT,
+                        width: 0.0,
+                        radius: 0.0.into(),
+                    },
+                    ..Default::default()
+                }
+            })))
+            .into()
     );
 
     // Add syntax highlight legend
