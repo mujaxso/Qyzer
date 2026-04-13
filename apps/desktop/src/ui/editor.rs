@@ -42,33 +42,40 @@ impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
     fn highlight_line(&mut self, line: &str) -> Self::Iterator<'_> {
         let line_index = self.current_line;
         let mut ranges = Vec::new();
-        // Only print debug for the first few calls to reduce noise
-        static mut CALL_COUNT: usize = 0;
-        unsafe {
-            if CALL_COUNT < 10 {
-                eprintln!("DEBUG: highlight_line called for line {} with text length {}", line_index, line.len());
-                CALL_COUNT += 1;
-            }
-        }
+        // Print debug for all calls to see what's happening
+        eprintln!("DEBUG: highlight_line called for line {} with text length {}", line_index, line.len());
         if let Some(line_highlights) = self.line_cache.get(line_index) {
+            eprintln!("DEBUG: line {} has {} highlights", line_index, line_highlights.len());
             // Convert character ranges to byte ranges
             let line_chars: Vec<char> = line.chars().collect();
-            for (char_range, color) in line_highlights {
+            for (i, (char_range, color)) in line_highlights.iter().enumerate() {
                 // Convert character positions to byte positions
                 let char_start = char_range.start;
                 let char_end = char_range.end.min(line_chars.len());
+                
+                eprintln!("DEBUG: highlight {}: char_range {:?}, color {:?}", i, char_range, color);
                 
                 if char_start < char_end {
                     // Calculate byte positions
                     let byte_start = line_chars[..char_start].iter().map(|c| c.len_utf8()).sum::<usize>();
                     let byte_end = byte_start + line_chars[char_start..char_end].iter().map(|c| c.len_utf8()).sum::<usize>();
                     
+                    eprintln!("DEBUG:   byte_range {}..{}", byte_start, byte_end);
+                    
                     if byte_start < byte_end && byte_end <= line.len() {
                         ranges.push((byte_start..byte_end, *color));
+                        eprintln!("DEBUG:   added range");
+                    } else {
+                        eprintln!("DEBUG:   range invalid (byte_end {} > line.len() {})", byte_end, line.len());
                     }
+                } else {
+                    eprintln!("DEBUG:   char_start >= char_end");
                 }
             }
+        } else {
+            eprintln!("DEBUG: line {} has no highlights in cache", line_index);
         }
+        eprintln!("DEBUG: returning {} ranges for line {}", ranges.len(), line_index);
         // The iterator must be sorted by position ascending.
         ranges.sort_by_key(|(range, _)| range.start);
         ranges.into_iter()
