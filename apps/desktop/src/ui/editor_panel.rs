@@ -5,7 +5,29 @@ use crate::state::App;
 use super::style::StyleHelpers;
 use super::editor;
 use crate::ui::icons::Icon;
+use crate::theme::SemanticColors;
 
+
+struct SyntaxIndicatorStyle {
+    colors: SemanticColors,
+    is_active: bool,
+}
+
+impl iced::widget::container::StyleSheet for SyntaxIndicatorStyle {
+    type Style = iced::Theme;
+
+    fn appearance(&self, _style: &Self::Style) -> container::Appearance {
+        container::Appearance {
+            background: Some(self.colors.elevated_panel_background.into()),
+            border: iced::Border {
+                color: if self.is_active { self.colors.accent } else { self.colors.border },
+                width: 1.0,
+                radius: 6.0.into(),
+            },
+            ..Default::default()
+        }
+    }
+}
 
 pub fn editor_panel(app: &App) -> Element<'_, Message> {
     let style = StyleHelpers::new(app.theme);
@@ -34,16 +56,9 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                         .align_items(iced::Alignment::Center)
                     )
                     .padding([3, 8])
-                    .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-                        container::Appearance {
-                            background: Some(style.colors.elevated_panel_background.into()),
-                            border: iced::Border {
-                                color: style.colors.accent,
-                                width: 1.0,
-                                radius: 6.0.into(),
-                            },
-                            ..Default::default()
-                        }
+                    .style(iced::theme::Container::Custom(Box::new(SyntaxIndicatorStyle {
+                        colors: style.colors,
+                        is_active: true,
                     })))
                     .into()
                 } else {
@@ -60,16 +75,9 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                         .align_items(iced::Alignment::Center)
                     )
                     .padding([3, 8])
-                    .style(iced::theme::Container::Custom(Box::new(move |_theme: &iced::Theme| {
-                        container::Appearance {
-                            background: Some(style.colors.elevated_panel_background.into()),
-                            border: iced::Border {
-                                color: style.colors.border,
-                                width: 1.0,
-                                radius: 6.0.into(),
-                            },
-                            ..Default::default()
-                        }
+                    .style(iced::theme::Container::Custom(Box::new(SyntaxIndicatorStyle {
+                        colors: style.colors,
+                        is_active: false,
                     })))
                     .into()
                 },
