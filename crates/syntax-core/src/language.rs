@@ -19,11 +19,23 @@ impl LanguageId {
             .and_then(|n| n.to_str())
             .unwrap_or("")
             .to_lowercase();
-        match (ext, name.as_str()) {
-            ("rs", _) => LanguageId::Rust,
-            ("toml", _) => LanguageId::Toml,
-            (_, "Cargo.toml") => LanguageId::Toml,
-            (_, "rust-toolchain.toml") => LanguageId::Toml,
+        
+        // Check for TOML files
+        if ext.eq_ignore_ascii_case("toml") {
+            return LanguageId::Toml;
+        }
+        
+        // Check for specific TOML filenames
+        match name.as_str() {
+            "cargo.toml" | "rust-toolchain.toml" | "clippy.toml" | "rustfmt.toml" 
+            | ".clippy.toml" | ".rustfmt.toml" | "pyproject.toml" | "taplo.toml" => {
+                return LanguageId::Toml;
+            }
+            _ => {}
+        }
+        
+        match ext {
+            "rs" => LanguageId::Rust,
             _ => LanguageId::PlainText,
         }
     }

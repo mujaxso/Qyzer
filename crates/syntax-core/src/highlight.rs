@@ -103,6 +103,8 @@ fn map_capture_name(name: &str) -> Highlight {
     match name {
         "comment" => Highlight::Comment,
         "string" => Highlight::String,
+        "string.escape" => Highlight::String,
+        "string.special" => Highlight::String,
         "keyword" => Highlight::Keyword,
         "function" | "function.call" | "function.method" => Highlight::Function,
         "function.macro" | "macro" => Highlight::Function, // Macros use function color
@@ -113,6 +115,7 @@ fn map_capture_name(name: &str) -> Highlight {
         "attribute" => Highlight::Attribute,
         "operator" | "punctuation.bracket" | "punctuation.delimiter" => Highlight::Operator,
         "number" => Highlight::Number,
+        "boolean" => Highlight::Constant,
         "property" => Highlight::Property,
         "namespace" => Highlight::Namespace,
         "constructor" => Highlight::Type,

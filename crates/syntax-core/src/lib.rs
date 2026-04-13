@@ -17,3 +17,38 @@ pub use error::SyntaxError;
 pub use highlight::{Highlight, HighlightSpan};
 pub use language::LanguageId;
 pub use manager::SyntaxManager;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_toml_language_detection() {
+        use std::path::Path;
+        
+        assert_eq!(
+            LanguageId::from_path(Path::new("Cargo.toml")),
+            LanguageId::Toml
+        );
+        assert_eq!(
+            LanguageId::from_path(Path::new("test.toml")),
+            LanguageId::Toml
+        );
+        assert_eq!(
+            LanguageId::from_path(Path::new(".clippy.toml")),
+            LanguageId::Toml
+        );
+        assert_eq!(
+            LanguageId::from_path(Path::new("pyproject.toml")),
+            LanguageId::Toml
+        );
+        assert_eq!(
+            LanguageId::from_path(Path::new("rustfmt.toml")),
+            LanguageId::Toml
+        );
+        assert_eq!(
+            LanguageId::from_path(Path::new("config.toml")),
+            LanguageId::Toml
+        );
+    }
+}
