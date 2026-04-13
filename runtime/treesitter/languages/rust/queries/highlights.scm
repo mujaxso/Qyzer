@@ -96,11 +96,14 @@
 ; Constants
 (const_item
   name: (identifier) @constant)
-(identifier) @constant
-  when-match? @constant (#match? @constant "^[A-Z_][A-Z_0-9]*$")
+; Capture identifiers that match constant naming convention (uppercase)
+((identifier) @constant
+ (#match? @constant "^[A-Z_][A-Z_0-9]*$"))
 
 ; Variables
-(identifier) @variable
+; Capture identifiers that don't match constant pattern
+((identifier) @variable
+ (#not-match? @variable "^[A-Z_][A-Z_0-9]*$"))
 
 ; Parameters
 (parameter
