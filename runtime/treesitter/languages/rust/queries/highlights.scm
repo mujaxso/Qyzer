@@ -17,7 +17,6 @@
   "break"
   "const"
   "continue"
-  "crate"
   "dyn"
   "else"
   "enum"
