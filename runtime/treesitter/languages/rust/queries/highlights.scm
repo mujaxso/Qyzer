@@ -31,7 +31,7 @@
 "match" @keyword
 "mod" @keyword
 "move" @keyword
-"mut" @keyword
+(mutable_specifier) @keyword
 "pub" @keyword
 "ref" @keyword
 "return" @keyword
