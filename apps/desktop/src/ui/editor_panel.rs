@@ -1,7 +1,7 @@
 use iced::{Element, Length, Color, widget::{column, container, row, text}};
 use syntax_core::Highlight;
 use crate::message::Message;
-use crate::state::App;
+use crate::state::{App, FileLoadingState};
 use super::style::StyleHelpers;
 use super::editor;
 use crate::ui::icons::Icon;
