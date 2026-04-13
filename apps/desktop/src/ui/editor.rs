@@ -12,7 +12,6 @@ use crate::settings::editor::EditorTypographySettings;
 struct SyntaxHighlighter {
     line_cache: Vec<Vec<(Range<usize>, Color)>>,
     current_line: usize,
-    segment_count: usize,
 }
 
 impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
@@ -24,7 +23,6 @@ impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
         Self {
             line_cache: settings.clone(),
             current_line: 0,
-            segment_count: 0,
         }
     }
 
@@ -35,8 +33,6 @@ impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
     fn change_line(&mut self, line: usize) {
         eprintln!("DEBUG: SyntaxHighlighter::change_line: {}", line);
         self.current_line = line;
-        // Reset a counter to track segments within the same line
-        self.segment_count = 0;
     }
 
     fn current_line(&self) -> usize {
@@ -44,62 +40,68 @@ impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
     }
 
     fn highlight_line(&mut self, line: &str) -> Self::Iterator<'_> {
+        use std::sync::atomic::{AtomicUsize, Ordering};
+        
         let mut ranges = Vec::new();
         
         // Track the current line based on text patterns
         // This is a simple heuristic: if the text length changes significantly, move to the next line
-        static mut LAST_TEXT_LEN: usize = 0;
-        static mut LINE_COUNTER: usize = 0;
+        static LAST_TEXT_LEN: AtomicUsize = AtomicUsize::new(0);
+        static LINE_COUNTER: AtomicUsize = AtomicUsize::new(0);
         
         let current_len = line.len();
-        unsafe {
-            // If this is the first call or the text length is very different, increment the line counter
-            if LINE_COUNTER == 0 || (current_len > 0 && (current_len as isize - LAST_TEXT_LEN as isize).abs() > 2) {
-                LINE_COUNTER += 1;
-            }
-            LAST_TEXT_LEN = current_len;
-            
-            // Use the line counter, but don't exceed cache bounds
-            let line_index = if LINE_COUNTER > 0 { LINE_COUNTER - 1 } else { 0 };
-            
-            eprintln!("DEBUG: highlight_line called with text length {}, line_counter = {}, line_index = {}", 
-                     current_len, LINE_COUNTER, line_index);
-            
-            if line_index < self.line_cache.len() {
-                if let Some(line_highlights) = self.line_cache.get(line_index) {
-                    eprintln!("DEBUG: line {} has {} highlights", line_index, line_highlights.len());
-                    // Convert character ranges to byte ranges
-                    let line_chars: Vec<char> = line.chars().collect();
-                    for (i, (char_range, color)) in line_highlights.iter().enumerate() {
-                        // Convert character positions to byte positions
-                        let char_start = char_range.start;
-                        let char_end = char_range.end.min(line_chars.len());
+        
+        // Load current values
+        let last_len = LAST_TEXT_LEN.load(Ordering::Relaxed);
+        let mut line_counter = LINE_COUNTER.load(Ordering::Relaxed);
+        
+        // If this is the first call or the text length is very different, increment the line counter
+        if line_counter == 0 || (current_len > 0 && (current_len as isize - last_len as isize).abs() > 2) {
+            line_counter = line_counter.wrapping_add(1);
+            LINE_COUNTER.store(line_counter, Ordering::Relaxed);
+        }
+        LAST_TEXT_LEN.store(current_len, Ordering::Relaxed);
+        
+        // Use the line counter, but don't exceed cache bounds
+        let line_index = if line_counter > 0 { line_counter - 1 } else { 0 };
+        
+        eprintln!("DEBUG: highlight_line called with text length {}, line_counter = {}, line_index = {}", 
+                 current_len, line_counter, line_index);
+        
+        if line_index < self.line_cache.len() {
+            if let Some(line_highlights) = self.line_cache.get(line_index) {
+                eprintln!("DEBUG: line {} has {} highlights", line_index, line_highlights.len());
+                // Convert character ranges to byte ranges
+                let line_chars: Vec<char> = line.chars().collect();
+                for (i, (char_range, color)) in line_highlights.iter().enumerate() {
+                    // Convert character positions to byte positions
+                    let char_start = char_range.start;
+                    let char_end = char_range.end.min(line_chars.len());
+                    
+                    eprintln!("DEBUG: highlight {}: char_range {:?}, color {:?}", i, char_range, color);
+                    
+                    if char_start < char_end {
+                        // Calculate byte positions
+                        let byte_start = line_chars[..char_start].iter().map(|c| c.len_utf8()).sum::<usize>();
+                        let byte_end = byte_start + line_chars[char_start..char_end].iter().map(|c| c.len_utf8()).sum::<usize>();
                         
-                        eprintln!("DEBUG: highlight {}: char_range {:?}, color {:?}", i, char_range, color);
+                        eprintln!("DEBUG:   byte_range {}..{}", byte_start, byte_end);
                         
-                        if char_start < char_end {
-                            // Calculate byte positions
-                            let byte_start = line_chars[..char_start].iter().map(|c| c.len_utf8()).sum::<usize>();
-                            let byte_end = byte_start + line_chars[char_start..char_end].iter().map(|c| c.len_utf8()).sum::<usize>();
-                            
-                            eprintln!("DEBUG:   byte_range {}..{}", byte_start, byte_end);
-                            
-                            if byte_start < byte_end && byte_end <= line.len() {
-                                ranges.push((byte_start..byte_end, *color));
-                                eprintln!("DEBUG:   added range");
-                            } else {
-                                eprintln!("DEBUG:   range invalid (byte_end {} > line.len() {})", byte_end, line.len());
-                            }
+                        if byte_start < byte_end && byte_end <= line.len() {
+                            ranges.push((byte_start..byte_end, *color));
+                            eprintln!("DEBUG:   added range");
                         } else {
-                            eprintln!("DEBUG:   char_start >= char_end");
+                            eprintln!("DEBUG:   range invalid (byte_end {} > line.len() {})", byte_end, line.len());
                         }
+                    } else {
+                        eprintln!("DEBUG:   char_start >= char_end");
                     }
-                } else {
-                    eprintln!("DEBUG: line {} has no highlights in cache", line_index);
                 }
             } else {
-                eprintln!("DEBUG: line_index {} out of bounds (cache size: {})", line_index, self.line_cache.len());
+                eprintln!("DEBUG: line {} has no highlights in cache", line_index);
             }
+        } else {
+            eprintln!("DEBUG: line_index {} out of bounds (cache size: {})", line_index, self.line_cache.len());
         }
         
         eprintln!("DEBUG: returning {} ranges", ranges.len());
@@ -144,7 +146,6 @@ impl Default for SyntaxHighlighter {
         Self {
             line_cache: Vec::new(),
             current_line: 0,
-            segment_count: 0,
         }
     }
 }
