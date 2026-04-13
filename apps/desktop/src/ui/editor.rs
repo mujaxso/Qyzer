@@ -128,7 +128,9 @@ impl iced::widget::text_editor::StyleSheet for TransparentStyle {
     }
 
     fn value_color(&self, _style: &Self::Style) -> Color {
-        Color::WHITE
+        // Use a color that won't interfere with syntax highlighting
+        // This is the base color for non-highlighted text
+        Color::from_rgb(0.9, 0.9, 0.9)  // Light gray
     }
 
     fn disabled_color(&self, _style: &Self::Style) -> Color {
@@ -155,14 +157,17 @@ pub fn editor<'a>(
     text_editor_content: &'a iced::widget::text_editor::Content,
     typography: &EditorTypographySettings,
     background_color: Color,
+    text_color: Color,
     line_cache: Option<Vec<Vec<(Range<usize>, Color)>>>,
 ) -> Element<'a, Message> {
     // Create font based on selected font family
     let font_family = typography.font_family.to_family_string();
     let font = Font::with_name(font_family);
     
-    // Use a transparent style for the editor; background is provided by the container
-    let custom_style = iced::theme::TextEditor::Custom(Box::new(TransparentStyle));
+    // Use a custom style for the editor with proper text color
+    let custom_style = iced::theme::TextEditor::Custom(Box::new(EditorStyle {
+        text_color,
+    }));
     
     // Check if we should use syntax highlighting
     // We have syntax highlighting if any line in the cache has highlights

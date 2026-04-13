@@ -181,6 +181,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
                 &app.text_editor,
                 &app.editor_typography,
                 style.colors.editor_background,
+                style.colors.text_primary,
                 line_cache,
             )
         }
