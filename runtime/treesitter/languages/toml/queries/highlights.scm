@@ -11,17 +11,11 @@
 
 (boolean) @boolean
 
-; Keys
-(bare_key) @property
-
-; Table headers
-(table_header (bare_key) @type)
-(table_array_header (bare_key) @type)
-
-; Punctuation
+; Basic punctuation that likely exists
 "=" @operator
-"[" @punctuation.bracket
-"]" @punctuation.bracket
-"{" @punctuation.bracket
-"}" @punctuation.bracket
-"," @punctuation.delimiter
+"[" @operator
+"]" @operator
+"{" @operator
+"}" @operator
+"," @operator
+"." @operator
