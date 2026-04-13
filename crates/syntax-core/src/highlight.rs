@@ -116,6 +116,7 @@ fn map_capture_name(name: &str) -> Highlight {
         "constructor" => Highlight::Type,
         "label" => Highlight::Variable,
         "escape" => Highlight::String,
+        "mutable_specifier" => Highlight::Keyword,
         _ => Highlight::Plain,
     }
 }

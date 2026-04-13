@@ -16,7 +16,7 @@
 "break" @keyword
 "const" @keyword
 "continue" @keyword
-"crate" @keyword
+(crate) @keyword
 "dyn" @keyword
 "else" @keyword
 "enum" @keyword
@@ -31,13 +31,13 @@
 "match" @keyword
 "mod" @keyword
 "move" @keyword
-"mut" @keyword
+(mutable_specifier) @keyword
 "pub" @keyword
 "ref" @keyword
 "return" @keyword
 "static" @keyword
 "struct" @keyword
-"super" @keyword
+(super) @keyword
 "trait" @keyword
 "type" @keyword
 "union" @keyword
@@ -80,9 +80,11 @@
 ; Type definitions
 (type_identifier) @type
 (primitive_type) @type
+(Self) @type
 
 ; Variables
 (identifier) @variable
+(self) @variable
 
 ; Constants
 (const_item (identifier) @constant)
