@@ -12,6 +12,7 @@ use crate::settings::editor::EditorTypographySettings;
 struct SyntaxHighlighter {
     line_cache: Vec<Vec<(Range<usize>, Color)>>,
     current_line: usize,
+    segment_count: usize,
 }
 
 impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
@@ -23,6 +24,7 @@ impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
         Self {
             line_cache: settings.clone(),
             current_line: 0,
+            segment_count: 0,
         }
     }
 
@@ -33,6 +35,8 @@ impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
     fn change_line(&mut self, line: usize) {
         eprintln!("DEBUG: SyntaxHighlighter::change_line: {}", line);
         self.current_line = line;
+        // Reset a counter to track segments within the same line
+        self.segment_count = 0;
     }
 
     fn current_line(&self) -> usize {
@@ -47,9 +51,18 @@ impl iced_core::text::highlighter::Highlighter for SyntaxHighlighter {
         // Find the line index by searching through the cache
         // We'll use a simple approach: find the first line where the text could match
         // Since we don't have the full line text, we'll use a heuristic
-        let line_index = self.find_line_index(line);
+        let line_index = self.find_line_index(line).or_else(|| {
+            // If we can't find by matching, use current_line as a fallback
+            // This assumes change_line was called for this line
+            if self.current_line < self.line_cache.len() {
+                Some(self.current_line)
+            } else {
+                None
+            }
+        });
         
-        eprintln!("DEBUG: highlight_line called with text length {}, found line index {:?}", line.len(), line_index);
+        eprintln!("DEBUG: highlight_line called with text length {}, found line index {:?}, current_line = {}", 
+                 line.len(), line_index, self.current_line);
         
         if let Some(line_index) = line_index {
             if let Some(line_highlights) = self.line_cache.get(line_index) {
@@ -98,20 +111,28 @@ impl SyntaxHighlighter {
     // Try to find which line index corresponds to the given text
     // This is a heuristic approach since we don't have the full context
     fn find_line_index(&self, line_text: &str) -> Option<usize> {
-        // Simple approach: find the first line in the cache where the highlights
-        // could match the text length
-        // This assumes that lines with highlights are unique enough
+        let line_text_len = line_text.chars().count();
+        
+        // First, try to find a line where the highlights match the text length
         for (i, highlights) in self.line_cache.iter().enumerate() {
             if !highlights.is_empty() {
-                // Check if the last highlight end is within the text length
-                if let Some(last_highlight) = highlights.last() {
-                    if last_highlight.0.end <= line_text.chars().count() {
+                // Check if all highlights fit within the text length
+                let all_fit = highlights.iter().all(|(range, _)| range.end <= line_text_len);
+                if all_fit {
+                    // Also check that at least one highlight is not empty
+                    let has_valid = highlights.iter().any(|(range, _)| range.start < range.end);
+                    if has_valid {
                         return Some(i);
                     }
                 }
             }
         }
-        // If no line with highlights matches, return None
+        
+        // If no line with highlights matches, try to find by approximate length
+        // This is a fallback for lines without highlights
+        // We'll look for a line where the text length is close to what we expect
+        // Since we don't have the full text, we can't do exact matching
+        // For now, return None for lines without highlights
         None
     }
 }
@@ -121,6 +142,7 @@ impl Default for SyntaxHighlighter {
         Self {
             line_cache: Vec::new(),
             current_line: 0,
+            segment_count: 0,
         }
     }
 }
