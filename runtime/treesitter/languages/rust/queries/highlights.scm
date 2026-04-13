@@ -93,17 +93,16 @@
 (type_identifier) @type
 (primitive_type) @type.builtin
 
+; Variables - default for identifiers
+(identifier) @variable
+
 ; Constants
 (const_item
   name: (identifier) @constant)
-; Capture identifiers that match constant naming convention (uppercase)
+
+; Uppercase identifiers (constants by convention) - override variable capture
 ((identifier) @constant
  (#match? @constant "^[A-Z_][A-Z_0-9]*$"))
-
-; Variables
-; Capture identifiers that don't match constant pattern
-((identifier) @variable
- (#not-match? @variable "^[A-Z_][A-Z_0-9]*$"))
 
 ; Parameters
 (parameter

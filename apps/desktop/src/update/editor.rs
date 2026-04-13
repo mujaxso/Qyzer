@@ -97,18 +97,15 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                             match syntax_manager.update_document(&doc_id, &current_text, Path::new(path)) {
                                 Ok(()) => {
                                     // Successfully updated syntax
-                                    app.status_message = format!("Syntax highlighting active for {} (language: {:?})", doc_id, language);
-                                    // Try to retrieve highlight spans to prove it works
+                                    // Try to retrieve highlight spans
                                     match syntax_manager.highlight_spans(&doc_id) {
                                         Ok(spans) => {
                                             app.syntax_highlight_span_count = spans.len();
                                             app.syntax_highlight_spans = spans.clone();
                                             // Always rebuild the per‑line cache for the editor widget
-                                            eprintln!("DEBUG: Building line cache with {} spans, text length {}", spans.len(), current_text.len());
                                             app.syntax_highlight_cache =
                                                 build_line_cache(&current_text, &spans, app.theme);
                                             app.syntax_cache_version += 1;
-                                            eprintln!("DEBUG: Built cache with {} lines, version {}", app.syntax_highlight_cache.len(), app.syntax_cache_version);
                                             if spans.is_empty() {
                                                 app.status_message = format!(
                                                     "No syntax spans for {} (language: {:?})",
@@ -116,10 +113,9 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                                                 );
                                             } else {
                                                 app.status_message = format!(
-                                                    "{} highlights for {} (language: {:?})",
+                                                    "{} highlights for {}",
                                                     spans.len(),
-                                                    doc_id,
-                                                    language
+                                                    doc_id
                                                 );
                                             }
                                         }
