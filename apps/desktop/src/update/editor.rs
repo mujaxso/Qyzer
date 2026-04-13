@@ -293,11 +293,17 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                             app.syntax_highlight_cache =
                                 build_line_cache(&text, &spans, app.theme);
                             eprintln!("DEBUG: Initial cache built with {} lines", app.syntax_highlight_cache.len());
+                            if !spans.is_empty() {
+                                app.status_message = format!("Syntax highlighting applied ({} spans)", spans.len());
+                            } else {
+                                app.status_message = "No syntax highlights available for this file type".to_string();
+                            }
                         }
                         Err(_) => {
                             app.syntax_highlight_span_count = 0;
                             app.syntax_highlight_spans.clear();
                             app.syntax_highlight_cache.clear();
+                            app.status_message = "Syntax highlighting not available".to_string();
                         }
                     }
                 }

@@ -99,6 +99,11 @@ fn handle_file_selected(app: &mut App, index: usize) -> Command<Message> {
             app.error_message = None;
             app.is_file_read_only = false;
             
+            // Clear syntax highlight cache for previous file
+            app.syntax_highlight_cache.clear();
+            app.syntax_highlight_spans.clear();
+            app.syntax_highlight_span_count = 0;
+            
             // Load metadata using the file-ops crate
             Command::perform(
                 async move {
