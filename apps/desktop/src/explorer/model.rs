@@ -50,7 +50,7 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry], workspace_root: &PathBuf)
     path_list.sort_by_key(|path| std::cmp::Reverse(path.components().count()));
     
     for path in path_list {
-        if let Some(mut node) = nodes.remove(&path) {
+        if let Some(node) = nodes.remove(&path) {
             // Find parent
             if let Some(parent_path) = path.parent() {
                 let parent_path = normalize_path(parent_path);

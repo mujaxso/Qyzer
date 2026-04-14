@@ -474,7 +474,8 @@ fn handle_refresh_workspace(app: &mut App) -> Command<Message> {
         let path = app.workspace_path.clone();
         Command::perform(
             async move {
-                match tokio::task::spawn_blocking(move || load_directory_recursive(&path)).await {
+                let path_clone = path.clone();
+                match tokio::task::spawn_blocking(move || load_directory_recursive(&path_clone)).await {
                     Ok(Ok(entries)) => Message::WorkspaceLoaded(Ok((path, entries))),
                     Ok(Err(e)) => Message::WorkspaceLoaded(Err(format!("Failed to refresh workspace: {}", e))),
                     Err(e) => Message::WorkspaceLoaded(Err(format!("Task failed: {}", e))),
@@ -509,7 +510,8 @@ fn handle_submit_manual_workspace_path(app: &mut App, path: String) -> Command<M
         let path_clone = path.clone();
         Command::perform(
             async move {
-                match tokio::task::spawn_blocking(move || load_directory_recursive(&path_clone)).await {
+                let path_clone2 = path_clone.clone();
+                match tokio::task::spawn_blocking(move || load_directory_recursive(&path_clone2)).await {
                     Ok(Ok(entries)) => Message::WorkspaceLoaded(Ok((path_clone, entries))),
                     Ok(Err(e)) => Message::WorkspaceLoaded(Err(format!("Manual workspace load failed: {}", e))),
                     Err(e) => Message::WorkspaceLoaded(Err(format!("Task failed: {}", e))),

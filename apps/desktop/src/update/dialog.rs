@@ -41,7 +41,8 @@ pub fn open_workspace_dialog() -> Command<Message> {
             match dialog.pick_folder().await {
                 Some(handle) => {
                     let path = handle.path().to_string_lossy().to_string();
-                    match tokio::task::spawn_blocking(move || load_directory_recursive(&path)).await {
+                    let path_clone = path.clone();
+                    match tokio::task::spawn_blocking(move || load_directory_recursive(&path_clone)).await {
                         Ok(Ok(entries)) => Message::WorkspaceLoaded(Ok((path, entries))),
                         Ok(Err(e)) => Message::WorkspaceLoaded(Err(format!("Failed to open workspace: {}", e))),
                         Err(e) => Message::WorkspaceLoaded(Err(format!("Task failed: {}", e))),
@@ -54,7 +55,8 @@ pub fn open_workspace_dialog() -> Command<Message> {
                     
                     match try_sync_dialog().await {
                         Ok(path) => {
-                            match tokio::task::spawn_blocking(move || load_directory_recursive(&path)).await {
+                            let path_clone = path.clone();
+                            match tokio::task::spawn_blocking(move || load_directory_recursive(&path_clone)).await {
                                 Ok(Ok(entries)) => Message::WorkspaceLoaded(Ok((path, entries))),
                                 Ok(Err(e)) => Message::WorkspaceLoaded(Err(format!("Failed to open workspace: {}", e))),
                                 Err(e) => Message::WorkspaceLoaded(Err(format!("Task failed: {}", e))),
