@@ -29,7 +29,7 @@ impl iced::widget::container::StyleSheet for SyntaxIndicatorStyle {
 }
 
 pub fn editor_panel(app: &App) -> Element<'_, Message> {
-    let style = StyleHelpers::new(app.theme);
+    let style = StyleHelpers::new(app.current_theme);
     
     let header = if let Some(active_path) = &app.active_file_path {
         let file_name = active_path.split('/').last().unwrap_or(active_path);

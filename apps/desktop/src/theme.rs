@@ -106,7 +106,7 @@ pub struct SemanticColors {
 }
 
 /// Theme variants for Neote
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
 pub enum NeoteTheme {
     Dark,
     Light,

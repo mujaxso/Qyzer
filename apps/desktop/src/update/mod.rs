@@ -56,7 +56,8 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
         }
         
         // Settings and typography
-        Message::FontFamilyChanged(_)
+        Message::ThemeChanged(_)
+        | Message::FontFamilyChanged(_)
         | Message::FontSizeChanged(_)
         | Message::LineHeightChanged(_)
         | Message::LetterSpacingChanged(_)

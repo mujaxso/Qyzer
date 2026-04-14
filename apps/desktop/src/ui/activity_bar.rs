@@ -75,7 +75,7 @@ impl ActivityItem {
 
 /// Main activity bar component - modern, compact, VS Code-inspired
 pub fn activity_bar(app: &App) -> Element<'_, Message> {
-    let style = StyleHelpers::new(app.theme);
+    let style = StyleHelpers::new(app.current_theme);
     
     // Get all activity items
     let items = ActivityItem::all();

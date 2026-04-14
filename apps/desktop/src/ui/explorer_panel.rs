@@ -8,7 +8,7 @@ use crate::explorer::state::InlineEditMode;
 use crate::ui::icons::Icon;
 
 pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
-    let style = StyleHelpers::new(app.theme);
+    let style = StyleHelpers::new(app.current_theme);
     
     struct ScrollableStyle {
         colors: SemanticColors,

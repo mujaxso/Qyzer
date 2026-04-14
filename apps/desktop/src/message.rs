@@ -71,4 +71,6 @@ pub enum Message {
     WorkspaceDialogCancelled,
     // Manual workspace path submission (fallback when native dialog fails)
     SubmitManualWorkspacePath(String),
+    // Theme changed
+    ThemeChanged(crate::theme::NeoteTheme),
 }
