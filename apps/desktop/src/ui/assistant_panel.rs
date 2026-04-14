@@ -123,7 +123,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
             column![
                 row![
                     Icon::Robot.render_with_color(&app.editor_typography, style.colors.text_primary, Some(16)),
-                    text("Neote AI").size(14)
+                    text("Qyzer AI").size(14)
                         .style(iced::theme::Text::Color(style.colors.text_primary)),
                 ]
                 .spacing(6)
@@ -263,7 +263,7 @@ pub fn assistant_panel(app: &App) -> Element<'_, Message> {
     
     let input_area = container(
         column![
-            text_input(if is_compact { "Ask..." } else { "Ask Neote AI..." }, &app.prompt_input)
+            text_input(if is_compact { "Ask..." } else { "Ask Qyzer AI..." }, &app.prompt_input)
                 .on_input(Message::PromptInputChanged)
                 .padding(if is_compact { [10, 20] } else { [14, 24] })
                 .width(Length::Fill)

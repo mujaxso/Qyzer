@@ -9,7 +9,7 @@ use std::ops::Range;
 
 use crate::state::{Activity, FileLoadingState};
 use crate::message::Message;
-use crate::theme::NeoteTheme;
+use crate::theme::QyzerTheme;
 use crate::ui::style::StyleHelpers;
 use crate::settings::editor::EditorTypographySettings;
 use crate::ui::icons::Icon;
@@ -42,7 +42,7 @@ pub fn ide_layout<'a>(
     editor_document: Option<&'a editor_core::Document>,
     is_file_too_large_for_editor: bool,
     file_loading_state: &'a FileLoadingState,
-    theme: NeoteTheme,
+    theme: QyzerTheme,
     editor_typography: &'a EditorTypographySettings,
     syntax_highlight_cache: Option<Vec<Vec<(Range<usize>, Color)>>>,
 ) -> Element<'a, Message> {
@@ -145,8 +145,8 @@ fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Message> 
     row![
         // Logo/brand
         row![
-            text("N").size(20).style(iced::theme::Text::Color(iced::Color::from_rgb8(100, 160, 255))),
-            text("eote").size(20).style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 230))),
+            text("Q").size(20).style(iced::theme::Text::Color(iced::Color::from_rgb8(100, 160, 255))),
+            text("yzer").size(20).style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 230))),
         ]
         .spacing(0)
         .align_items(Alignment::Center),
@@ -271,7 +271,7 @@ fn activity_rail<'a>(active_activity: Activity) -> Element<'a, Message> {
             // We need to create a temporary typography settings for the icon
             // Since we don't have access to app here, we'll use defaults
             let typography = EditorTypographySettings::default();
-            let style = StyleHelpers::new(NeoteTheme::Dark);
+            let style = StyleHelpers::new(QyzerTheme::Dark);
             let icon_color = if is_active {
                 style.colors.accent
             } else {
@@ -436,7 +436,7 @@ fn editor_panel<'a>(
     is_file_too_large_for_editor: bool,
     file_loading_state: &'a FileLoadingState,
     editor_typography: &'a EditorTypographySettings,
-    theme: NeoteTheme,
+    theme: QyzerTheme,
     line_cache: Option<Vec<Vec<(Range<usize>, Color)>>>,
 ) -> Element<'a, Message> {
     let style = StyleHelpers::new(theme);
@@ -684,7 +684,7 @@ fn editor_panel<'a>(
             } else {
                 container(
                     column![
-                        text("Neote").size(32).style(iced::theme::Text::Color(style.colors.accent)),
+                        text("Qyzer").size(32).style(iced::theme::Text::Color(style.colors.accent)),
                         text("AI‑first IDE").size(16).style(iced::theme::Text::Color(style.colors.text_secondary)),
                         container(iced::widget::horizontal_rule(1)).width(150),
                         column![
@@ -761,7 +761,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
                                     iced::Color::from_rgb8(220, 220, 255),
                                     Some(20)
                                 ),
-                                text("Neote AI").size(16).style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 255))),
+                                text("Qyzer AI").size(16).style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 255))),
                             ]
                             .spacing(8)
                             .align_items(Alignment::Center),
@@ -822,7 +822,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
         iced::widget::horizontal_rule(1),
         container(
             row![
-                text_input("Ask Neote AI...", prompt_input)
+                text_input("Ask Qyzer AI...", prompt_input)
                     .on_input(Message::PromptInputChanged)
                     .padding([12, 14])
                     .width(Length::Fill),

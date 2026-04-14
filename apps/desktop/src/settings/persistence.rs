@@ -5,7 +5,7 @@
 use std::fs;
 use std::path::PathBuf;
 use crate::settings::editor::EditorTypographySettings;
-use crate::theme::NeoteTheme;
+use crate::theme::QyzerTheme;
 
 const SETTINGS_FILE_NAME: &str = "neote_settings.json";
 
@@ -13,7 +13,7 @@ const SETTINGS_FILE_NAME: &str = "neote_settings.json";
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct AppSettings {
     pub typography: EditorTypographySettings,
-    pub theme_preference: NeoteTheme,
+    pub theme_preference: QyzerTheme,
 }
 
 impl Default for AppSettings {
@@ -30,7 +30,7 @@ fn settings_path() -> Result<PathBuf, String> {
     let mut path = dirs::config_dir()
         .ok_or_else(|| "Could not find config directory".to_string())?;
     
-    path.push("neote");
+    path.push(crate::brand::CONFIG_DIR_NAME);
     fs::create_dir_all(&path).map_err(|e| format!("Failed to create config directory: {}", e))?;
     
     path.push(SETTINGS_FILE_NAME);
@@ -38,7 +38,7 @@ fn settings_path() -> Result<PathBuf, String> {
 }
 
 /// Save app settings to disk.
-pub fn save_settings(typography: &EditorTypographySettings, theme_preference: NeoteTheme) -> Result<(), String> {
+pub fn save_settings(typography: &EditorTypographySettings, theme_preference: QyzerTheme) -> Result<(), String> {
     let path = settings_path()?;
     
     let settings = AppSettings {
@@ -57,11 +57,11 @@ pub fn save_settings(typography: &EditorTypographySettings, theme_preference: Ne
 
 /// Load app settings from disk.
 /// Returns default settings if file doesn't exist or can't be read.
-pub fn load_settings() -> Result<(EditorTypographySettings, NeoteTheme), String> {
+pub fn load_settings() -> Result<(EditorTypographySettings, QyzerTheme), String> {
     let path = settings_path()?;
     
     if !path.exists() {
-        return Ok((EditorTypographySettings::default(), NeoteTheme::System));
+        return Ok((EditorTypographySettings::default(), QyzerTheme::System));
     }
     
     let json = fs::read_to_string(&path)

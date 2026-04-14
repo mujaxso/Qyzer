@@ -44,7 +44,7 @@ impl Default for DesignTokens {
 }
 
 /// Helper to get current theme colors from app state
-pub fn current_colors(theme: NeoteTheme) -> SemanticColors {
+pub fn current_colors(theme: QyzerTheme) -> SemanticColors {
     theme.colors()
 }
 
@@ -105,31 +105,31 @@ pub struct SemanticColors {
     pub syntax_plain: Color,             // #E6EAF2 - primary text
 }
 
-/// Theme variants for Neote
+/// Theme variants for Qyzer
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum NeoteTheme {
+pub enum QyzerTheme {
     Dark,
     Light,
     System,
 }
 
-impl std::fmt::Display for NeoteTheme {
+impl std::fmt::Display for QyzerTheme {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            NeoteTheme::Dark => write!(f, "Dark"),
-            NeoteTheme::Light => write!(f, "Light"),
-            NeoteTheme::System => write!(f, "System"),
+            QyzerTheme::Dark => write!(f, "Dark"),
+            QyzerTheme::Light => write!(f, "Light"),
+            QyzerTheme::System => write!(f, "System"),
         }
     }
 }
 
-impl NeoteTheme {
+impl QyzerTheme {
     /// Get the semantic colors for this theme
     pub fn colors(&self) -> SemanticColors {
         match self {
-            NeoteTheme::Dark => SemanticColors::dark(),
-            NeoteTheme::Light => SemanticColors::light(),
-            NeoteTheme::System => {
+            QyzerTheme::Dark => SemanticColors::dark(),
+            QyzerTheme::Light => SemanticColors::light(),
+            QyzerTheme::System => {
                 // For now, default to dark theme
                 // In a real implementation, we'd detect system preference
                 SemanticColors::dark()
@@ -140,9 +140,9 @@ impl NeoteTheme {
     /// Convert to iced::Theme
     pub fn to_iced_theme(&self) -> Theme {
         match self {
-            NeoteTheme::Dark => Theme::Dark,
-            NeoteTheme::Light => Theme::Light,
-            NeoteTheme::System => {
+            QyzerTheme::Dark => Theme::Dark,
+            QyzerTheme::Light => Theme::Light,
+            QyzerTheme::System => {
                 // Default to dark for system
                 Theme::Dark
             }
@@ -151,15 +151,15 @@ impl NeoteTheme {
     
     /// Get all available theme variants
     pub fn all() -> Vec<Self> {
-        vec![NeoteTheme::System, NeoteTheme::Light, NeoteTheme::Dark]
+        vec![QyzerTheme::System, QyzerTheme::Light, QyzerTheme::Dark]
     }
     
     /// Get display name for the theme
     pub fn display_name(&self) -> &'static str {
         match self {
-            NeoteTheme::System => "System",
-            NeoteTheme::Light => "Light",
-            NeoteTheme::Dark => "Dark",
+            QyzerTheme::System => "System",
+            QyzerTheme::Light => "Light",
+            QyzerTheme::Dark => "Dark",
         }
     }
 }

@@ -150,7 +150,7 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         // Welcome screen
         container(
             column![
-                text("Neote").size(32)
+                text("Qyzer").size(32)
                     .style(iced::theme::Text::Color(style.colors.text_primary)),
                 text("AI‑first IDE").size(16)
                     .style(iced::theme::Text::Color(style.colors.text_secondary)),

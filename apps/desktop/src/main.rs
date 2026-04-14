@@ -1,5 +1,6 @@
 mod app;
 mod bootstrap;
+mod brand;
 mod commands;
 mod ui;
 mod events;
