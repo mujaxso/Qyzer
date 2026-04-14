@@ -4,6 +4,7 @@ use crate::explorer::model::{ExplorerNode, build_explorer_tree};
 use core_types::workspace::DirectoryEntry;
 
 // Helper function to normalize paths for consistent comparison
+// This must match the implementation in explorer/model.rs
 fn normalize_path(path: &std::path::Path) -> PathBuf {
     // Convert to string and remove any trailing separator
     let mut normalized = path.to_string_lossy().to_string();
@@ -11,8 +12,7 @@ fn normalize_path(path: &std::path::Path) -> PathBuf {
     while normalized.ends_with('/') || normalized.ends_with('\\') {
         normalized.pop();
     }
-    // Also convert to absolute path if possible, but for now just ensure consistency
-    // On Windows, we might want to handle case sensitivity, but for now keep as is
+    // Ensure we use the same normalization as in model.rs
     PathBuf::from(normalized)
 }
 
@@ -61,11 +61,21 @@ impl ExplorerState {
     pub fn toggle_directory(&mut self, path: PathBuf) {
         let normalized_path = normalize_path(&path);
         
-        if self.expanded_directories.contains(&normalized_path) {
+        let was_expanded = self.expanded_directories.contains(&normalized_path);
+        if was_expanded {
             self.expanded_directories.remove(&normalized_path);
         } else {
-            self.expanded_directories.insert(normalized_path);
+            self.expanded_directories.insert(normalized_path.clone());
         }
+        
+        // Diagnostic log
+        println!(
+            "Explorer: toggled directory '{}' (normalized: '{}') from {} to {}",
+            path.display(),
+            normalized_path.display(),
+            was_expanded,
+            !was_expanded
+        );
     }
     
     pub fn select_file(&mut self, path: PathBuf) {
@@ -150,6 +160,13 @@ impl ExplorerState {
     pub fn visible_rows(&self) -> Vec<VisibleRow> {
         let mut rows = Vec::new();
         self.collect_visible_rows(&self.file_tree, 0, &mut rows);
+        
+        // Diagnostic log
+        println!(
+            "Explorer: generated {} visible rows ({} expanded directories)",
+            rows.len(),
+            self.expanded_directories.len()
+        );
         rows
     }
     

@@ -37,28 +37,27 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
     });
     
     // Create a map from normalized path to node
-    let mut path_to_node: HashMap<String, ExplorerNode> = HashMap::new();
+    let mut path_to_node: HashMap<PathBuf, ExplorerNode> = HashMap::new();
     
     // First pass: create all nodes without children
     for entry in sorted_entries {
         // Normalize the path to ensure consistent comparison
-        let path_str = normalize_path(std::path::Path::new(&entry.path));
+        let path = normalize_path(std::path::Path::new(&entry.path));
         let mut node = ExplorerNode::new(entry);
         // Ensure the node's path is normalized
-        node.path = PathBuf::from(&path_str);
-        path_to_node.insert(path_str, node);
+        node.path = path.clone();
+        path_to_node.insert(path, node);
     }
     
     // Second pass: build parent-child relationships
     // We need to collect parent-child pairs first
-    let mut parent_to_children: HashMap<String, Vec<String>> = HashMap::new();
+    let mut parent_to_children: HashMap<PathBuf, Vec<PathBuf>> = HashMap::new();
     
     for path in path_to_node.keys() {
-        let node_path = PathBuf::from(path);
-        if let Some(parent_path) = node_path.parent() {
-            let parent_str = normalize_path(&parent_path.to_path_buf());
-            if path_to_node.contains_key(&parent_str) {
-                parent_to_children.entry(parent_str)
+        if let Some(parent_path) = path.parent() {
+            let parent = normalize_path(parent_path);
+            if path_to_node.contains_key(&parent) {
+                parent_to_children.entry(parent)
                     .or_insert_with(Vec::new)
                     .push(path.clone());
             }
@@ -67,7 +66,7 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
     
     // Third pass: build the tree by adding children to their parents
     // We need to collect child nodes first, then add them to parents
-    let mut child_nodes_by_parent: HashMap<String, Vec<ExplorerNode>> = HashMap::new();
+    let mut child_nodes_by_parent: HashMap<PathBuf, Vec<ExplorerNode>> = HashMap::new();
     
     // First, remove all child nodes from path_to_node
     for (parent_path, child_paths) in parent_to_children {
@@ -112,13 +111,13 @@ pub fn build_explorer_tree(entries: &[DirectoryEntry]) -> Vec<ExplorerNode> {
 }
 
 // Helper function to normalize paths for consistent comparison
-fn normalize_path(path: &std::path::Path) -> String {
+fn normalize_path(path: &std::path::Path) -> PathBuf {
     // Convert to string and remove any trailing separator
     let mut normalized = path.to_string_lossy().to_string();
     // Remove trailing separator if present
     while normalized.ends_with('/') || normalized.ends_with('\\') {
         normalized.pop();
     }
-    normalized
+    PathBuf::from(normalized)
 }
 

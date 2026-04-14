@@ -78,8 +78,8 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                     &app.editor_typography,
                     &style,
                     Some(Message::Explorer(ExplorerMessage::CreateFileRequested)),
-                    Some(10), // Even smaller icon size
-                    Some(20.0), // Even smaller button size
+                    Some(10),
+                    Some(20.0),
                 )
                 .style(iced::theme::Button::Secondary),
                 // New folder button
@@ -88,8 +88,8 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                     &app.editor_typography,
                     &style,
                     Some(Message::Explorer(ExplorerMessage::CreateFolderRequested)),
-                    Some(10), // Even smaller icon size
-                    Some(20.0), // Even smaller button size
+                    Some(10),
+                    Some(20.0),
                 )
                 .style(iced::theme::Button::Secondary),
                 // Refresh button
@@ -98,8 +98,8 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
                     &app.editor_typography,
                     &style,
                     Some(Message::Explorer(ExplorerMessage::Refresh)),
-                    Some(10), // Even smaller icon size
-                    Some(20.0), // Even smaller button size
+                    Some(10),
+                    Some(20.0),
                 )
                 .style(iced::theme::Button::Secondary),
             ]
@@ -108,7 +108,7 @@ pub fn explorer_panel<'a>(app: &'a App) -> Element<'a, Message> {
         ]
         .align_items(iced::Alignment::Center)
     )
-    .padding(if is_compact { [8, 12] } else { [10, 16] })
+    .padding(if is_compact { [6, 10] } else { [8, 12] })
     .width(Length::Fill);
     
     let content: Element<_> = if visible_rows.is_empty() {
@@ -396,9 +396,9 @@ fn explorer_row(row: crate::explorer::state::VisibleRow, app: &App, is_compact: 
         mouse_area(
             button(row_content)
                 .on_press(message)
-                .padding(if is_compact { [5, 8] } else { [7, 12] })
+                .padding(if is_compact { [4, 6] } else { [5, 8] })
                 .width(Length::Fill)
-                .height(Length::Fixed(if is_compact { 28.0 } else { 32.0 }))
+                .height(Length::Fixed(if is_compact { 24.0 } else { 28.0 }))
                 .style(iced::theme::Button::Custom(Box::new(button_style)))
         )
         .on_enter(Message::ExplorerHoverChanged(Some(row.path.clone())))
