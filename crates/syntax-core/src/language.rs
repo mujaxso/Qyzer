@@ -126,4 +126,3 @@ fn load_dynamic_language(language_id: &str) -> Option<tree_sitter::Language> {
         }
     }
 }
-}
