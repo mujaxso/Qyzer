@@ -6,7 +6,7 @@ Qyzer Studio is designed with security as a fundamental principle, implementing 
 
 ### Threat Model
 
-Neote considers the following primary threats:
+Qyzer Studio considers the following primary threats:
 
 1. **Data confidentiality**: Unauthorized access to user code, credentials, or AI prompts
 2. **Data integrity**: Unauthorized modification of code, configuration, or AI outputs
