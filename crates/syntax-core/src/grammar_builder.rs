@@ -25,38 +25,33 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     // Create repo directory
     fs::create_dir_all(&repo_dir)?;
     
-    // Download zip file
-    let zip_url = format!("{}/archive/refs/heads/master.zip", grammar_info.repo_url.trim_end_matches(".git"));
+    // Download zip file from GitHub
+    // Extract repo owner and name from the URL
+    let repo_url = grammar_info.repo_url.trim_end_matches(".git");
+    let parts: Vec<&str> = repo_url.split('/').collect();
+    if parts.len() < 2 {
+        return Err(format!("Invalid repo URL: {}", repo_url));
+    }
+    let repo_owner = parts[parts.len() - 2];
+    let repo_name = parts[parts.len() - 1];
+    
+    // Use GitHub's archive URL which doesn't require authentication
+    let zip_url = format!("https://github.com/{}/{}/archive/refs/heads/main.zip", repo_owner, repo_name);
     let zip_path = temp_dir.path().join("source.zip");
     
-    // Use curl or wget to download
-    let download_ok = if cfg!(windows) {
-        Command::new("powershell")
-            .args(["-Command", &format!("Invoke-WebRequest -Uri {} -OutFile {}", zip_url, zip_path.display())])
-            .status()
-            .map(|s| s.success())
-            .unwrap_or(false)
+    // Try main branch first, then master as fallback
+    let download_result = download_file(&zip_url, &zip_path);
+    let zip_url = if download_result.is_err() {
+        // Try master branch
+        format!("https://github.com/{}/{}/archive/refs/heads/master.zip", repo_owner, repo_name)
     } else {
-        // Try curl first
-        let curl_status = Command::new("curl")
-            .args(["-L", "-o", zip_path.to_str().unwrap(), &zip_url])
-            .status();
-        
-        if curl_status.is_err() || !curl_status.unwrap().success() {
-            // Try wget as fallback
-            Command::new("wget")
-                .args(["-O", zip_path.to_str().unwrap(), &zip_url])
-                .status()
-                .map(|s| s.success())
-                .unwrap_or(false)
-        } else {
-            true
-        }
+        zip_url
     };
     
-    if !download_ok {
-        return Err(format!("Failed to download source from {}. Please install curl/wget.", zip_url));
-    }
+    // Download the file
+    download_file(&zip_url, &zip_path).map_err(|e| {
+        format!("Failed to download source from {}: {}. Please install curl/wget.", zip_url, e)
+    })?;
     
     // Extract zip
     let extract_ok = if cfg!(windows) {
@@ -77,18 +72,42 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
         return Err("Failed to extract source zip".to_string());
     }
     
-    // Find the extracted directory (usually ends with -master)
+    // Find the extracted directory (usually ends with -main or -master)
     let mut source_dir = None;
     for entry in fs::read_dir(&repo_dir).map_err(|e| format!("Failed to read repo dir: {}", e))? {
         let entry = entry.map_err(|e| format!("Failed to read entry: {}", e))?;
         let path = entry.path();
-        if path.is_dir() && path.file_name().and_then(|n| n.to_str()).map(|s| s.contains(language_id)).unwrap_or(false) {
-            source_dir = Some(path);
-            break;
+        if path.is_dir() {
+            if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
+                // Look for directories that contain the language name or are likely the source
+                if dir_name.contains(language_id) || dir_name.contains("-main") || dir_name.contains("-master") {
+                    source_dir = Some(path);
+                    break;
+                }
+            }
         }
     }
     
-    let source_dir = source_dir.ok_or_else(|| format!("Could not find extracted source directory in {:?}", repo_dir))?;
+    // If we didn't find a specific directory, use the first directory in repo_dir
+    let source_dir = match source_dir {
+        Some(dir) => dir,
+        None => {
+            // List all entries and find the first directory
+            let mut entries: Vec<_> = fs::read_dir(&repo_dir)
+                .map_err(|e| format!("Failed to read repo dir: {}", e))?
+                .filter_map(|entry| entry.ok())
+                .filter(|entry| entry.path().is_dir())
+                .collect();
+            
+            if entries.is_empty() {
+                return Err(format!("No directories found in {:?}", repo_dir));
+            }
+            
+            // Sort to get a consistent result
+            entries.sort_by_key(|entry| entry.path());
+            entries[0].path()
+        }
+    };
     
     // Navigate to subdirectory if needed
     let source_dir = if let Some(subdir) = &grammar_info.subdirectory {
@@ -246,6 +265,70 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     
     println!("Successfully installed {} grammar!", language_id);
     Ok(())
+}
+
+/// Download a file from a URL to a local path
+fn download_file(url: &str, path: &std::path::Path) -> Result<(), String> {
+    use std::io::Write;
+    
+    // Try using ureq for HTTP requests (no authentication required)
+    let response = ureq::get(url)
+        .timeout_connect(30_000)
+        .timeout_read(60_000)
+        .call();
+    
+    match response {
+        Ok(resp) => {
+            let mut file = std::fs::File::create(path)
+                .map_err(|e| format!("Failed to create file {}: {}", path.display(), e))?;
+            
+            let mut reader = resp.into_reader();
+            std::io::copy(&mut reader, &mut file)
+                .map_err(|e| format!("Failed to write to file: {}", e))?;
+            
+            Ok(())
+        }
+        Err(ureq::Error::Status(code, resp)) => {
+            Err(format!("HTTP error {}: {}", code, resp.status_text()))
+        }
+        Err(e) => {
+            // Fall back to curl/wget if ureq fails
+            fallback_download(url, path)
+        }
+    }
+}
+
+/// Fallback download using system commands
+fn fallback_download(url: &str, path: &std::path::Path) -> Result<(), String> {
+    let download_ok = if cfg!(windows) {
+        Command::new("powershell")
+            .args(["-Command", &format!("Invoke-WebRequest -Uri {} -OutFile {}", url, path.display())])
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+    } else {
+        // Try curl first
+        let curl_status = Command::new("curl")
+            .args(["-L", "-o", path.to_str().unwrap(), url])
+            .status();
+        
+        if curl_status.is_err() || !curl_status.unwrap().success() {
+            // Try wget as fallback
+            Command::new("wget")
+                .args(["-O", path.to_str().unwrap(), url])
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false)
+        } else {
+            true
+        }
+    };
+    
+    if download_ok {
+        Ok(())
+    } else {
+        Err("Failed to download using curl/wget/powershell".to_string())
+    }
 }
 
 /// Get the platform-specific library name for a language
