@@ -126,7 +126,7 @@ pub fn map_capture_name(name: &str) -> Highlight {
     }
 }
 
-fn get_query_for_language(language: LanguageId) -> Result<&'static str, SyntaxError> {
+pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, SyntaxError> {
     match language {
         LanguageId::Rust => {
             #[cfg(feature = "rust")]

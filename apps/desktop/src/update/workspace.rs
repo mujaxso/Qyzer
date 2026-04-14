@@ -324,11 +324,8 @@ fn handle_file_loaded(app: &mut App, result: Result<(String, String, Document), 
                     app.status_message = format!("File loaded: {} ({} bytes)", path, file_size_bytes);
                 }
                 
-                // Create editor state and set text editor content
-                let editor_state = editor_core::EditorState::from_document(document);
-                let text = editor_state.document().text();
-                app.text_editor = iced::widget::text_editor::Content::with_text(&text);
-                app.editor_state = Some(editor_state);
+                // Don't set editor state here - it will be set in EditorSetDocument
+                // For very large files, we handle it differently
             }
             
             app.error_message = None;
