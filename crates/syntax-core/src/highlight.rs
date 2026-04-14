@@ -3,6 +3,7 @@
 use crate::error::SyntaxError;
 use crate::language::LanguageId;
 use tree_sitter::{Query, QueryCursor, Tree};
+use std::fs;
 
 /// A highlight span in the document
 #[derive(Debug, Clone)]

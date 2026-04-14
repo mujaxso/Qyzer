@@ -11,6 +11,7 @@ pub mod error;
 pub mod highlight;
 pub mod language;
 pub mod manager;
+pub mod runtime;
 
 // Re-export main types for convenience
 pub use error::SyntaxError;
