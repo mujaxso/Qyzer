@@ -195,22 +195,22 @@ pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, Synt
         LanguageId::Markdown => {
             #[cfg(feature = "markdown")]
             {
-                // Try to load from runtime directory first
-                // This follows the same pattern as Rust
-                match std::fs::read_to_string("../../../runtime/treesitter/languages/markdown/queries/highlights.scm") {
+                // Try to load from runtime directory
+                // This follows the official Tree-sitter approach using SCM files
+                use crate::runtime::Runtime;
+                
+                let runtime = Runtime::new();
+                let query_path = runtime.language_dir("markdown").join("queries/highlights.scm");
+                
+                match std::fs::read_to_string(&query_path) {
                     Ok(query) => Ok(Box::leak(query.into_boxed_str())),
-                    Err(_) => {
-                        // Fall back to a minimal query if file doesn't exist
-                        // This is better than hardcoding a large query
-                        const MINIMAL_MARKDOWN_QUERY: &str = r#"
-                            (atx_heading) @heading
-                            (setext_heading) @heading
-                            (emphasis) @emphasis
-                            (strong_emphasis) @strong
-                            (inline_code_span) @inline_code
-                            (code_fence) @code_fence
-                        "#;
-                        Ok(MINIMAL_MARKDOWN_QUERY)
+                    Err(e) => {
+                        // If file doesn't exist, provide a helpful error message
+                        // This encourages proper setup of runtime directory
+                        Err(SyntaxError::LanguageNotSupported(
+                            format!("Markdown query file not found at {}: {}. Please ensure the runtime directory contains the official tree-sitter-markdown query files.", 
+                                   query_path.display(), e)
+                        ))
                     }
                 }
             }

@@ -7,14 +7,13 @@ edition = "2024"
 tree-sitter = "0.20"
 tree-sitter-rust = { version = "0.20", optional = true }
 tree-sitter-toml = { version = "0.20", optional = true }
-tree-sitter-markdown = { git = "https://github.com/tree-sitter/tree-sitter-markdown", branch = "master", optional = true }
 ropey = "1.6"
 thiserror = "1.0"
 libloading = { version = "0.8", optional = true }
 
 [features]
-default = ["rust", "toml", "markdown", "dynamic-loading"]
+default = ["rust", "toml", "dynamic-loading"]
 rust = ["tree-sitter-rust"]
 toml = ["tree-sitter-toml"]
-markdown = ["tree-sitter-markdown"]
+markdown = ["dynamic-loading"]  # Markdown uses dynamic loading only
 dynamic-loading = ["libloading"]

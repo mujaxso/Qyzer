@@ -68,11 +68,31 @@ impl LanguageId {
             LanguageId::Toml => None,
             #[cfg(feature = "markdown")]
             LanguageId::Markdown => {
-                // tree-sitter-markdown 0.7 may not be compatible with tree-sitter 0.20
-                // Try to get the language, but handle potential version mismatch
-                use tree_sitter_markdown;
-                // This might fail due to version incompatibility
-                Some(tree_sitter_markdown::language())
+                // Load Markdown grammar dynamically from runtime directory
+                // This avoids version conflicts with tree-sitter crate
+                use crate::runtime::Runtime;
+                use std::sync::OnceLock;
+                
+                static MARKDOWN_LANGUAGE: OnceLock<Option<tree_sitter::Language>> = OnceLock::new();
+                
+                *MARKDOWN_LANGUAGE.get_or_init(|| {
+                    let runtime = Runtime::new();
+                    // Try to load markdown grammar from runtime directory
+                    match runtime.load_language("markdown") {
+                        Ok(lang) => {
+                            // Successfully loaded
+                            Some(lang)
+                        }
+                        Err(e) => {
+                            // Log error but don't panic
+                            eprintln!("Note: Markdown grammar not available: {}", e);
+                            eprintln!("To enable Markdown syntax highlighting:");
+                            eprintln!("1. Build tree-sitter-markdown grammar");
+                            eprintln!("2. Place it in {}", runtime.grammar_library_path("markdown").display());
+                            None
+                        }
+                    }
+                })
             }
             #[cfg(not(feature = "markdown"))]
             LanguageId::Markdown => None,
