@@ -10,6 +10,8 @@ tree-sitter-toml = { version = "0.20", optional = true }
 ropey = "1.6"
 thiserror = "1.0"
 libloading = { version = "0.8", optional = true }
+tempfile = "3.10"
+clap = { version = "4.4", features = ["derive"] }
 
 [features]
 default = ["rust", "toml", "dynamic-loading"]
@@ -17,3 +19,7 @@ rust = ["tree-sitter-rust"]
 toml = ["tree-sitter-toml"]
 markdown = ["dynamic-loading"]  # Markdown uses dynamic loading only
 dynamic-loading = ["libloading"]
+
+[[bin]]
+name = "download-grammars"
+path = "src/bin/download_grammars.rs"

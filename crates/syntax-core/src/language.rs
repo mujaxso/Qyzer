@@ -85,10 +85,9 @@ impl LanguageId {
                         }
                         Err(e) => {
                             // Log error but don't panic
-                            eprintln!("Note: Markdown grammar not available: {}", e);
-                            eprintln!("To enable Markdown syntax highlighting:");
-                            eprintln!("1. Build tree-sitter-markdown grammar");
-                            eprintln!("2. Place it in {}", runtime.grammar_library_path("markdown").display());
+                            eprintln!("{}", e);
+                            eprintln!("\nYou can install the grammar with:");
+                            eprintln!("  cargo run --bin download-grammars -- install markdown");
                             None
                         }
                     }

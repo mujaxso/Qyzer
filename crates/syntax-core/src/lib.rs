@@ -12,12 +12,16 @@ pub mod highlight;
 pub mod language;
 pub mod manager;
 pub mod runtime;
+pub mod grammar_registry;
+pub mod grammar_builder;
 
 // Re-export main types for convenience
 pub use error::SyntaxError;
 pub use highlight::{Highlight, HighlightSpan};
 pub use language::LanguageId;
 pub use manager::SyntaxManager;
+pub use grammar_registry::GrammarInfo;
+pub use grammar_builder::{build_and_install_grammar, is_grammar_installed, install_missing_grammars};
 
 #[cfg(test)]
 mod tests {
