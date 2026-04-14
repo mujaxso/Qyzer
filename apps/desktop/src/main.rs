@@ -31,6 +31,7 @@ fn main() -> iced::Result {
             position: iced::window::Position::Centered,
             resizable: true,
             decorations: true,
+            title: String::from(crate::brand::WINDOW_TITLE),
             ..Default::default()
         },
         // Enable antialiasing for better text rendering

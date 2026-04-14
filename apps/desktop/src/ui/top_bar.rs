@@ -206,7 +206,7 @@ pub fn top_bar(app: &App) -> Element<'_, Message> {
             container(
                 row![
                     text("Q").size(18).style(iced::theme::Text::Color(style.colors.accent)),
-                    text("yzer").size(18).style(iced::theme::Text::Color(style.colors.text_primary)),
+                    text("yzer Studio").size(18).style(iced::theme::Text::Color(style.colors.text_primary)),
                 ]
                 .spacing(0)
             )

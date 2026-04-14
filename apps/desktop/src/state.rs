@@ -207,7 +207,7 @@ pub struct App {
 
 impl App {
     pub fn new() -> (Self, iced::Command<crate::message::Message>) {
-        // Ensure QYZER_RUNTIME is set to find Tree‑sitter resources
+        // Ensure QYZER_STUDIO_RUNTIME is set to find Tree‑sitter resources
         if env::var(crate::brand::RUNTIME_ENV_VAR).is_err() {
             // Try to locate runtime relative to the executable
             if let Ok(exe_path) = env::current_exe() {

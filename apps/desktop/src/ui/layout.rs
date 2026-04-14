@@ -684,8 +684,8 @@ fn editor_panel<'a>(
             } else {
                 container(
                     column![
-                        text("Qyzer").size(32).style(iced::theme::Text::Color(style.colors.accent)),
-                        text("AI‑first IDE").size(16).style(iced::theme::Text::Color(style.colors.text_secondary)),
+                        text("Qyzer Studio").size(32).style(iced::theme::Text::Color(style.colors.accent)),
+                        text("AI‑first Code Editor").size(16).style(iced::theme::Text::Color(style.colors.text_secondary)),
                         container(iced::widget::horizontal_rule(1)).width(150),
                         column![
                             button("Open a file from the explorer").style(iced::theme::Button::Secondary),
@@ -761,7 +761,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
                                     iced::Color::from_rgb8(220, 220, 255),
                                     Some(20)
                                 ),
-                                text("Qyzer AI").size(16).style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 255))),
+                                text("Qyzer Studio AI").size(16).style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 255))),
                             ]
                             .spacing(8)
                             .align_items(Alignment::Center),
@@ -822,7 +822,7 @@ fn ai_panel<'a>(prompt_input: &'a str) -> Element<'a, Message> {
         iced::widget::horizontal_rule(1),
         container(
             row![
-                text_input("Ask Qyzer AI...", prompt_input)
+                text_input("Ask Qyzer Studio AI...", prompt_input)
                     .on_input(Message::PromptInputChanged)
                     .padding([12, 14])
                     .width(Length::Fill),

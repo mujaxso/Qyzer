@@ -150,9 +150,9 @@ pub fn editor_panel(app: &App) -> Element<'_, Message> {
         // Welcome screen
         container(
             column![
-                text("Qyzer").size(32)
+                text("Qyzer Studio").size(32)
                     .style(iced::theme::Text::Color(style.colors.text_primary)),
-                text("AI‑first IDE").size(16)
+                text("AI‑first Code Editor").size(16)
                     .style(iced::theme::Text::Color(style.colors.text_secondary)),
                 container(iced::widget::horizontal_rule(1)).width(150),
                 column![

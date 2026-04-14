@@ -1,6 +1,6 @@
 use iced::{Color, Theme};
 
-/// Design system tokens for Qyzer IDE
+/// Design system tokens for Qyzer Studio
 #[derive(Debug, Clone, Copy)]
 pub struct DesignTokens {
     // Spacing scale (in pixels)
@@ -48,7 +48,7 @@ pub fn current_colors(theme: QyzerTheme) -> SemanticColors {
     theme.colors()
 }
 
-/// Semantic color roles for Qyzer IDE - Premium dark theme
+/// Semantic color roles for Qyzer Studio - Premium dark theme
 #[derive(Debug, Clone, Copy)]
 pub struct SemanticColors {
     // Background surfaces - Premium dark palette
@@ -165,7 +165,7 @@ impl QyzerTheme {
 }
 
 impl SemanticColors {
-    /// Premium professional dark theme for Qyzer IDE
+    /// Premium professional dark theme for Qyzer Studio
     pub fn dark() -> Self {
         Self {
             // Background surfaces - Clean, deep charcoal with subtle blue undertones
