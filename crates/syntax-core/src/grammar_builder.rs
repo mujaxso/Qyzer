@@ -37,8 +37,9 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     let repo_name = parts[parts.len() - 1];
     
     // Use GitHub's archive URL which doesn't require authentication
-    // Try both main and master branches (without refs/heads/)
+    // Try HEAD.zip first (points to default branch), then try main/master as fallback
     let zip_urls = vec![
+        format!("https://github.com/{}/{}/archive/HEAD.zip", repo_owner, repo_name),
         format!("https://github.com/{}/{}/archive/main.zip", repo_owner, repo_name),
         format!("https://github.com/{}/{}/archive/master.zip", repo_owner, repo_name),
     ];
@@ -64,21 +65,55 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     }
     
     if let Some(e) = last_error {
-        println!("All download attempts failed. Trying git clone as last resort...");
-        // Try git clone as fallback
-        match Command::new("git")
-            .args(["clone", "--depth", "1", &grammar_info.repo_url, repo_dir.to_str().unwrap()])
-            .status() {
+        println!("All download attempts failed: {}", e);
+        println!("Trying git clone as last resort...");
+        // Try git clone as fallback using multiple URL formats
+        let git_urls = vec![
+            // git:// protocol (no authentication, but may be blocked)
+            grammar_info.repo_url.replace("https://", "git://").replace("http://", "git://"),
+            // SSH format (requires SSH key setup, but no interactive auth)
+            grammar_info.repo_url.replace("https://github.com/", "git@github.com:").replace("http://github.com/", "git@github.com:"),
+            // Original HTTPS URL with credential helper disabled
+            grammar_info.repo_url.clone(),
+        ];
+        
+        let mut last_git_error = None;
+        
+        for (i, git_url) in git_urls.iter().enumerate() {
+            println!("Trying git clone with URL {}: {}", i + 1, git_url);
+            
+            let mut cmd = Command::new("git");
+            cmd.args(["clone", "--depth", "1"]);
+            
+            // For HTTPS URL, disable credential helper to avoid prompts
+            if git_url.starts_with("https://") {
+                cmd.args(["--config", "credential.helper="]);
+            }
+            
+            cmd.args([git_url, repo_dir.to_str().unwrap()]);
+            
+            match cmd.status() {
                 Ok(status) if status.success() => {
                     println!("Successfully cloned repository using git");
+                    last_git_error = None;
+                    break;
                 }
                 Ok(_) => {
-                    return Err(format!("Failed to download source: {}. Also git clone failed.", e));
+                    last_git_error = Some(format!("git clone failed with URL: {}", git_url));
+                    // Clean up repo_dir for next attempt
+                    let _ = std::fs::remove_dir_all(&repo_dir);
                 }
                 Err(git_err) => {
-                    return Err(format!("Failed to download source: {}. Also git clone failed: {}", e, git_err));
+                    last_git_error = Some(format!("git clone failed with URL {}: {}", git_url, git_err));
+                    // Clean up repo_dir for next attempt
+                    let _ = std::fs::remove_dir_all(&repo_dir);
                 }
             }
+        }
+        
+        if let Some(git_err) = last_git_error {
+            return Err(format!("Failed to download source: {}. Also git clone failed: {}", e, git_err));
+        }
     }
     
     // Extract zip
@@ -118,7 +153,7 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
         if path.is_dir() {
             if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
                 // Look for directories that contain the language name or are likely the source
-                if dir_name.contains(language_id) || dir_name.contains("-main") || dir_name.contains("-master") {
+                if dir_name.contains(language_id) || dir_name.contains("-main") || dir_name.contains("-master") || dir_name.contains("-HEAD") {
                     extracted_dir = Some(path);
                     break;
                 }
