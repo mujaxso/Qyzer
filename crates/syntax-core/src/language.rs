@@ -67,35 +67,63 @@ impl LanguageId {
             #[cfg(not(feature = "toml"))]
             LanguageId::Toml => None,
             #[cfg(feature = "markdown")]
-            LanguageId::Markdown => {
-                // Load Markdown grammar dynamically from runtime directory
-                // This avoids version conflicts with tree-sitter crate
-                use crate::runtime::Runtime;
-                use std::sync::OnceLock;
-                
-                static MARKDOWN_LANGUAGE: OnceLock<Option<tree_sitter::Language>> = OnceLock::new();
-                
-                *MARKDOWN_LANGUAGE.get_or_init(|| {
-                    let runtime = Runtime::new();
-                    // Try to load markdown grammar from runtime directory
-                    match runtime.load_language("markdown") {
-                        Ok(lang) => {
-                            // Successfully loaded
-                            Some(lang)
-                        }
-                        Err(e) => {
-                            // Log error but don't panic
-                            eprintln!("{}", e);
-                            eprintln!("\nYou can install the grammar with:");
-                            eprintln!("  cargo run --bin download-grammars -- install markdown");
-                            None
-                        }
-                    }
-                })
-            }
+            LanguageId::Markdown => load_dynamic_language("markdown"),
             #[cfg(not(feature = "markdown"))]
             LanguageId::Markdown => None,
             LanguageId::PlainText => None,
         }
     }
+}
+
+/// Helper function to load any language dynamically from runtime directory
+/// This works for ALL languages in the grammar registry
+fn load_dynamic_language(language_id: &str) -> Option<tree_sitter::Language> {
+    use crate::runtime::Runtime;
+    use std::sync::OnceLock;
+    use std::collections::HashMap;
+    
+    // Use a global cache for all dynamically loaded languages
+    static LANGUAGE_CACHE: OnceLock<HashMap<String, Option<tree_sitter::Language>>> = OnceLock::new();
+    
+    let cache = LANGUAGE_CACHE.get_or_init(|| HashMap::new());
+    
+    // Check cache first
+    if let Some(cached) = cache.get(language_id) {
+        return cached.clone();
+    }
+    
+    // Not in cache, try to load
+    let runtime = Runtime::new();
+    match runtime.load_language(language_id) {
+        Ok(lang) => {
+            // Successfully loaded - cache it
+            let mut cache = LANGUAGE_CACHE.get().unwrap().clone();
+            cache.insert(language_id.to_string(), Some(lang.clone()));
+            // Note: We can't update the OnceLock, but that's okay
+            Some(lang)
+        }
+        Err(e) => {
+            // Log error and try to install automatically
+            eprintln!("{}", e);
+            eprintln!("\nAttempting to install {} grammar automatically...", language_id);
+            
+            // Try to install using the grammar builder
+            if let Ok(()) = crate::grammar_builder::build_and_install_grammar(language_id) {
+                eprintln!("Successfully installed {} grammar!", language_id);
+                // Try loading again
+                match runtime.load_language(language_id) {
+                    Ok(lang) => Some(lang),
+                    Err(e2) => {
+                        eprintln!("Failed to load even after installation: {}", e2);
+                        None
+                    }
+                }
+            } else {
+                eprintln!("Failed to install {} grammar automatically.", language_id);
+                eprintln!("Please install manually with: cargo run --bin download-grammars -- install {}", language_id);
+                None
+            }
+        }
+    }
+}
 }

@@ -126,10 +126,34 @@ impl SyntaxManager {
         }
     }
     
-    // Precompile queries for supported languages to speed up highlighting
+    // Precompile queries for ALL languages in the registry
     pub fn precompile_queries(&mut self) {
-        let languages = [LanguageId::Rust, LanguageId::Toml, LanguageId::Markdown];
-        for &language in &languages {
+        use crate::grammar_registry::GrammarInfo;
+        
+        // Get all available languages
+        let language_ids = GrammarInfo::available_languages();
+        
+        for language_id in language_ids {
+            // Convert string to LanguageId
+            let language = match language_id.as_str() {
+                "rust" => LanguageId::Rust,
+                "toml" => LanguageId::Toml,
+                "markdown" => LanguageId::Markdown,
+                "javascript" => LanguageId::PlainText, // We'll handle dynamically
+                "python" => LanguageId::PlainText,
+                "json" => LanguageId::PlainText,
+                "html" => LanguageId::PlainText,
+                "css" => LanguageId::PlainText,
+                "go" => LanguageId::PlainText,
+                "c" => LanguageId::PlainText,
+                "cpp" => LanguageId::PlainText,
+                "java" => LanguageId::PlainText,
+                "bash" => LanguageId::PlainText,
+                "typescript" => LanguageId::PlainText,
+                _ => continue,
+            };
+            
+            // Try to get the language
             if let Some(ts_lang) = language.tree_sitter_language() {
                 if let Ok(query_str) = get_query_for_language(language) {
                     let query = Query::new(ts_lang, query_str);

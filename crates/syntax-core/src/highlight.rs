@@ -196,24 +196,7 @@ pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, Synt
         LanguageId::Markdown => {
             #[cfg(feature = "markdown")]
             {
-                // Try to load from runtime directory
-                // This follows the official Tree-sitter approach using SCM files
-                use crate::runtime::Runtime;
-                
-                let runtime = Runtime::new();
-                let query_path = runtime.language_dir("markdown").join("queries/highlights.scm");
-                
-                match std::fs::read_to_string(&query_path) {
-                    Ok(query) => Ok(Box::leak(query.into_boxed_str())),
-                    Err(e) => {
-                        // If file doesn't exist, provide a helpful error message
-                        // This encourages proper setup of runtime directory
-                        Err(SyntaxError::LanguageNotSupported(
-                            format!("Markdown query file not found at {}: {}. Please ensure the runtime directory contains the official tree-sitter-markdown query files.", 
-                                   query_path.display(), e)
-                        ))
-                    }
-                }
+                load_query_from_runtime("markdown")
             }
             #[cfg(not(feature = "markdown"))]
             Err(SyntaxError::LanguageNotSupported(
@@ -223,5 +206,38 @@ pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, Synt
         LanguageId::PlainText => Err(SyntaxError::LanguageNotSupported(
             "plaintext has no syntax queries".to_string(),
         )),
+    }
+}
+
+/// Load query file from runtime directory for ANY language
+fn load_query_from_runtime(language_id: &str) -> Result<&'static str, SyntaxError> {
+    use crate::runtime::Runtime;
+    
+    let runtime = Runtime::new();
+    let query_path = runtime.language_dir(language_id).join("queries/highlights.scm");
+    
+    match std::fs::read_to_string(&query_path) {
+        Ok(query) => Ok(Box::leak(query.into_boxed_str())),
+        Err(e) => {
+            // If file doesn't exist, try to download it
+            eprintln!("Query file not found for {}: {}", language_id, e);
+            eprintln!("Attempting to download query files...");
+            
+            // Try to install the grammar (which includes query files)
+            if let Ok(()) = crate::grammar_builder::build_and_install_grammar(language_id) {
+                // Try loading again
+                match std::fs::read_to_string(&query_path) {
+                    Ok(query) => Ok(Box::leak(query.into_boxed_str())),
+                    Err(e2) => Err(SyntaxError::LanguageNotSupported(
+                        format!("Failed to load query file for {} even after installation: {}", language_id, e2)
+                    ))
+                }
+            } else {
+                Err(SyntaxError::LanguageNotSupported(
+                    format!("Query file not found at {}: {}. Please install the grammar with: cargo run --bin download-grammars -- install {}", 
+                           query_path.display(), e, language_id)
+                ))
+            }
+        }
     }
 }

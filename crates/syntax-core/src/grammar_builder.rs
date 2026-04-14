@@ -18,18 +18,77 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     let temp_dir = tempfile::tempdir()
         .map_err(|e| format!("Failed to create temp directory: {}", e))?;
     
-    // Clone repository
-    println!("Cloning {} grammar...", language_id);
+    // Download source as zip instead of using git clone
+    println!("Downloading {} grammar source...", language_id);
     let repo_dir = temp_dir.path().join("repo");
     
-    let status = Command::new("git")
-        .args(["clone", "--depth", "1", &grammar_info.repo_url, repo_dir.to_str().unwrap()])
-        .status()
-        .map_err(|e| format!("Failed to run git: {}", e))?;
+    // Create repo directory
+    fs::create_dir_all(&repo_dir)?;
     
-    if !status.success() {
-        return Err("Failed to clone repository".to_string());
+    // Download zip file
+    let zip_url = format!("{}/archive/refs/heads/master.zip", grammar_info.repo_url.trim_end_matches(".git"));
+    let zip_path = temp_dir.path().join("source.zip");
+    
+    // Use curl or wget to download
+    let download_ok = if cfg!(windows) {
+        Command::new("powershell")
+            .args(["-Command", &format!("Invoke-WebRequest -Uri {} -OutFile {}", zip_url, zip_path.display())])
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+    } else {
+        // Try curl first
+        let curl_status = Command::new("curl")
+            .args(["-L", "-o", zip_path.to_str().unwrap(), &zip_url])
+            .status();
+        
+        if curl_status.is_err() || !curl_status.unwrap().success() {
+            // Try wget as fallback
+            Command::new("wget")
+                .args(["-O", zip_path.to_str().unwrap(), &zip_url])
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false)
+        } else {
+            true
+        }
+    };
+    
+    if !download_ok {
+        return Err(format!("Failed to download source from {}. Please install curl/wget.", zip_url));
     }
+    
+    // Extract zip
+    let extract_ok = if cfg!(windows) {
+        Command::new("powershell")
+            .args(["-Command", &format!("Expand-Archive -Path {} -DestinationPath {}", zip_path.display(), repo_dir.display())])
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+    } else {
+        Command::new("unzip")
+            .args(["-q", zip_path.to_str().unwrap(), "-d", repo_dir.to_str().unwrap()])
+            .status()
+            .map(|s| s.success())
+            .unwrap_or(false)
+    };
+    
+    if !extract_ok {
+        return Err("Failed to extract source zip".to_string());
+    }
+    
+    // Find the extracted directory (usually ends with -master)
+    let mut source_dir = None;
+    for entry in fs::read_dir(&repo_dir).map_err(|e| format!("Failed to read repo dir: {}", e))? {
+        let entry = entry.map_err(|e| format!("Failed to read entry: {}", e))?;
+        let path = entry.path();
+        if path.is_dir() && path.file_name().and_then(|n| n.to_str()).map(|s| s.contains(language_id)).unwrap_or(false) {
+            source_dir = Some(path);
+            break;
+        }
+    }
+    
+    let source_dir = source_dir.ok_or_else(|| format!("Could not find extracted source directory in {:?}", repo_dir))?;
     
     // Navigate to subdirectory if needed
     let source_dir = if let Some(subdir) = &grammar_info.subdirectory {
