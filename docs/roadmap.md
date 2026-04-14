@@ -1,6 +1,6 @@
-# Neote Roadmap
+# Qyzer Studio Roadmap
 
-This document outlines the development roadmap for Neote, an AI-first IDE. The roadmap is organized into phases, with each phase building upon the previous to deliver increasing functionality and polish.
+This document outlines the development roadmap for Qyzer Studio, an AI-first IDE. The roadmap is organized into phases, with each phase building upon the previous to deliver increasing functionality and polish.
 
 ## Phase 1: Foundation (Current)
 **Goal**: Establish the basic architecture and development workflow.
@@ -140,7 +140,7 @@ This document outlines the development roadmap for Neote, an AI-first IDE. The r
 
 ## Contributing to the Roadmap
 
-The Neote roadmap is a living document that evolves based on:
+The Qyzer Studio roadmap is a living document that evolves based on:
 
 1. **Community feedback**: User needs and pain points
 2. **Technology trends**: Advances in AI and development tools

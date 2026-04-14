@@ -1,6 +1,6 @@
 # Security Architecture
 
-Neote is designed with security as a fundamental principle, implementing multiple layers of protection for user data, system integrity, and AI operations.
+Qyzer Studio is designed with security as a fundamental principle, implementing multiple layers of protection for user data, system integrity, and AI operations.
 
 ## Security Model
 
@@ -194,7 +194,7 @@ if permissions.check(Permission::FileWrite, &resource).await? {
 ## Getting Help & Reporting Issues
 
 ### Security Contacts
-- **Security issues**: security@neote.dev (encrypted communication preferred)
+- **Security issues**: security@qyzer.dev (encrypted communication preferred)
 - **Documentation**: Security documentation in `/docs/security.md`
 - **Community**: Security discussions in designated channels
 
@@ -203,4 +203,4 @@ if permissions.check(Permission::FileWrite, &resource).await? {
 2. **Provide details**: Steps to reproduce, impact assessment
 3. **Expect response**: Acknowledgment within 48 hours, resolution timeline
 
-Neote's security architecture is designed to protect users while enabling powerful AI-assisted development. Security is an ongoing process, and we welcome feedback and contributions to improve our security posture.
+Qyzer Studio's security architecture is designed to protect users while enabling powerful AI-assisted development. Security is an ongoing process, and we welcome feedback and contributions to improve our security posture.

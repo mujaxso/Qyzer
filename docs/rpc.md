@@ -1,6 +1,6 @@
 # Remote Procedure Call (RPC) Framework
 
-Neote uses a custom RPC framework for communication between different components of the system, particularly between the desktop application and background services (workspace-daemon, ai-daemon).
+Qyzer Studio uses a custom RPC framework for communication between different components of the system, particularly between the desktop application and background services (workspace-daemon, ai-daemon).
 
 ## Overview
 
@@ -222,4 +222,4 @@ The desktop app connects to both daemons and provides:
 4. **Metrics collection**: Performance monitoring and telemetry
 5. **Protocol buffers**: Alternative serialization format for performance
 
-The RPC framework is designed to be robust, performant, and extensible, serving as the communication backbone for Neote's distributed architecture.
+The RPC framework is designed to be robust, performant, and extensible, serving as the communication backbone for Qyzer Studio's distributed architecture.
