@@ -73,7 +73,7 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     }
     
     // Find the extracted directory (usually ends with -main or -master)
-    let mut source_dir = None;
+    let mut extracted_dir = None;
     for entry in fs::read_dir(&repo_dir).map_err(|e| format!("Failed to read repo dir: {}", e))? {
         let entry = entry.map_err(|e| format!("Failed to read entry: {}", e))?;
         let path = entry.path();
@@ -81,7 +81,7 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
             if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
                 // Look for directories that contain the language name or are likely the source
                 if dir_name.contains(language_id) || dir_name.contains("-main") || dir_name.contains("-master") {
-                    source_dir = Some(path);
+                    extracted_dir = Some(path);
                     break;
                 }
             }
@@ -89,7 +89,7 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     }
     
     // If we didn't find a specific directory, use the first directory in repo_dir
-    let source_dir = match source_dir {
+    let extracted_dir = match extracted_dir {
         Some(dir) => dir,
         None => {
             // List all entries and find the first directory
@@ -111,10 +111,15 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     
     // Navigate to subdirectory if needed
     let source_dir = if let Some(subdir) = &grammar_info.subdirectory {
-        source_dir.join(subdir)
+        extracted_dir.join(subdir)
     } else {
-        source_dir
+        extracted_dir
     };
+    
+    // Verify source directory exists
+    if !source_dir.exists() {
+        return Err(format!("Source directory does not exist: {:?}", source_dir));
+    }
     
     // Check if tree-sitter CLI is available
     let has_tree_sitter_cli = Command::new("tree-sitter")
