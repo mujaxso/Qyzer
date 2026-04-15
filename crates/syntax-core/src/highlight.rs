@@ -89,6 +89,8 @@ fn highlight_with_query(
     // Debug: print capture names for markdown
     if language.as_str() == "markdown" {
         println!("DEBUG: Markdown capture names: {:?}", query.capture_names());
+        // Also print number of patterns in the query
+        println!("DEBUG: Markdown query has {} patterns", query.pattern_count());
     }
 
     let mut cursor = QueryCursor::new();
@@ -98,16 +100,13 @@ fn highlight_with_query(
     // In tree-sitter 0.26.8, QueryCursor::matches() returns QueryMatches which implements StreamingIterator
     // We need to use a while loop with next()
     let mut matches = cursor.matches(&query, root_node, source.as_bytes());
-    let mut match_count = 0;
     while let Some(match_) = StreamingIterator::next(&mut matches) {
-        match_count += 1;
         for capture in match_.captures {
             let node = capture.node;
             let start = node.start_byte();
             let end = node.end_byte();
             let capture_name = &query.capture_names()[capture.index as usize];
             let highlight = map_capture_name(capture_name);
-            
             
             spans.push(HighlightSpan {
                 start,
@@ -116,7 +115,6 @@ fn highlight_with_query(
             });
         }
     }
-
 
     // Sort spans by start position
     spans.sort_by_key(|span| span.start);
@@ -204,7 +202,6 @@ pub fn map_capture_name(name: &str) -> Highlight {
         "heading_content" => Highlight::Type,
         "list_marker" => Highlight::Operator,
         "link_label" => Highlight::Variable,
-        "link_title" => Highlight::String,
         "url" => Highlight::String,
         "email" => Highlight::String,
         "html" => Highlight::Attribute,
@@ -222,7 +219,6 @@ pub fn map_capture_name(name: &str) -> Highlight {
         "text.math" => Highlight::Constant,
         "text.environment" => Highlight::Property,
         "punctuation.special" => Highlight::Operator,
-        "label" => Highlight::Variable,
         "definition" => Highlight::Variable,
         _ => Highlight::Plain,
     }
@@ -244,8 +240,18 @@ pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, Synt
             Ok(query_text) => {
                 // Check if the query is not empty
                 if query_text.trim().is_empty() {
+                    eprintln!("DEBUG: Query file for {} is empty", language_id);
                     return Ok("");
                 }
+                
+                // Debug for markdown
+                if language_id == "markdown" {
+                    println!("DEBUG: Markdown query file loaded ({} bytes)", query_text.len());
+                    // Print first few lines
+                    let lines: Vec<&str> = query_text.lines().take(10).collect();
+                    println!("DEBUG: First 10 lines: {:?}", lines);
+                }
+                
                 // Leak the string to make it static
                 let leaked = Box::leak(query_text.into_boxed_str());
                 Ok(leaked)

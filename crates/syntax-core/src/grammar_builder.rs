@@ -496,7 +496,7 @@ fn install_library_and_queries(
 fn manual_compile(
     grammar_info: &crate::grammar_registry::GrammarInfo,
     source_dir: &std::path::Path,
-    repo_dir: &std::path::Path,
+    _repo_dir: &std::path::Path,
     language_id: &str,
     temp_dir: &tempfile::TempDir,
 ) -> Result<std::path::PathBuf, String> {

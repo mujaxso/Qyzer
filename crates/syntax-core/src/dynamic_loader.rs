@@ -78,7 +78,7 @@ fn load_language_impl(language_id: &str) -> Option<tree_sitter::Language> {
                         if language_id == "markdown" {
                             println!("DEBUG: Trying alternative symbol for markdown...");
                             let alt_symbol_name = "tree_sitter_markdown_inline";
-                            match lib.get(alt_symbol_name.as_bytes()) {
+                            match lib.get::<unsafe extern "C" fn() -> tree_sitter::Language>(alt_symbol_name.as_bytes()) {
                                 Ok(func) => {
                                     println!("DEBUG: Found alternative symbol {}", alt_symbol_name);
                                     let language = func();
@@ -87,6 +87,21 @@ fn load_language_impl(language_id: &str) -> Option<tree_sitter::Language> {
                                 }
                                 Err(e) => {
                                     eprintln!("DEBUG: Failed to get alternative symbol {}: {}", alt_symbol_name, e);
+                                }
+                            }
+                            
+                            // Try another alternative: tree_sitter_markdown
+                            println!("DEBUG: Trying another alternative symbol for markdown...");
+                            let alt_symbol_name2 = "tree_sitter_markdown";
+                            match lib.get::<unsafe extern "C" fn() -> tree_sitter::Language>(alt_symbol_name2.as_bytes()) {
+                                Ok(func) => {
+                                    println!("DEBUG: Found alternative symbol {}", alt_symbol_name2);
+                                    let language = func();
+                                    std::mem::forget(lib);
+                                    return Some(language);
+                                }
+                                Err(e) => {
+                                    eprintln!("DEBUG: Failed to get alternative symbol {}: {}", alt_symbol_name2, e);
                                 }
                             }
                         }
