@@ -88,7 +88,7 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
             repo_url.replace("https://github.com/", "git@github.com:")
         } else if repo_url.starts_with("https://") {
             // Generic conversion
-            repo_url.replacen("https://", "git@", 1).replace("/", ":/", 1)
+            repo_url.replacen("https://", "git@", 1).replace("/", ":/")
         } else {
             repo_url.clone()
         };
