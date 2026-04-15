@@ -99,6 +99,20 @@ mod tests {
         assert_eq!(map_capture_name("list"), Highlight::Property);
         assert_eq!(map_capture_name("thematic_break"), Highlight::Operator);
         
+        // Test new captures added
+        assert_eq!(map_capture_name("atx_heading"), Highlight::Type);
+        assert_eq!(map_capture_name("setext_heading"), Highlight::Type);
+        assert_eq!(map_capture_name("heading.marker"), Highlight::Operator);
+        assert_eq!(map_capture_name("code_block"), Highlight::Property);
+        assert_eq!(map_capture_name("code_block.delimiter"), Highlight::Operator);
+        assert_eq!(map_capture_name("blockquote.marker"), Highlight::Operator);
+        assert_eq!(map_capture_name("list.marker"), Highlight::Operator);
+        assert_eq!(map_capture_name("table"), Highlight::Property);
+        assert_eq!(map_capture_name("table.header"), Highlight::Type);
+        assert_eq!(map_capture_name("table.delimiter"), Highlight::Operator);
+        assert_eq!(map_capture_name("image"), Highlight::Variable);
+        assert_eq!(map_capture_name("strikethrough"), Highlight::Comment);
+        
         // Test that programming language captures still work
         assert_eq!(map_capture_name("comment"), Highlight::Comment);
         assert_eq!(map_capture_name("string"), Highlight::String);
