@@ -130,14 +130,34 @@ fn highlight_with_query(
     // Sort spans by start position
     spans.sort_by_key(|span| span.start);
     
+    // Filter out plain spans that are completely covered by other spans
+    let mut filtered_spans = Vec::new();
+    for (i, span) in spans.iter().enumerate() {
+        if span.highlight == Highlight::Plain {
+            let mut covered = false;
+            for (j, other) in spans.iter().enumerate() {
+                if i != j && other.highlight != Highlight::Plain &&
+                   other.start <= span.start && other.end >= span.end {
+                    covered = true;
+                    break;
+                }
+            }
+            if !covered {
+                filtered_spans.push(span.clone());
+            }
+        } else {
+            filtered_spans.push(span.clone());
+        }
+    }
+    
     if language.as_str() == "markdown" {
-        eprintln!("DEBUG: Generated {} highlight spans for markdown", spans.len());
-        for span in spans.iter().take(5) {
+        eprintln!("DEBUG: Generated {} highlight spans for markdown (filtered to {})", spans.len(), filtered_spans.len());
+        for span in filtered_spans.iter().take(5) {
             eprintln!("DEBUG: Span {}..{} -> {:?}", span.start, span.end, span.highlight);
         }
     }
     
-    Ok(spans)
+    Ok(filtered_spans)
 }
 
 
@@ -252,6 +272,16 @@ pub fn map_capture_name(name: &str) -> Highlight {
         "image_description" => Highlight::Variable,
         "hard_line_break" => Highlight::Operator,
         "strikethrough" => Highlight::Comment,
+        // Captures from the current markdown query file
+        "string.escape" => Highlight::String,
+        "emphasis" => Highlight::Comment,
+        "strong_emphasis" => Highlight::Keyword,
+        "inline_code" => Highlight::Constant,
+        "link" => Highlight::Variable,
+        "string" => Highlight::String,
+        "html" => Highlight::Attribute,
+        "operator" => Highlight::Operator,
+        "plain" => Highlight::Plain,
         _ => Highlight::Plain,
     }
 }
