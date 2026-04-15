@@ -403,10 +403,13 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
                 // Try to find tree-sitter include path
                 let mut include_args = vec!["-c", "-fPIC", "-I./src"];
                 
+                // Store tree-sitter include path in a variable that lives long enough
+                let tree_sitter_include = find_tree_sitter_include_path().ok();
+                
                 // Add include path for tree-sitter headers if available
-                if let Ok(tree_sitter_include) = find_tree_sitter_include_path() {
+                if let Some(tree_sitter_include) = &tree_sitter_include {
                     include_args.push("-I");
-                    include_args.push(&tree_sitter_include);
+                    include_args.push(tree_sitter_include);
                 }
                 
                 // Add include path for the repo root (for common/ directory)
