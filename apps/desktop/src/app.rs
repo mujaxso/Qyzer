@@ -123,6 +123,38 @@ impl iced::Application for App {
                             }
                         }
                     }
+                } else {
+                    // Check if the query file is not empty
+                    if let Ok(content) = std::fs::read_to_string(&query_path) {
+                        if content.trim().is_empty() {
+                            println!("Markdown query file is empty, creating basic query...");
+                            let basic_query = r#"
+; Basic markdown highlighting
+(atx_heading) @heading
+(setext_heading) @heading
+(emphasis) @emphasis
+(strong_emphasis) @strong
+(link) @link
+(inline_code_span) @inline_code
+(code_fence) @code_fence
+(block_quote) @block_quote
+(list) @list
+(thematic_break) @thematic_break
+"#;
+                            if let Err(e) = std::fs::write(&query_path, basic_query) {
+                                eprintln!("Failed to write basic query: {}", e);
+                            } else {
+                                println!("Wrote basic markdown query");
+                            }
+                        } else {
+                            println!("Markdown query file exists and has content ({} bytes)", content.len());
+                            // Debug: print first few lines
+                            let lines: Vec<&str> = content.lines().take(5).collect();
+                            println!("First few lines: {:?}", lines);
+                        }
+                    } else {
+                        println!("Could not read markdown query file");
+                    }
                 }
             }
             

@@ -67,6 +67,12 @@ fn highlight_with_query(
         }
     };
 
+    // Check if query is empty
+    if query_str.trim().is_empty() {
+        eprintln!("DEBUG: Query for {} is empty", language.as_str());
+        return Ok(Vec::new());
+    }
+
     // Try to compile the query
     let query = match Query::new(&ts_lang, query_str) {
         Ok(q) => q,
@@ -78,6 +84,11 @@ fn highlight_with_query(
         }
     };
 
+    // Debug: print capture names for markdown
+    if language.as_str() == "markdown" {
+        println!("DEBUG: Markdown capture names: {:?}", query.capture_names());
+    }
+
     let mut cursor = QueryCursor::new();
     let root_node = tree.root_node();
     let mut spans = Vec::new();
@@ -85,19 +96,32 @@ fn highlight_with_query(
     // In tree-sitter 0.26.8, QueryCursor::matches() returns QueryMatches which implements StreamingIterator
     // We need to use a while loop with next()
     let mut matches = cursor.matches(&query, root_node, source.as_bytes());
+    let mut match_count = 0;
     while let Some(match_) = StreamingIterator::next(&mut matches) {
+        match_count += 1;
         for capture in match_.captures {
             let node = capture.node;
             let start = node.start_byte();
             let end = node.end_byte();
             let capture_name = &query.capture_names()[capture.index as usize];
             let highlight = map_capture_name(capture_name);
+            
+            // Debug for markdown
+            if language.as_str() == "markdown" {
+                println!("DEBUG: Markdown capture: {} at [{}, {}]", capture_name, start, end);
+            }
+            
             spans.push(HighlightSpan {
                 start,
                 end,
                 highlight,
             });
         }
+    }
+
+    // Debug: print match count
+    if language.as_str() == "markdown" {
+        println!("DEBUG: Markdown matches found: {}", match_count);
     }
 
     // Sort spans by start position
@@ -182,6 +206,17 @@ pub fn map_capture_name(name: &str) -> Highlight {
         "escape_sequence" => Highlight::String,
         "hard_line_break" => Highlight::Operator,
         "soft_line_break" => Highlight::Plain,
+        // More markdown captures
+        "heading_content" => Highlight::Type,
+        "list_marker" => Highlight::Operator,
+        "link_label" => Highlight::Variable,
+        "link_title" => Highlight::String,
+        "url" => Highlight::String,
+        "email" => Highlight::String,
+        "html" => Highlight::Attribute,
+        "inline" => Highlight::Plain,
+        "block" => Highlight::Plain,
+        "document" => Highlight::Plain,
         _ => Highlight::Plain,
     }
 }

@@ -459,9 +459,17 @@ fn install_library_and_queries(
                         println!("Installed query file from repo root: {}", query_file);
                     } else {
                         println!("Warning: Query file {} not found in {}", query_file, query_source_dir.display());
+                        // For markdown, create a default query file
+                        if language_id == "markdown" && query_file == "highlights.scm" {
+                            create_default_markdown_query(&query_target_dir)?;
+                        }
                     }
                 } else {
                     println!("Warning: Query file {} not found in {}", query_file, query_source_dir.display());
+                    // For markdown, create a default query file
+                    if language_id == "markdown" && query_file == "highlights.scm" {
+                        create_default_markdown_query(&query_target_dir)?;
+                    }
                 }
             }
         }
@@ -482,6 +490,14 @@ fn install_library_and_queries(
                         .map_err(|e| format!("Failed to copy query file {}: {}", query_file, e))?;
                     println!("Installed query file from repo root: {}", query_file);
                 }
+            }
+        } else {
+            // For markdown, create a default query file
+            if language_id == "markdown" {
+                let query_target_dir = runtime.language_dir(language_id).join("queries");
+                fs::create_dir_all(&query_target_dir)
+                    .map_err(|e| format!("Failed to create query directory: {}", e))?;
+                create_default_markdown_query(&query_target_dir)?;
             }
         }
     }
@@ -616,6 +632,49 @@ pub fn is_grammar_installed(language_id: &str) -> bool {
     let runtime = Runtime::new();
     let lib_path = runtime.grammar_library_path(language_id);
     lib_path.exists()
+}
+
+/// Create a default markdown query file
+fn create_default_markdown_query(query_target_dir: &std::path::Path) -> Result<(), String> {
+    let query_path = query_target_dir.join("highlights.scm");
+    let default_query = r#"
+; Markdown highlighting for tree-sitter-markdown
+(atx_heading) @heading
+(setext_heading) @heading
+(emphasis) @emphasis
+(strong_emphasis) @strong
+(link) @link
+(inline_code_span) @inline_code
+(code_fence) @code_fence
+(block_quote) @block_quote
+(list) @list
+(thematic_break) @thematic_break
+(paragraph) @paragraph
+(fenced_code_block) @code_fence
+(code_span) @inline_code
+(image) @link
+(reference_link) @link
+(reference_definition) @link
+(footnote_reference) @link
+(footnote_definition) @link
+(task_list_marker) @operator
+(strikethrough) @emphasis
+(escape_sequence) @string
+(hard_line_break) @operator
+(soft_line_break) @paragraph
+(table) @table
+(table_header) @heading
+(table_row) @table
+(table_cell) @paragraph
+(html_block) @html
+(html_inline) @html
+"#;
+    
+    std::fs::write(&query_path, default_query)
+        .map_err(|e| format!("Failed to create default markdown query: {}", e))?;
+    
+    println!("Created default markdown query file at {}", query_path.display());
+    Ok(())
 }
 
 /// Install missing grammars for a list of languages
