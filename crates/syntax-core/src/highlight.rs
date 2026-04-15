@@ -243,29 +243,103 @@ pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, Synt
             }
         }
         LanguageId::Toml => {
-            if crate::query_cache::get_query("toml", "highlights").is_some() {
+            eprintln!("DEBUG: Getting query for TOML");
+            // First try to load from cache/file
+            if let Some(_) = crate::query_cache::get_query("toml", "highlights") {
+                eprintln!("DEBUG: Found TOML query in cache");
                 use std::sync::OnceLock;
                 static TOML_QUERY: OnceLock<Option<&'static str>> = OnceLock::new();
                 
                 let query_str = TOML_QUERY.get_or_init(|| {
                     let runtime = crate::runtime::Runtime::new();
                     let query_path = runtime.language_dir("toml").join("queries/highlights.scm");
+                    eprintln!("DEBUG: Looking for TOML query at: {}", query_path.display());
                     match std::fs::read_to_string(&query_path) {
-                        Ok(query_text) => Some(Box::leak(query_text.into_boxed_str())),
-                        Err(_) => None,
+                        Ok(query_text) => {
+                            eprintln!("DEBUG: Found TOML query file");
+                            Some(Box::leak(query_text.into_boxed_str()))
+                        }
+                        Err(e) => {
+                            eprintln!("DEBUG: Failed to read TOML query file: {}", e);
+                            None
+                        }
                     }
                 });
                 
                 match query_str {
-                    Some(str) => Ok(*str),
-                    None => Err(SyntaxError::LanguageNotSupported(
-                        "toml grammar not available".to_string(),
-                    )),
+                    Some(str) => {
+                        eprintln!("DEBUG: Returning cached TOML query");
+                        Ok(*str)
+                    }
+                    None => {
+                        // Fall back to a default TOML query
+                        eprintln!("DEBUG: Using default TOML query");
+                        static DEFAULT_TOML_QUERY: &str = r#"
+; Default TOML highlights query
+(table) @type
+(key) @property
+(string) @string
+(boolean) @constant
+(integer) @number
+(float) @number
+(date) @constant
+(time) @constant
+(date_time) @constant
+(comment) @comment
+"#;
+                        Ok(DEFAULT_TOML_QUERY)
+                    }
                 }
             } else {
-                Err(SyntaxError::LanguageNotSupported(
-                    "toml grammar not available".to_string(),
-                ))
+                // Try to load directly from runtime directory
+                let runtime = crate::runtime::Runtime::new();
+                let query_path = runtime.language_dir("toml").join("queries/highlights.scm");
+                eprintln!("DEBUG: Direct check for TOML query at: {}", query_path.display());
+                if query_path.exists() {
+                    match std::fs::read_to_string(&query_path) {
+                        Ok(query_text) => {
+                            let leaked = Box::leak(query_text.into_boxed_str());
+                            eprintln!("DEBUG: Loaded TOML query directly");
+                            Ok(leaked)
+                        }
+                        Err(e) => {
+                            eprintln!("DEBUG: Failed to read TOML query directly: {}", e);
+                            // Fall back to a default TOML query
+                            eprintln!("DEBUG: Using default TOML query (fallback)");
+                            static DEFAULT_TOML_QUERY: &str = r#"
+; Default TOML highlights query
+(table) @type
+(key) @property
+(string) @string
+(boolean) @constant
+(integer) @number
+(float) @number
+(date) @constant
+(time) @constant
+(date_time) @constant
+(comment) @comment
+"#;
+                            Ok(DEFAULT_TOML_QUERY)
+                        }
+                    }
+                } else {
+                    // Fall back to a default TOML query
+                    eprintln!("DEBUG: Using default TOML query (no file)");
+                    static DEFAULT_TOML_QUERY: &str = r#"
+; Default TOML highlights query
+(table) @type
+(key) @property
+(string) @string
+(boolean) @constant
+(integer) @number
+(float) @number
+(date) @constant
+(time) @constant
+(date_time) @constant
+(comment) @comment
+"#;
+                    Ok(DEFAULT_TOML_QUERY)
+                }
             }
         }
         LanguageId::Markdown => {

@@ -95,24 +95,20 @@ impl LanguageId {
         match self {
             LanguageId::Rust => {
                 eprintln!("DEBUG: tree_sitter_language for Rust");
-                // Try dynamic loading first
-                let lang = crate::dynamic_loader::load_language("rust");
-                eprintln!("DEBUG: dynamic_loader::load_language('rust') returned {:?}", 
-                         if lang.is_some() { "Some" } else { "None" });
-                if lang.is_some() {
-                    lang
-                } else {
-                    #[cfg(feature = "rust")]
-                    {
-                        let builtin = tree_sitter_rust::language();
-                        eprintln!("DEBUG: Using built-in tree-sitter-rust");
-                        Some(builtin)
-                    }
-                    #[cfg(not(feature = "rust"))]
-                    {
-                        eprintln!("DEBUG: No built-in rust feature");
-                        None
-                    }
+                // Use built-in if feature is enabled (more reliable)
+                #[cfg(feature = "rust")]
+                {
+                    eprintln!("DEBUG: Using built-in tree-sitter-rust");
+                    return Some(tree_sitter_rust::language());
+                }
+                #[cfg(not(feature = "rust"))]
+                {
+                    // Fall back to dynamic loading only if built-in not available
+                    eprintln!("DEBUG: No built-in rust feature, trying dynamic loading");
+                    let lang = crate::dynamic_loader::load_language("rust");
+                    eprintln!("DEBUG: dynamic_loader::load_language('rust') returned {:?}", 
+                             if lang.is_some() { "Some" } else { "None" });
+                    return lang;
                 }
             }
             LanguageId::Toml => {
