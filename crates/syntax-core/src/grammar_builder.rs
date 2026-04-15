@@ -102,37 +102,85 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
         // Use tree-sitter CLI
         println!("Using tree-sitter CLI to build {}...", language_id);
         
-        let status = Command::new("tree-sitter")
+        // Run tree-sitter generate and capture output
+        let generate_output = Command::new("tree-sitter")
             .current_dir(&source_dir)
             .arg("generate")
-            .status()
+            .output()
             .map_err(|e| format!("Failed to run tree-sitter generate: {}", e))?;
         
-        if !status.success() {
-            return Err("tree-sitter generate failed".to_string());
+        if !generate_output.status.success() {
+            let stderr = String::from_utf8_lossy(&generate_output.stderr);
+            let stdout = String::from_utf8_lossy(&generate_output.stdout);
+            return Err(format!("tree-sitter generate failed:\nstdout: {}\nstderr: {}", stdout, stderr));
         }
         
-        let status = Command::new("tree-sitter")
+        // Run tree-sitter build and capture output
+        let build_output = Command::new("tree-sitter")
             .current_dir(&source_dir)
             .arg("build")
-            .status()
+            .output()
             .map_err(|e| format!("Failed to run tree-sitter build: {}", e))?;
         
-        if !status.success() {
-            return Err("tree-sitter build failed".to_string());
+        if !build_output.status.success() {
+            let stderr = String::from_utf8_lossy(&build_output.stderr);
+            let stdout = String::from_utf8_lossy(&build_output.stdout);
+            return Err(format!("tree-sitter build failed:\nstdout: {}\nstderr: {}", stdout, stderr));
         }
         
-        // Find the built library
-        let target_dir = source_dir.join("target").join("release");
+        // Print build output for debugging
+        let build_stdout = String::from_utf8_lossy(&build_output.stdout);
+        let build_stderr = String::from_utf8_lossy(&build_output.stderr);
+        if !build_stdout.trim().is_empty() {
+            println!("tree-sitter build stdout: {}", build_stdout);
+        }
+        if !build_stderr.trim().is_empty() {
+            println!("tree-sitter build stderr: {}", build_stderr);
+        }
+        
+        // Find the built library - tree-sitter CLI may place it in several locations
         let lib_name = get_library_name(language_id);
         
-        if target_dir.join(&lib_name).exists() {
-            target_dir.join(lib_name)
-        } else if source_dir.join(&lib_name).exists() {
-            source_dir.join(lib_name)
-        } else {
-            return Err(format!("Could not find built library {}", lib_name));
+        // Possible locations where tree-sitter CLI might place the library
+        let possible_paths = vec![
+            source_dir.join(&lib_name),                     // In source directory
+            source_dir.join("target").join("release").join(&lib_name), // target/release/
+            source_dir.join("target").join(&lib_name),      // target/
+            source_dir.join("out").join(&lib_name),         // out/ (some grammars)
+            source_dir.join("build").join(&lib_name),       // build/ (some grammars)
+        ];
+        
+        // Also check for debug builds
+        let debug_path = source_dir.join("target").join("debug").join(&lib_name);
+        let possible_paths_with_debug = possible_paths.into_iter().chain(std::iter::once(debug_path));
+        
+        for path in possible_paths_with_debug {
+            if path.exists() {
+                println!("Found library at: {}", path.display());
+                return Ok(path);
+            }
         }
+        
+        // If not found, try to list files to debug
+        println!("Searching for library {} in {}...", lib_name, source_dir.display());
+        if let Ok(entries) = std::fs::read_dir(&source_dir) {
+            for entry in entries.flatten() {
+                println!("  Found: {}", entry.path().display());
+            }
+        }
+        
+        // Also check target directory
+        let target_dir = source_dir.join("target");
+        if target_dir.exists() {
+            println!("Checking target directory...");
+            if let Ok(entries) = std::fs::read_dir(&target_dir) {
+                for entry in entries.flatten() {
+                    println!("  Found in target: {}", entry.path().display());
+                }
+            }
+        }
+        
+        return Err(format!("Could not find built library {} after tree-sitter build. Searched in source directory and common locations.", lib_name));
     } else {
         // Manual compilation with cc
         println!("Using cc to build {}...", language_id);
