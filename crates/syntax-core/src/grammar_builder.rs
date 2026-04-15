@@ -64,7 +64,7 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
         let _ = std::fs::remove_dir_all(&repo_dir);
         
         let mut cmd = Command::new("git");
-        cmd.args(["clone", "--depth", "1", "--config", "credential.helper=", &grammar_info.repo_url, repo_dir.to_str().unwrap()]);
+        cmd.args(["clone", "--depth", "1", "--config", "credential.helper=", &repo_url, repo_dir.to_str().unwrap()]);
         
         if let Ok(status) = cmd.status() {
             if status.success() {
