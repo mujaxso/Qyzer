@@ -357,7 +357,7 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
 fn install_library_and_queries(
     grammar_info: &crate::grammar_registry::GrammarInfo,
     source_dir: &std::path::Path,
-    _repo_dir: &std::path::Path,
+    repo_dir: &std::path::Path,
     language_id: &str,
     temp_dir: &tempfile::TempDir,
     lib_path: std::path::PathBuf,
@@ -403,7 +403,7 @@ fn install_library_and_queries(
         // Try multiple possible locations
         let possible_dirs = vec![
             // Look in the parent directory of source_dir (tree-sitter-markdown/queries)
-            source_dir.parent().unwrap_or(&repo_dir).join("queries"),
+            source_dir.parent().unwrap_or(repo_dir).join("queries"),
             // Look in the repo root's queries directory
             repo_dir.join("queries"),
             // Look in source_dir/queries (unlikely but possible)
@@ -411,14 +411,16 @@ fn install_library_and_queries(
         ];
         
         // Find the first existing directory
+        let mut found_dir = None;
         for dir in possible_dirs {
             if dir.exists() {
                 println!("Found markdown queries at: {}", dir.display());
-                return dir;
+                found_dir = Some(dir);
+                break;
             }
         }
         // If none found, use the parent directory
-        source_dir.parent().unwrap_or(&repo_dir).join("queries")
+        found_dir.unwrap_or_else(|| source_dir.parent().unwrap_or(repo_dir).join("queries"))
     } else if let Some(_subdir) = &grammar_info.subdirectory {
         // Try to find queries in the parent directory (repo root)
         let parent_dir = temp_dir.path().join("repo");
@@ -492,7 +494,7 @@ fn install_library_and_queries(
 fn manual_compile(
     grammar_info: &crate::grammar_registry::GrammarInfo,
     source_dir: &std::path::Path,
-    _repo_dir: &std::path::Path,
+    repo_dir: &std::path::Path,
     language_id: &str,
     temp_dir: &tempfile::TempDir,
 ) -> Result<std::path::PathBuf, String> {
