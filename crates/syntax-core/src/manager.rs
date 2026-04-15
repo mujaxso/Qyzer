@@ -40,35 +40,54 @@ impl SyntaxManager {
         // Get or create parser for this language
         let parser = self.parsers.entry(language).or_insert_with(|| {
             eprintln!("DEBUG: Creating new parser for language");
-            let mut parser = Parser::new();
-            // Try to get the language, but don't panic if it fails
-            match language.tree_sitter_language() {
-                Some(ts_lang) => {
-                    eprintln!("DEBUG: Setting tree-sitter language");
-                    if let Err(e) = parser.set_language(ts_lang) {
-                        eprintln!("DEBUG: Failed to set language: {:?}", e);
-                    }
-                }
-                None => {
-                    eprintln!("DEBUG: No tree-sitter language available for {:?}", language);
-                }
-            }
-            parser
+            Parser::new()
         });
 
-        // Try to parse the document
-        let tree = match parser.language() {
-            Some(_) => {
-                eprintln!("DEBUG: Parsing document with available language");
-                let tree = parser.parse(text, None);
-                eprintln!("DEBUG: Parse result: {}", if tree.is_some() { "Some" } else { "None" });
-                tree
-            }
+        // Try to get the language
+        let ts_lang = match language.tree_sitter_language() {
+            Some(lang) => lang,
             None => {
-                eprintln!("DEBUG: Parser has no language, cannot parse");
-                None
+                eprintln!("DEBUG: No tree-sitter language available for {:?}", language);
+                let doc = SyntaxDocument {
+                    text: text.to_string(),
+                    language,
+                    tree: None,
+                };
+                self.documents.insert(doc_id.to_string(), doc);
+                eprintln!("DEBUG: Document updated without tree");
+                return Ok(());
             }
         };
+
+        // Try to set the language on the parser
+        if parser.language() != Some(ts_lang) {
+            eprintln!("DEBUG: Setting tree-sitter language");
+            if let Err(e) = parser.set_language(ts_lang) {
+                eprintln!("DEBUG: Failed to set language: {:?}", e);
+                // If setting fails, create a new parser
+                eprintln!("DEBUG: Creating fresh parser");
+                let mut new_parser = Parser::new();
+                if let Err(e) = new_parser.set_language(ts_lang) {
+                    eprintln!("DEBUG: Failed to set language on fresh parser too: {:?}", e);
+                    // Still can't set language, give up
+                    let doc = SyntaxDocument {
+                        text: text.to_string(),
+                        language,
+                        tree: None,
+                    };
+                    self.documents.insert(doc_id.to_string(), doc);
+                    eprintln!("DEBUG: Document updated without tree");
+                    return Ok(());
+                }
+                // Replace the parser in the cache
+                *parser = new_parser;
+            }
+        }
+
+        // Parse the document
+        eprintln!("DEBUG: Parsing document with available language");
+        let tree = parser.parse(text, None);
+        eprintln!("DEBUG: Parse result: {}", if tree.is_some() { "Some" } else { "None" });
 
         let doc = SyntaxDocument {
             text: text.to_string(),

@@ -37,6 +37,24 @@ impl iced::Application for App {
             let mut syntax_manager = app.syntax_manager.lock().unwrap();
             // Initialize the dynamic grammar loader
             syntax_manager.initialize_dynamic_grammars();
+            
+            // Check for missing grammars and log warnings
+            use syntax_core::dynamic_loader;
+            use syntax_core::grammar_registry;
+            
+            let registry = grammar_registry::GrammarRegistry::global();
+            let mut missing = Vec::new();
+            
+            for language_id in registry.language_ids() {
+                if !dynamic_loader::is_grammar_available(language_id) {
+                    missing.push(language_id);
+                }
+            }
+            
+            if !missing.is_empty() {
+                eprintln!("Warning: Missing grammar libraries for: {:?}", missing);
+                eprintln!("Syntax highlighting will be limited. Run: cargo run --bin build-grammar -- <language>");
+            }
         }
         
         // Load custom fonts for icon support

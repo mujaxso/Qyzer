@@ -95,21 +95,33 @@ impl LanguageId {
         match self {
             LanguageId::Rust => {
                 eprintln!("DEBUG: tree_sitter_language for Rust");
-                // Always use dynamic loading for now to avoid the LANGUAGE type issue
-                // The built-in feature will be fixed later when we understand the API better
-                let lang = crate::dynamic_loader::load_language("rust");
-                eprintln!("DEBUG: dynamic_loader::load_language('rust') returned {:?}", 
-                         if lang.is_some() { "Some" } else { "None" });
-                return lang;
+                // Try built-in first if feature is enabled
+                #[cfg(feature = "rust")]
+                {
+                    eprintln!("DEBUG: Trying built-in tree-sitter-rust");
+                    // tree_sitter_rust::language() is a function that returns Language
+                    // This should work without version issues
+                    return Some(tree_sitter_rust::language());
+                }
+                #[cfg(not(feature = "rust"))]
+                {
+                    eprintln!("DEBUG: No built-in rust feature, trying dynamic loading");
+                    let lang = crate::dynamic_loader::load_language("rust");
+                    eprintln!("DEBUG: dynamic_loader::load_language('rust') returned {:?}", 
+                             if lang.is_some() { "Some" } else { "None" });
+                    return lang;
+                }
             }
             LanguageId::Toml => {
                 // Use built-in tree-sitter-toml (v0.20) which should match the query file
                 #[cfg(feature = "toml")]
                 {
+                    eprintln!("DEBUG: Using built-in tree-sitter-toml");
                     return Some(tree_sitter_toml::language());
                 }
                 #[cfg(not(feature = "toml"))]
                 {
+                    eprintln!("DEBUG: No built-in toml feature, trying dynamic loading");
                     return crate::dynamic_loader::load_language("toml");
                 }
             }
