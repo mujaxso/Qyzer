@@ -162,8 +162,16 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
         }
         
         // Check if we should use tree-sitter build or manual compilation
-        // If grammar.js exists, use tree-sitter build, otherwise compile manually
-        if source_dir.join("grammar.js").exists() {
+        // If grammar.js exists in source_dir or repo_dir, use tree-sitter build
+        let grammar_js_path = if source_dir.join("grammar.js").exists() {
+            source_dir.join("grammar.js")
+        } else if repo_dir.join("grammar.js").exists() {
+            repo_dir.join("grammar.js")
+        } else {
+            PathBuf::new()
+        };
+        
+        if grammar_js_path.exists() {
             // For markdown, always run tree-sitter build to ensure the library is built
             let should_run_build = if language_id == "markdown" {
                 true
@@ -177,14 +185,20 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
                 } else {
                     "parser.so"
                 };
-                !source_dir.join(parser_lib_name).exists() && !source_dir.join(&lib_name).exists()
+                // Check in source_dir first, then in the directory containing grammar.js
+                let grammar_js_dir = grammar_js_path.parent().unwrap();
+                !source_dir.join(parser_lib_name).exists() && 
+                !source_dir.join(&lib_name).exists() &&
+                !grammar_js_dir.join(parser_lib_name).exists() &&
+                !grammar_js_dir.join(&lib_name).exists()
             };
             
             if should_run_build {
                 println!("Running tree-sitter build for {}...", language_id);
-                // Run tree-sitter build and capture output
+                // Run tree-sitter build in the directory containing grammar.js
+                let build_dir = grammar_js_path.parent().unwrap();
                 let build_output = Command::new("tree-sitter")
-                    .current_dir(&source_dir)
+                    .current_dir(build_dir)
                     .arg("build")
                     .output()
                     .map_err(|e| format!("Failed to run tree-sitter build: {}", e))?;
@@ -219,11 +233,16 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
             };
             
             // Check common locations
+            let grammar_js_dir = grammar_js_path.parent().unwrap();
             let possible_paths = vec![
                 source_dir.join(parser_lib_name),
                 source_dir.join(&lib_name),
                 source_dir.join("target").join("release").join(parser_lib_name),
                 source_dir.join("target").join("release").join(&lib_name),
+                grammar_js_dir.join(parser_lib_name),
+                grammar_js_dir.join(&lib_name),
+                grammar_js_dir.join("target").join("release").join(parser_lib_name),
+                grammar_js_dir.join("target").join("release").join(&lib_name),
             ];
             
             // For markdown, also check markdown-inline.so
