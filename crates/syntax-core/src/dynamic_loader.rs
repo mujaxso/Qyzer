@@ -50,6 +50,12 @@ fn load_language_impl(language_id: &str) -> Option<tree_sitter::Language> {
     if !library_path.exists() {
         eprintln!("Grammar library not found at {}", library_path.display());
         eprintln!("Please rebuild grammars with: cargo run --bin build-grammar -- {}", language_id);
+        
+        // Special message for markdown
+        if language_id == "markdown" {
+            eprintln!("Note: Markdown grammar may require special handling.");
+            eprintln!("Make sure you have git and tree-sitter CLI installed.");
+        }
         return None;
     }
     

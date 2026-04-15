@@ -50,6 +50,14 @@ fn init_dynamic_grammars() {
         println!("  3. If prompted for credentials, try:");
         println!("     - Setting GIT_TERMINAL_PROMPT=0 in your environment");
         println!("     - Or using a GitHub personal access token");
+        
+        // Special note for markdown
+        if missing.contains(&"markdown") {
+            println!("\nSpecial note for markdown grammar:");
+            println!("The markdown grammar uses a special branch 'split_parser'.");
+            println!("If building fails, you may need to manually clone the repository:");
+            println!("  git clone -b split_parser https://github.com/tree-sitter-grammars/tree-sitter-markdown");
+        }
     }
     
     // Preload available grammars
