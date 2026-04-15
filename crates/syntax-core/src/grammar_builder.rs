@@ -6,6 +6,100 @@ use std::process::Command;
 use crate::runtime::Runtime;
 use crate::grammar_registry;
 
+/// Try to locate tree-sitter include directory containing parser.h
+fn find_tree_sitter_include_path() -> Result<String, String> {
+    // Try system include paths
+    let system_paths = [
+        "/usr/include",
+        "/usr/local/include",
+        "/opt/homebrew/include",
+        "/usr/local/opt/tree-sitter/include",
+    ];
+    for path in system_paths {
+        let header_path = std::path::Path::new(path).join("tree_sitter/parser.h");
+        if header_path.exists() {
+            return Ok(path.to_string());
+        }
+    }
+    
+    // Try to find via cargo metadata
+    if let Ok(output) = std::process::Command::new("cargo")
+        .args(["metadata", "--format-version=1"])
+        .output()
+    {
+        if output.status.success() {
+            let metadata: serde_json::Value = serde_json::from_slice(&output.stdout)
+                .map_err(|e| format!("Failed to parse cargo metadata: {}", e))?;
+            if let Some(packages) = metadata.get("packages").and_then(|p| p.as_array()) {
+                for package in packages {
+                    if let Some(name) = package.get("name").and_then(|n| n.as_str()) {
+                        if name == "tree-sitter" {
+                            if let Some(manifest_path) = package.get("manifest_path").and_then(|m| m.as_str()) {
+                                let manifest = std::path::Path::new(manifest_path);
+                                if let Some(root) = manifest.parent() {
+                                    let include_path = root.join("lib").join("include");
+                                    if include_path.exists() {
+                                        return Ok(include_path.to_string_lossy().to_string());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Try to find in target directory
+    if let Ok(cargo_manifest_dir) = std::env::var("CARGO_MANIFEST_DIR") {
+        let manifest_path = std::path::Path::new(&cargo_manifest_dir);
+        // Look in target/build directory for tree-sitter-*/out/build
+        let target_dir = manifest_path.join("../../target");
+        if target_dir.exists() {
+            // Use find command to locate parser.h
+            if let Ok(output) = std::process::Command::new("find")
+                .arg(&target_dir)
+                .arg("-name")
+                .arg("parser.h")
+                .arg("-type")
+                .arg("f")
+                .output()
+            {
+                if output.status.success() {
+                    let stdout = String::from_utf8_lossy(&output.stdout);
+                    for line in stdout.lines() {
+                        if line.contains("tree_sitter") {
+                            if let Some(parent) = std::path::Path::new(line).parent() {
+                                if let Some(grandparent) = parent.parent() {
+                                    return Ok(grandparent.to_string_lossy().to_string());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Last resort: try to use pkg-config
+    if let Ok(output) = std::process::Command::new("pkg-config")
+        .args(["--cflags", "tree-sitter"])
+        .output()
+    {
+        if output.status.success() {
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            for part in stdout.split_whitespace() {
+                if part.starts_with("-I") {
+                    let path = &part[2..];
+                    return Ok(path.to_string());
+                }
+            }
+        }
+    }
+    
+    Err("Could not find tree-sitter include path".to_string())
+}
+
 /// Build a Tree-sitter grammar and install it to the runtime directory
 pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     let grammar_info = grammar_registry::for_language(language_id)
@@ -304,9 +398,27 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
                 let object_file = temp_dir.path().join(format!("{}.o", source_file.replace('/', "_")));
                 
                 println!("Compiling {}...", source_file);
+                // Try to find tree-sitter include path
+                let mut include_args = vec!["-c", "-fPIC", "-I./src"];
+                
+                // Add include path for tree-sitter headers if available
+                if let Ok(tree_sitter_include) = find_tree_sitter_include_path() {
+                    include_args.push("-I");
+                    include_args.push(&tree_sitter_include);
+                }
+                
+                // Add include path for the repo root (for common/ directory)
+                if let Some(repo_root) = source_dir.parent() {
+                    if repo_root.join("common").exists() {
+                        include_args.push("-I");
+                        include_args.push(repo_root.to_str().unwrap());
+                    }
+                }
+                
+                include_args.extend_from_slice(&["-o", object_file.to_str().unwrap()]);
+                
                 let output = Command::new("cc")
-                    .args(["-c", "-fPIC", "-I./src", "-o"])
-                    .arg(&object_file)
+                    .args(&include_args)
                     .arg(&source_path)
                     .current_dir(&source_dir)
                     .output()
