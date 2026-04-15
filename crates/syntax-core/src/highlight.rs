@@ -48,10 +48,7 @@ pub fn highlight(
         LanguageId::Toml => highlight_with_query(language, source, tree),
         #[cfg(not(feature = "toml"))]
         LanguageId::Toml => Ok(Vec::new()),
-        #[cfg(feature = "markdown")]
         LanguageId::Markdown => highlight_with_query(language, source, tree),
-        #[cfg(not(feature = "markdown"))]
-        LanguageId::Markdown => Ok(Vec::new()),
         LanguageId::PlainText => Ok(Vec::new()),
         LanguageId::Dynamic(_) => highlight_with_query(language, source, tree),
     }
@@ -187,31 +184,9 @@ pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, Synt
     let language_id = language.as_str();
     
     // Always try to load from the query cache first
-    if let Some(query) = crate::query_cache::get_query(language_id, "highlights") {
-        // The query cache stores compiled queries, not strings
-        // We need to get the query text from the file
-        // Let's load it from the runtime directory
-        let runtime = crate::runtime::Runtime::new();
-        let query_path = runtime.language_dir(language_id).join("queries/highlights.scm");
-        
-        if query_path.exists() {
-            match std::fs::read_to_string(&query_path) {
-                Ok(query_text) => {
-                    // Leak the string to make it static
-                    let leaked = Box::leak(query_text.into_boxed_str());
-                    return Ok(leaked);
-                }
-                Err(e) => {
-                    eprintln!("DEBUG: Failed to read query file for {}: {}", language_id, e);
-                    return Err(SyntaxError::LanguageNotSupported(
-                        format!("failed to read query file: {}", e),
-                    ));
-                }
-            }
-        }
-    }
-    
-    // If not in cache, try to load directly from file
+    // Check if query exists in cache (but we need the query text, not the compiled query)
+    // The cache stores compiled queries, but we need the raw text
+    // So we'll always load from file for now
     let runtime = crate::runtime::Runtime::new();
     let query_path = runtime.language_dir(language_id).join("queries/highlights.scm");
     

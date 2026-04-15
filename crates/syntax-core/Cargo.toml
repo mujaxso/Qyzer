@@ -20,6 +20,8 @@ default = ["rust", "toml", "dynamic-loading"]
 rust = ["tree-sitter-rust"]
 toml = ["tree-sitter-toml"]
 dynamic-loading = ["libloading"]
+markdown = []
+markdown = []  # Add markdown feature to avoid warnings
 
 [[bin]]
 name = "download-grammars"

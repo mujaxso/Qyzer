@@ -99,7 +99,8 @@ impl LanguageId {
                 #[cfg(feature = "rust")]
                 {
                     eprintln!("DEBUG: Using built-in tree-sitter-rust v0.24");
-                    return Some(tree_sitter_rust::LANGUAGE());
+                    // tree_sitter_rust::LANGUAGE is a function pointer, call it
+                    return Some(tree_sitter_rust::language());
                 }
                 #[cfg(not(feature = "rust"))]
                 {
@@ -115,7 +116,7 @@ impl LanguageId {
                 // Use built-in tree-sitter-toml (v0.20) which should match the query file
                 #[cfg(feature = "toml")]
                 {
-                    return Some(tree_sitter_toml::LANGUAGE());
+                    return Some(tree_sitter_toml::language());
                 }
                 #[cfg(not(feature = "toml"))]
                 {

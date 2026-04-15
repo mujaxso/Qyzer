@@ -84,7 +84,6 @@ mod tests {
         );
     }
     
-    #[cfg(feature = "markdown")]
     #[test]
     fn test_markdown_highlight_captures() {
         use crate::highlight::map_capture_name;
@@ -106,7 +105,6 @@ mod tests {
         assert_eq!(map_capture_name("keyword"), Highlight::Keyword);
     }
     
-    #[cfg(feature = "markdown")]
     #[test]
     fn test_markdown_language_parsing() {
         use crate::language::LanguageId;
