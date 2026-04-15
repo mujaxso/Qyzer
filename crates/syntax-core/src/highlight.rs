@@ -244,13 +244,6 @@ pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, Synt
                     return Ok("");
                 }
                 
-                // Debug for markdown
-                if language_id == "markdown" {
-                    println!("DEBUG: Markdown query file loaded ({} bytes)", query_text.len());
-                    // Print first few lines
-                    let lines: Vec<&str> = query_text.lines().take(10).collect();
-                    println!("DEBUG: First 10 lines: {:?}", lines);
-                }
                 
                 // Leak the string to make it static
                 let leaked = Box::leak(query_text.into_boxed_str());
