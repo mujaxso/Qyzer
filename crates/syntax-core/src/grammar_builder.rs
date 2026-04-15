@@ -172,32 +172,47 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
             }
         }
         
-        // Run tree-sitter generate and capture output
-        let generate_output = Command::new("tree-sitter")
-            .current_dir(&source_dir)
-            .arg("generate")
-            .output()
-            .map_err(|e| format!("Failed to run tree-sitter generate: {}", e))?;
+        // Check if we need to run tree-sitter generate
+        // Only run if grammar.js exists and parser.c doesn't exist
+        let grammar_js_exists = source_dir.join("grammar.js").exists();
+        let parser_c_exists = source_dir.join("src/parser.c").exists();
         
-        if !generate_output.status.success() {
-            let stderr = String::from_utf8_lossy(&generate_output.stderr);
-            let stdout = String::from_utf8_lossy(&generate_output.stdout);
-            eprintln!("tree-sitter generate failed, trying with npx...");
-            
-            // Try with npx tree-sitter generate
-            let npx_output = Command::new("npx")
+        if grammar_js_exists && !parser_c_exists {
+            // Run tree-sitter generate and capture output
+            let generate_output = Command::new("tree-sitter")
                 .current_dir(&source_dir)
-                .args(["tree-sitter", "generate"])
+                .arg("generate")
                 .output()
-                .map_err(|e| format!("Failed to run npx tree-sitter generate: {}", e))?;
+                .map_err(|e| format!("Failed to run tree-sitter generate: {}", e))?;
             
-            if !npx_output.status.success() {
-                let npx_stderr = String::from_utf8_lossy(&npx_output.stderr);
-                let npx_stdout = String::from_utf8_lossy(&npx_output.stdout);
-                return Err(format!("tree-sitter generate failed with both tree-sitter CLI and npx:\nFirst error:\nstdout: {}\nstderr: {}\n\nNpx error:\nstdout: {}\nstderr: {}", 
-                    stdout, stderr, npx_stdout, npx_stderr));
+            if !generate_output.status.success() {
+                let stderr = String::from_utf8_lossy(&generate_output.stderr);
+                let stdout = String::from_utf8_lossy(&generate_output.stdout);
+                eprintln!("tree-sitter generate failed, trying with npx...");
+                
+                // Try with npx tree-sitter generate
+                let npx_output = Command::new("npx")
+                    .current_dir(&source_dir)
+                    .args(["tree-sitter", "generate"])
+                    .output()
+                    .map_err(|e| format!("Failed to run npx tree-sitter generate: {}", e))?;
+                
+                if !npx_output.status.success() {
+                    let npx_stderr = String::from_utf8_lossy(&npx_output.stderr);
+                    let npx_stdout = String::from_utf8_lossy(&npx_output.stdout);
+                    return Err(format!("tree-sitter generate failed with both tree-sitter CLI and npx:\nFirst error:\nstdout: {}\nstderr: {}\n\nNpx error:\nstdout: {}\nstderr: {}", 
+                        stdout, stderr, npx_stdout, npx_stderr));
+                }
+                println!("tree-sitter generate succeeded with npx");
+            } else {
+                println!("tree-sitter generate succeeded");
             }
-            println!("tree-sitter generate succeeded with npx");
+        } else if !parser_c_exists {
+            // No parser.c and no grammar.js - we can't generate
+            return Err(format!("Cannot build {}: parser.c doesn't exist and grammar.js not found", language_id));
+        } else {
+            // parser.c already exists, skip generation
+            println!("parser.c already exists, skipping tree-sitter generate");
         }
         
         // Check if we should use tree-sitter build or manual compilation
