@@ -5,7 +5,7 @@ use crate::highlight::{highlight, HighlightSpan};
 use crate::language::LanguageId;
 use std::collections::HashMap;
 use std::path::Path;
-use tree_sitter::{Parser, Tree, Query, QueryCursor};
+use tree_sitter::{Parser, Tree};
 
 pub struct SyntaxManager {
     documents: HashMap<String, SyntaxDocument>,
