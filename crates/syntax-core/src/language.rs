@@ -123,10 +123,13 @@ impl LanguageId {
                     return crate::dynamic_loader::load_language("toml");
                 }
             }
+            #[cfg(feature = "markdown")]
             LanguageId::Markdown => {
-                // Always use dynamic loading for markdown since we don't have a built-in feature
+                // Use dynamic loading for markdown
                 crate::dynamic_loader::load_language("markdown")
             }
+            #[cfg(not(feature = "markdown"))]
+            LanguageId::Markdown => None,
             LanguageId::PlainText => None,
             LanguageId::Dynamic(id) => crate::dynamic_loader::load_language(id),
         }
