@@ -67,25 +67,14 @@ fn highlight_with_query(
         .tree_sitter_language()
         .ok_or_else(|| SyntaxError::LanguageNotSupported(language.as_str().to_string()))?;
 
-    // Try to compile the query, but if it fails, try to fix common issues
-    let query_result = Query::new(ts_lang, query_str);
-    
-    let query = match query_result {
+    // Try to compile the query
+    let query = match Query::new(ts_lang, query_str) {
         Ok(q) => q,
         Err(e) => {
             // Log the error for debugging
             eprintln!("DEBUG: Tree-sitter query error for {}: {}", language.as_str(), e);
-            
-            // Try to create a minimal fallback query
-            eprintln!("DEBUG: Creating fallback query for {}", language.as_str());
-            let fallback_query = create_fallback_query(language);
-            match Query::new(ts_lang, fallback_query) {
-                Ok(q) => q,
-                Err(e2) => {
-                    eprintln!("DEBUG: Fallback query also failed: {}", e2);
-                    return Ok(Vec::new());
-                }
-            }
+            // Return empty spans (plaintext) when query compilation fails
+            return Ok(Vec::new());
         }
     };
 
@@ -114,38 +103,6 @@ fn highlight_with_query(
     Ok(spans)
 }
 
-fn create_fallback_query(language: LanguageId) -> &'static str {
-    match language {
-        LanguageId::Rust => {
-            r#"
-(comment) @comment
-(string_literal) @string
-(raw_string_literal) @string
-(line_comment) @comment
-(block_comment) @comment
-(identifier) @variable
-(type_identifier) @type
-(primitive_type) @type
-(field_identifier) @property
-"# 
-        }
-        LanguageId::Toml => {
-            r#"
-(comment) @comment
-(string) @string
-(boolean) @constant
-(integer) @number
-(float) @number
-"#
-        }
-        _ => {
-            r#"
-(comment) @comment
-(string) @string
-"#
-        }
-    }
-}
 
 pub fn map_capture_name(name: &str) -> Highlight {
     match name {
