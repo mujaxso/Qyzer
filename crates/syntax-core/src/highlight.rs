@@ -82,8 +82,10 @@ fn highlight_with_query(
     let root_node = tree.root_node();
     let mut spans = Vec::new();
 
-    // In tree-sitter 0.26.8, we can use matches() which returns QueryMatches that implements Iterator
-    for match_ in cursor.matches(&query, root_node, source.as_bytes()) {
+    // In tree-sitter 0.26.8, QueryCursor::matches() returns QueryMatches which doesn't implement Iterator
+    // We need to use a while loop with next()
+    let mut matches = cursor.matches(&query, root_node, source.as_bytes());
+    while let Some(match_) = matches.next() {
         for capture in match_.captures {
             let node = capture.node;
             let start = node.start_byte();
