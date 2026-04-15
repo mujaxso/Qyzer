@@ -99,10 +99,11 @@ impl LanguageId {
                 #[cfg(feature = "rust")]
                 {
                     eprintln!("DEBUG: Trying built-in tree-sitter-rust");
-                    // tree_sitter_rust::LANGUAGE is a constant function pointer
-                    // We need to call it as a function
+                    // tree_sitter_rust::LANGUAGE is a LanguageFn struct that wraps a function pointer
+                    // We need to extract the function pointer and call it
+                    let func_ptr = tree_sitter_rust::LANGUAGE.0;
                     unsafe {
-                        return Some(tree_sitter_rust::LANGUAGE());
+                        return Some(func_ptr());
                     }
                 }
                 #[cfg(not(feature = "rust"))]
