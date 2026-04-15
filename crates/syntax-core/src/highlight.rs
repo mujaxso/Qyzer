@@ -186,6 +186,10 @@ pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, Synt
     if query_path.exists() {
         match std::fs::read_to_string(&query_path) {
             Ok(query_text) => {
+                // Check if the query is not empty
+                if query_text.trim().is_empty() {
+                    return Ok("");
+                }
                 // Leak the string to make it static
                 let leaked = Box::leak(query_text.into_boxed_str());
                 Ok(leaked)

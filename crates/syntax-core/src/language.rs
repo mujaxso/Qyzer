@@ -40,6 +40,26 @@ impl LanguageId {
             "rs" => return LanguageId::Rust,
             "toml" => return LanguageId::Toml,
             "md" | "markdown" => return LanguageId::Markdown,
+            "js" | "jsx" => return LanguageId::Dynamic("javascript"),
+            "ts" => return LanguageId::Dynamic("typescript"),
+            "tsx" => return LanguageId::Dynamic("tsx"),
+            "py" => return LanguageId::Dynamic("python"),
+            "json" => return LanguageId::Dynamic("json"),
+            "css" => return LanguageId::Dynamic("css"),
+            "html" | "htm" => return LanguageId::Dynamic("html"),
+            "go" => return LanguageId::Dynamic("go"),
+            "java" => return LanguageId::Dynamic("java"),
+            "sh" | "bash" => return LanguageId::Dynamic("bash"),
+            "c" | "h" => return LanguageId::Dynamic("c"),
+            "cpp" | "cc" | "cxx" | "hpp" | "hh" | "hxx" => return LanguageId::Dynamic("cpp"),
+            "cs" => return LanguageId::Dynamic("c_sharp"),
+            "rb" => return LanguageId::Dynamic("ruby"),
+            "lua" => return LanguageId::Dynamic("lua"),
+            "yaml" | "yml" => return LanguageId::Dynamic("yaml"),
+            "zig" => return LanguageId::Dynamic("zig"),
+            "cmake" => return LanguageId::Dynamic("cmake"),
+            "ex" | "exs" => return LanguageId::Dynamic("elixir"),
+            "nix" => return LanguageId::Dynamic("nix"),
             _ => {}
         }
         
@@ -51,6 +71,7 @@ impl LanguageId {
             }
             "dockerfile" => return LanguageId::Dynamic("dockerfile"),
             "cmakelists.txt" => return LanguageId::Dynamic("cmake"),
+            "gemfile" | "rakefile" => return LanguageId::Dynamic("ruby"),
             _ => {}
         }
         

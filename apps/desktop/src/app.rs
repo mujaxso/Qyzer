@@ -55,8 +55,29 @@ impl iced::Application for App {
                     println!("Installing {} grammar...", language_id);
                     match grammar_builder::build_and_install_grammar(language_id) {
                         Ok(_) => println!("Successfully installed {} grammar", language_id),
-                        Err(e) => eprintln!("Failed to install {} grammar: {}", language_id, e),
+                        Err(e) => {
+                            eprintln!("Failed to install {} grammar: {}", language_id, e);
+                            // Try to create at least an empty query file
+                            let runtime = syntax_core::runtime::Runtime::new();
+                            let query_dir = runtime.language_dir(language_id).join("queries");
+                            let _ = std::fs::create_dir_all(&query_dir);
+                            let query_path = query_dir.join("highlights.scm");
+                            if !query_path.exists() {
+                                let _ = std::fs::write(&query_path, "");
+                            }
+                        }
                     }
+                }
+            }
+            
+            // Also ensure all languages have at least empty query files
+            for language_id in registry.language_ids() {
+                let runtime = syntax_core::runtime::Runtime::new();
+                let query_dir = runtime.language_dir(language_id).join("queries");
+                let _ = std::fs::create_dir_all(&query_dir);
+                let query_path = query_dir.join("highlights.scm");
+                if !query_path.exists() {
+                    let _ = std::fs::write(&query_path, "");
                 }
             }
             
