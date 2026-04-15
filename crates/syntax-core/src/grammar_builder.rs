@@ -67,6 +67,10 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
         return Err(format!("Source directory does not exist: {:?}", source_dir));
     }
     
+    // For languages with subdirectories, we need to check if the source files exist
+    // relative to the source_dir, not the repo root
+    // The source_files in grammar_info are relative to the subdirectory
+    // So we don't need to adjust them
     
     // Check if tree-sitter CLI is available and at a compatible version
     let has_tree_sitter_cli = Command::new("tree-sitter")
@@ -111,23 +115,48 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
         }
         
         // Check if we need to run tree-sitter generate
-        let grammar_js_exists = source_dir.join("grammar.js").exists();
-        let parser_c_exists = source_dir.join("src/parser.c").exists();
+        // Look for grammar.js in source_dir or parent directory (for subdirectory cases)
+        let grammar_js_exists = source_dir.join("grammar.js").exists() || 
+                               repo_dir.join("grammar.js").exists();
+        let parser_c_exists = source_dir.join("parser.c").exists() || 
+                             source_dir.join("src/parser.c").exists() ||
+                             repo_dir.join("parser.c").exists() ||
+                             repo_dir.join("src/parser.c").exists();
         
         if grammar_js_exists && !parser_c_exists {
-            // Run tree-sitter generate
+            // Run tree-sitter generate in the directory containing grammar.js
+            let generate_dir = if source_dir.join("grammar.js").exists() {
+                &source_dir
+            } else {
+                &repo_dir
+            };
+            
+            println!("Running tree-sitter generate in {}...", generate_dir.display());
             let generate_output = Command::new("tree-sitter")
-                .current_dir(&source_dir)
+                .current_dir(generate_dir)
                 .arg("generate")
                 .output()
                 .map_err(|e| format!("Failed to run tree-sitter generate: {}", e))?;
             
             if !generate_output.status.success() {
-                return Err("tree-sitter generate failed".to_string());
+                let stderr = String::from_utf8_lossy(&generate_output.stderr);
+                let stdout = String::from_utf8_lossy(&generate_output.stdout);
+                return Err(format!("tree-sitter generate failed:\nstdout: {}\nstderr: {}", stdout, stderr));
             }
             println!("tree-sitter generate succeeded");
         } else if !parser_c_exists {
-            return Err(format!("Cannot build {}: parser.c doesn't exist and grammar.js not found", language_id));
+            // Check if source files exist in the grammar_info.source_files list
+            let mut any_source_exists = false;
+            for source_file in &grammar_info.source_files {
+                if source_dir.join(source_file).exists() {
+                    any_source_exists = true;
+                    break;
+                }
+            }
+            if !any_source_exists {
+                return Err(format!("Cannot build {}: no source files found and grammar.js not found", language_id));
+            }
+            println!("Source files exist, skipping tree-sitter generate");
         } else {
             println!("parser.c already exists, skipping tree-sitter generate");
         }
@@ -399,7 +428,21 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     println!("Installed library to: {}", target_lib_path.display());
     
     // Install query files
-    let query_source_dir = source_dir.join("queries");
+    // For languages with subdirectories, queries might be in the parent directory
+    let query_source_dir = if let Some(subdir) = &grammar_info.subdirectory {
+        // Try to find queries in the parent directory (repo root)
+        let parent_dir = repo_dir;
+        let queries_in_parent = parent_dir.join("queries");
+        if queries_in_parent.exists() {
+            queries_in_parent
+        } else {
+            // Fall back to source_dir/queries
+            source_dir.join("queries")
+        }
+    } else {
+        source_dir.join("queries")
+    };
+    
     if query_source_dir.exists() {
         let query_target_dir = runtime.language_dir(language_id).join("queries");
         fs::create_dir_all(&query_target_dir)
@@ -412,10 +455,43 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
                 fs::copy(&source_path, &target_path)
                     .map_err(|e| format!("Failed to copy query file {}: {}", query_file, e))?;
                 println!("Installed query file: {}", query_file);
+            } else {
+                // Try to find the query file in the repo root's queries directory
+                let repo_queries_dir = repo_dir.join("queries");
+                if repo_queries_dir.exists() {
+                    let repo_source_path = repo_queries_dir.join(query_file);
+                    if repo_source_path.exists() {
+                        let target_path = query_target_dir.join(query_file);
+                        fs::copy(&repo_source_path, &target_path)
+                            .map_err(|e| format!("Failed to copy query file {}: {}", query_file, e))?;
+                        println!("Installed query file from repo root: {}", query_file);
+                    } else {
+                        println!("Warning: Query file {} not found in {}", query_file, query_source_dir.display());
+                    }
+                } else {
+                    println!("Warning: Query file {} not found in {}", query_file, query_source_dir.display());
+                }
             }
         }
     } else {
-        println!("Warning: No query directory found for {}", language_id);
+        println!("Warning: No query directory found for {} at {}", language_id, query_source_dir.display());
+        // Try to find queries in the repo root
+        let repo_queries_dir = repo_dir.join("queries");
+        if repo_queries_dir.exists() {
+            let query_target_dir = runtime.language_dir(language_id).join("queries");
+            fs::create_dir_all(&query_target_dir)
+                .map_err(|e| format!("Failed to create query directory: {}", e))?;
+            
+            for query_file in &grammar_info.query_files {
+                let source_path = repo_queries_dir.join(query_file);
+                if source_path.exists() {
+                    let target_path = query_target_dir.join(query_file);
+                    fs::copy(&source_path, &target_path)
+                        .map_err(|e| format!("Failed to copy query file {}: {}", query_file, e))?;
+                    println!("Installed query file from repo root: {}", query_file);
+                }
+            }
+        }
     }
     
     println!("Successfully installed {} grammar!", language_id);
