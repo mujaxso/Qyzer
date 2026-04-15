@@ -14,9 +14,11 @@ impl Runtime {
     /// Attempt to locate the runtime directory.
     ///
     /// Searches in the following order:
-    /// 1. `NEOTE_RUNTIME` environment variable.
-    /// 2. A directory `runtime/treesitter` sibling to the current executable.
-    /// 3. The current working directory `./runtime/treesitter`.
+    /// 1. `QYZER_STUDIO_RUNTIME` environment variable (for compatibility)
+    /// 2. `NEOTE_RUNTIME` environment variable.
+    /// 3. A directory `runtime/treesitter` sibling to the current executable.
+    /// 4. The current working directory `./runtime/treesitter`.
+    /// 5. Bundled resources directory for packaged applications.
     ///
     /// Returns a `Runtime` even if the directory does not exist; operations will
     /// fail later with appropriate errors.
@@ -29,7 +31,15 @@ impl Runtime {
     }
 
     fn locate_root() -> Option<PathBuf> {
-        // 1. Environment variable
+        // 1. QYZER_STUDIO_RUNTIME environment variable (for compatibility)
+        if let Ok(env_path) = env::var("QYZER_STUDIO_RUNTIME") {
+            let p = PathBuf::from(env_path);
+            if p.is_dir() {
+                return Some(p);
+            }
+        }
+
+        // 2. NEOTE_RUNTIME environment variable.
         if let Ok(env_path) = env::var("NEOTE_RUNTIME") {
             let p = PathBuf::from(env_path);
             if p.is_dir() {
@@ -37,17 +47,43 @@ impl Runtime {
             }
         }
 
-        // 2. Sibling to executable
+        // 3. Sibling to executable (development mode)
         if let Ok(exe_path) = env::current_exe() {
             if let Some(exe_dir) = exe_path.parent() {
+                // Try development layout: ../runtime/treesitter
                 let candidate = exe_dir.join("../runtime/treesitter").canonicalize().ok();
                 if candidate.as_ref().and_then(|p| p.is_dir().then(|| ())).is_some() {
                     return candidate;
                 }
+                
+                // Try packaged layout: ../Resources/runtime/treesitter (macOS) or ../share/qyzer-studio/runtime/treesitter (Linux)
+                #[cfg(target_os = "macos")]
+                {
+                    let candidate = exe_dir.join("../Resources/runtime/treesitter");
+                    if candidate.is_dir() {
+                        return Some(candidate);
+                    }
+                }
+                
+                #[cfg(target_os = "linux")]
+                {
+                    let candidate = exe_dir.join("../share/qyzer-studio/runtime/treesitter");
+                    if candidate.is_dir() {
+                        return Some(candidate);
+                    }
+                }
+                
+                #[cfg(windows)]
+                {
+                    let candidate = exe_dir.join("../resources/runtime/treesitter");
+                    if candidate.is_dir() {
+                        return Some(candidate);
+                    }
+                }
             }
         }
 
-        // 3. Current working directory
+        // 4. Current working directory
         let cwd = env::current_dir().ok()?;
         let candidate = cwd.join("runtime/treesitter");
         if candidate.is_dir() {

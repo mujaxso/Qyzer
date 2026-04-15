@@ -169,73 +169,45 @@ pub fn map_capture_name(name: &str) -> Highlight {
 pub fn get_query_for_language(language: LanguageId) -> Result<&'static str, SyntaxError> {
     match language {
         LanguageId::Rust => {
-            #[cfg(feature = "rust")]
-            {
-                Ok(include_str!(
-                    "../../../runtime/treesitter/languages/rust/queries/highlights.scm"
+            if let Some(query) = crate::query_cache::get_query("rust", "highlights") {
+                let query_str = Box::leak(query.source().to_string().into_boxed_str());
+                Ok(query_str)
+            } else {
+                Err(SyntaxError::LanguageNotSupported(
+                    "rust grammar not available".to_string(),
                 ))
             }
-            #[cfg(not(feature = "rust"))]
-            Err(SyntaxError::LanguageNotSupported(
-                "rust feature not enabled".to_string(),
-            ))
         }
         LanguageId::Toml => {
-            #[cfg(feature = "toml")]
-            {
-                // Use the official highlight query from the tree-sitter-toml crate
-                // This ensures we're using the correct node types for the exact grammar version
-                use tree_sitter_toml;
-                Ok(tree_sitter_toml::HIGHLIGHT_QUERY)
+            if let Some(query) = crate::query_cache::get_query("toml", "highlights") {
+                let query_str = Box::leak(query.source().to_string().into_boxed_str());
+                Ok(query_str)
+            } else {
+                Err(SyntaxError::LanguageNotSupported(
+                    "toml grammar not available".to_string(),
+                ))
             }
-            #[cfg(not(feature = "toml"))]
-            Err(SyntaxError::LanguageNotSupported(
-                "toml support not compiled".to_string(),
-            ))
         }
         LanguageId::Markdown => {
-            #[cfg(feature = "markdown")]
-            {
-                load_query_from_runtime("markdown")
+            if let Some(query) = crate::query_cache::get_query("markdown", "highlights") {
+                let query_str = Box::leak(query.source().to_string().into_boxed_str());
+                Ok(query_str)
+            } else {
+                Err(SyntaxError::LanguageNotSupported(
+                    "markdown grammar not available".to_string(),
+                ))
             }
-            #[cfg(not(feature = "markdown"))]
-            Err(SyntaxError::LanguageNotSupported(
-                "markdown support not compiled".to_string(),
-            ))
         }
         LanguageId::PlainText => Err(SyntaxError::LanguageNotSupported(
             "plaintext has no syntax queries".to_string(),
         )),
-    }
-}
-
-/// Load query file from runtime directory for ANY language
-fn load_query_from_runtime(language_id: &str) -> Result<&'static str, SyntaxError> {
-    use crate::runtime::Runtime;
-    
-    let runtime = Runtime::new();
-    let query_path = runtime.language_dir(language_id).join("queries/highlights.scm");
-    
-    match std::fs::read_to_string(&query_path) {
-        Ok(query) => Ok(Box::leak(query.into_boxed_str())),
-        Err(e) => {
-            // If file doesn't exist, try to download it
-            eprintln!("Query file not found for {}: {}", language_id, e);
-            eprintln!("Attempting to download query files...");
-            
-            // Try to install the grammar (which includes query files)
-            if let Ok(()) = crate::grammar_builder::build_and_install_grammar(language_id) {
-                // Try loading again
-                match std::fs::read_to_string(&query_path) {
-                    Ok(query) => Ok(Box::leak(query.into_boxed_str())),
-                    Err(e2) => Err(SyntaxError::LanguageNotSupported(
-                        format!("Failed to load query file for {} even after installation: {}", language_id, e2)
-                    ))
-                }
+        LanguageId::Dynamic(id) => {
+            if let Some(query) = crate::query_cache::get_query(id, "highlights") {
+                let query_str = Box::leak(query.source().to_string().into_boxed_str());
+                Ok(query_str)
             } else {
                 Err(SyntaxError::LanguageNotSupported(
-                    format!("Query file not found at {}: {}. Please install the grammar with: cargo run --bin download-grammars -- install {}", 
-                           query_path.display(), e, language_id)
+                    format!("{} grammar not available", id),
                 ))
             }
         }

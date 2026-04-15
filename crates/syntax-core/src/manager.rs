@@ -126,41 +126,16 @@ impl SyntaxManager {
         }
     }
     
-    // Precompile queries for ALL languages in the registry
-    pub fn precompile_queries(&mut self) {
-        use crate::grammar_registry::GrammarInfo;
+    /// Initialize dynamic grammars and preload queries
+    pub fn initialize_dynamic_grammars(&mut self) {
+        use crate::dynamic_loader::preload_available_grammars;
+        use crate::query_cache::preload_queries;
         
-        // Get all available languages
-        let language_ids = GrammarInfo::available_languages();
+        // Preload available grammars
+        preload_available_grammars();
         
-        for language_id in language_ids {
-            // Convert string to LanguageId
-            let language = match language_id.as_str() {
-                "rust" => LanguageId::Rust,
-                "toml" => LanguageId::Toml,
-                "markdown" => LanguageId::Markdown,
-                "javascript" => LanguageId::PlainText, // We'll handle dynamically
-                "python" => LanguageId::PlainText,
-                "json" => LanguageId::PlainText,
-                "html" => LanguageId::PlainText,
-                "css" => LanguageId::PlainText,
-                "go" => LanguageId::PlainText,
-                "c" => LanguageId::PlainText,
-                "cpp" => LanguageId::PlainText,
-                "java" => LanguageId::PlainText,
-                "bash" => LanguageId::PlainText,
-                "typescript" => LanguageId::PlainText,
-                _ => continue,
-            };
-            
-            // Try to get the language
-            if let Some(ts_lang) = language.tree_sitter_language() {
-                if let Ok(query_str) = get_query_for_language(language) {
-                    let query = Query::new(ts_lang, query_str);
-                    self.queries.insert(language, query.map_err(|e| e.to_string()));
-                }
-            }
-        }
+        // Preload queries
+        preload_queries();
     }
 }
 

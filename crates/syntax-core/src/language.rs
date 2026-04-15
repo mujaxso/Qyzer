@@ -1,6 +1,8 @@
 //! Language identification and grammar loading.
 
 use std::path::Path;
+use std::collections::HashMap;
+use std::sync::OnceLock;
 use tree_sitter;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -9,6 +11,7 @@ pub enum LanguageId {
     Toml,
     Markdown,
     PlainText,
+    Dynamic(&'static str),
 }
 
 impl LanguageId {
@@ -40,74 +43,92 @@ impl LanguageId {
             _ => {}
         }
         
+        // Try to match against dynamic language registry
+        if let Some(lang_id) = Self::from_extension_dynamic(ext) {
+            return LanguageId::Dynamic(lang_id);
+        }
+        
         match ext {
             "rs" => LanguageId::Rust,
             _ => LanguageId::PlainText,
         }
     }
 
-    pub fn as_str(&self) -> &'static str {
+    fn from_extension_dynamic(ext: &str) -> Option<&'static str> {
+        use crate::grammar_registry::GrammarRegistry;
+        
+        static EXTENSION_MAP: OnceLock<HashMap<String, &'static str>> = OnceLock::new();
+        
+        let map = EXTENSION_MAP.get_or_init(|| {
+            let mut map = HashMap::new();
+            let registry = GrammarRegistry::global();
+            
+            for (lang_id, info) in registry.languages() {
+                for ext in &info.extensions {
+                    map.insert(ext.to_lowercase(), *lang_id);
+                }
+                for filename in &info.filenames {
+                    map.insert(filename.to_lowercase(), *lang_id);
+                }
+            }
+            map
+        });
+        
+        map.get(&ext.to_lowercase()).copied()
+    }
+
+    pub fn as_str(&self) -> &str {
         match self {
             LanguageId::Rust => "rust",
             LanguageId::Toml => "toml",
             LanguageId::Markdown => "markdown",
             LanguageId::PlainText => "plaintext",
+            LanguageId::Dynamic(id) => id,
         }
     }
 
-    /// Return the statically linked Tree-sitter language if available.
+    /// Return the Tree-sitter language, loading dynamically if needed.
     pub fn tree_sitter_language(&self) -> Option<tree_sitter::Language> {
         match self {
-            #[cfg(feature = "rust")]
-            LanguageId::Rust => Some(tree_sitter_rust::language()),
-            #[cfg(not(feature = "rust"))]
-            LanguageId::Rust => None,
-            #[cfg(feature = "toml")]
-            LanguageId::Toml => Some(tree_sitter_toml::language()),
-            #[cfg(not(feature = "toml"))]
-            LanguageId::Toml => None,
-            #[cfg(feature = "markdown")]
-            LanguageId::Markdown => load_dynamic_language("markdown"),
-            #[cfg(not(feature = "markdown"))]
-            LanguageId::Markdown => None,
+            LanguageId::Rust => {
+                // Try dynamic loading first
+                crate::dynamic_loader::load_language("rust").or_else(|| {
+                    #[cfg(feature = "rust")]
+                    {
+                        Some(tree_sitter_rust::language())
+                    }
+                    #[cfg(not(feature = "rust"))]
+                    {
+                        None
+                    }
+                })
+            }
+            LanguageId::Toml => {
+                crate::dynamic_loader::load_language("toml").or_else(|| {
+                    #[cfg(feature = "toml")]
+                    {
+                        Some(tree_sitter_toml::language())
+                    }
+                    #[cfg(not(feature = "toml"))]
+                    {
+                        None
+                    }
+                })
+            }
+            LanguageId::Markdown => {
+                crate::dynamic_loader::load_language("markdown").or_else(|| {
+                    #[cfg(feature = "markdown")]
+                    {
+                        Some(tree_sitter_markdown::language())
+                    }
+                    #[cfg(not(feature = "markdown"))]
+                    {
+                        None
+                    }
+                })
+            }
             LanguageId::PlainText => None,
-        }
-    }
-}
-
-/// Helper function to load any language dynamically from runtime directory
-/// This works for ALL languages in the grammar registry
-fn load_dynamic_language(language_id: &str) -> Option<tree_sitter::Language> {
-    use crate::runtime::Runtime;
-    use std::sync::OnceLock;
-    use std::collections::HashMap;
-    
-    // Use a global cache for all dynamically loaded languages
-    static LANGUAGE_CACHE: OnceLock<HashMap<String, Option<tree_sitter::Language>>> = OnceLock::new();
-    
-    let cache = LANGUAGE_CACHE.get_or_init(|| HashMap::new());
-    
-    // Check cache first
-    if let Some(cached) = cache.get(language_id) {
-        return cached.clone();
-    }
-    
-    // Not in cache, try to load
-    let runtime = Runtime::new();
-    match runtime.load_language(language_id) {
-        Ok(lang) => {
-            // Successfully loaded - cache it
-            let mut cache = LANGUAGE_CACHE.get().unwrap().clone();
-            cache.insert(language_id.to_string(), Some(lang.clone()));
-            // Note: We can't update the OnceLock, but that's okay
-            Some(lang)
-        }
-        Err(e) => {
-            // Just log the error and return None - don't try to install automatically
-            // This prevents blocking the UI during startup
-            eprintln!("Note: {} grammar not found. {}", language_id, e);
-            eprintln!("To install, run: cargo run --bin download-grammars -- install {}", language_id);
-            None
+            LanguageId::Dynamic(id) => crate::dynamic_loader::load_language(id),
         }
     }
 }

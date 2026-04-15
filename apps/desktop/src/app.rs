@@ -32,12 +32,11 @@ impl iced::Application for App {
             }
         }
         
-        // Precompile syntax highlighting queries for faster file opening
+        // Initialize dynamic grammar system
         {
             let mut syntax_manager = app.syntax_manager.lock().unwrap();
-            // Precompile queries for supported languages
-            // This caches compiled Tree-sitter queries to avoid recompiling them for each file
-            syntax_manager.precompile_queries();
+            // Initialize the dynamic grammar loader
+            syntax_manager.initialize_dynamic_grammars();
         }
         
         // Load custom fonts for icon support

@@ -14,6 +14,8 @@ pub mod manager;
 pub mod runtime;
 pub mod grammar_registry;
 pub mod grammar_builder;
+pub mod dynamic_loader;
+pub mod query_cache;
 
 // Re-export main types for convenience
 pub use error::SyntaxError;
@@ -22,6 +24,8 @@ pub use language::LanguageId;
 pub use manager::SyntaxManager;
 pub use grammar_registry::GrammarInfo;
 pub use grammar_builder::{build_and_install_grammar, is_grammar_installed, install_missing_grammars};
+pub use dynamic_loader::DynamicGrammarLoader;
+pub use query_cache::QueryCache;
 
 #[cfg(test)]
 mod tests {
@@ -114,5 +118,19 @@ mod tests {
         // Test that tree_sitter_language returns something when feature is enabled
         // This may panic if tree-sitter-markdown is not properly linked, but that's okay for a test
         let _ = lang.tree_sitter_language();
+    }
+    
+    #[test]
+    fn test_dynamic_language_registry() {
+        use crate::grammar_registry::GrammarRegistry;
+        
+        let registry = GrammarRegistry::global();
+        assert!(registry.contains_language("rust"));
+        assert!(registry.contains_language("toml"));
+        assert!(registry.contains_language("markdown"));
+        
+        let rust_info = registry.get("rust").unwrap();
+        assert_eq!(rust_info.name, "Rust");
+        assert!(rust_info.extensions.contains(&"rs".to_string()));
     }
 }
