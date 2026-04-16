@@ -1,10 +1,10 @@
 use iced::{
-    widget::{button, column, container, horizontal_space, row, scrollable, text},
+    widget::{button, column, container, horizontal_space, row, scrollable, text, text_input},
     Alignment, Element, Length,
 };
 
 use crate::message::Message;
-use crate::state::Activity;
+use crate::state::{Activity, App};
 use core_types::workspace::DirectoryEntry;
 
 // Helper function to normalize paths for consistent comparison
