@@ -27,6 +27,71 @@ mod file_picker {
     pub struct FilePicker;
     
     impl FilePicker {
+        /// Check if system prefers dark theme
+        fn system_prefers_dark_theme() -> bool {
+            // Check GTK settings
+            if let Ok(theme) = std::env::var("GTK_THEME") {
+                if theme.to_lowercase().contains("dark") {
+                    return true;
+                }
+            }
+            
+            // Check COLORFGBG environment variable (common in terminals)
+            // Format is "foreground;background" where 15;0 means white on black (dark)
+            if let Ok(colorfg) = std::env::var("COLORFGBG") {
+                if colorfg.contains("15;0") || colorfg.contains("15;8") {
+                    return true;
+                }
+            }
+            
+            // Check QT settings
+            if let Ok(qt_style) = std::env::var("QT_STYLE_OVERRIDE") {
+                if qt_style.to_lowercase().contains("dark") {
+                    return true;
+                }
+            }
+            
+            // Check XDG desktop portal color scheme preference
+            if let Ok(color_scheme) = std::env::var("COLOR_SCHEME") {
+                if color_scheme.to_lowercase().contains("dark") {
+                    return true;
+                }
+            }
+            
+            // Check GNOME/GTK settings via gsettings
+            #[cfg(target_os = "linux")]
+            {
+                use std::process::Command;
+                if let Ok(output) = Command::new("gsettings")
+                    .args(["get", "org.gnome.desktop.interface", "color-scheme"])
+                    .output()
+                {
+                    if output.status.success() {
+                        let result = String::from_utf8_lossy(&output.stdout);
+                        if result.to_lowercase().contains("dark") {
+                            return true;
+                        }
+                    }
+                }
+                
+                // Also check gtk-theme
+                if let Ok(output) = Command::new("gsettings")
+                    .args(["get", "org.gnome.desktop.interface", "gtk-theme"])
+                    .output()
+                {
+                    if output.status.success() {
+                        let result = String::from_utf8_lossy(&output.stdout);
+                        if result.to_lowercase().contains("dark") {
+                            return true;
+                        }
+                    }
+                }
+            }
+            
+            // Default to false if we can't determine
+            false
+        }
+        
         /// Open a folder picker dialog with portal support
         pub async fn pick_folder(title: &str) -> Result<PathBuf, FilePickerError> {
             // Log environment for diagnostics
@@ -42,6 +107,29 @@ mod file_picker {
                 xdg_current_desktop,
                 hyprland);
             
+            // Try to ensure dark theme is used if system prefers it
+            if Self::system_prefers_dark_theme() {
+                log::debug!("System prefers dark theme, configuring GTK for dark mode");
+                
+                // Set GTK theme to prefer dark variant
+                if std::env::var("GTK_THEME").is_err() {
+                    unsafe {
+                        std::env::set_var("GTK_THEME", "Adwaita:dark");
+                    }
+                }
+                
+                // Also try setting GTK application preference for dark theme
+                // This is a GTK-specific setting that applications can use
+                unsafe {
+                    std::env::set_var("GTK_APPLICATION_PREFER_DARK_THEME", "1");
+                }
+                
+                // Set color scheme for portals
+                unsafe {
+                    std::env::set_var("COLOR_SCHEME", "dark");
+                }
+            }
+            
             // On Hyprland/Wayland, we need to ensure portal integration works
             // rfd should handle this automatically with the xdg-portal feature
             
@@ -51,7 +139,7 @@ mod file_picker {
             
             // Note: Native file dialogs use the system theme, not our application theme
             // This is a limitation of native dialogs on all platforms
-            log::debug!("Opening async file picker dialog (uses system theme)");
+            log::debug!("Opening async file picker dialog (trying to use dark theme)");
             match dialog.pick_folder().await {
                 Some(handle) => {
                     let path = handle.path().to_path_buf();
@@ -80,7 +168,23 @@ mod file_picker {
                     // Try synchronous version as fallback
                     // This might work better in some environments
                     match tokio::task::spawn_blocking(move || {
-                        log::debug!("Opening synchronous file picker dialog (uses system theme)");
+                        // Apply theme settings for synchronous dialog too
+                        if Self::system_prefers_dark_theme() {
+                            log::debug!("System prefers dark theme, configuring GTK for dark mode (sync)");
+                            
+                            if std::env::var("GTK_THEME").is_err() {
+                                unsafe {
+                                    std::env::set_var("GTK_THEME", "Adwaita:dark");
+                                }
+                            }
+                            
+                            unsafe {
+                                std::env::set_var("GTK_APPLICATION_PREFER_DARK_THEME", "1");
+                                std::env::set_var("COLOR_SCHEME", "dark");
+                            }
+                        }
+                        
+                        log::debug!("Opening synchronous file picker dialog (trying to use dark theme)");
                         let dialog = rfd::FileDialog::new()
                             .set_title(&title_clone);
                         dialog.pick_folder()
@@ -150,11 +254,11 @@ pub fn open_workspace_dialog() -> Command<Message> {
                         || std::env::var("XDG_CURRENT_DESKTOP").unwrap_or_default().to_lowercase().contains("hyprland");
                     
                     let error_msg = if hyprland && wayland {
-                        format!("File picker failed on Hyprland (Wayland). {}. Try manual entry below, or ensure xdg-desktop-portal and xdg-desktop-portal-hyprland are installed. Note: File picker uses system theme.", e)
+                        format!("File picker failed on Hyprland (Wayland). {}. Try manual entry below, or ensure xdg-desktop-portal and xdg-desktop-portal-hyprland are installed. If dialog appears with wrong theme, check your system's dark mode settings.", e)
                     } else if wayland {
-                        format!("File picker failed on Wayland. {}. Try manual entry below, or ensure xdg-desktop-portal is running. Note: File picker uses system theme.", e)
+                        format!("File picker failed on Wayland. {}. Try manual entry below, or ensure xdg-desktop-portal is running. If dialog appears with wrong theme, check your system's dark mode settings.", e)
                     } else {
-                        format!("File picker failed: {}. Try manual entry below. Note: File picker uses system theme.", e)
+                        format!("File picker failed: {}. Try manual entry below. If dialog appears with wrong theme, check your system's dark mode settings.", e)
                     };
                     
                     Message::WorkspaceLoaded(Err(error_msg))
