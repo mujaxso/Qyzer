@@ -17,7 +17,7 @@ pub fn left_panel_with_expanded<'a>(
 ) -> Element<'a, Message> {
     match active_activity {
         Activity::Primary(crate::state::PrimarySidebarView::Explorer) => 
-            explorer_panel(),
+            placeholder_panel("Explorer (use explorer_panel with App)"),
         Activity::Primary(crate::state::PrimarySidebarView::Search) => 
             search_panel(),
         Activity::Primary(crate::state::PrimarySidebarView::SourceControl) => 
@@ -33,23 +33,9 @@ pub fn explorer_panel_with_expanded<'a>(
     _expanded_directories: &'a std::collections::HashSet<std::path::PathBuf>,
     _workspace_path: &'a str,
 ) -> Element<'a, Message> {
-    explorer_panel()
+    placeholder_panel("Explorer (use explorer_panel with App)")
 }
 
-// Main explorer panel that uses the proper tree structure from App
-pub fn explorer_panel<'a>() -> Element<'a, Message> {
-    // This is a placeholder - the actual implementation will be in the wrapper function
-    // that has access to App
-    container(
-        text("Explorer")
-            .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
-    )
-    .center_y()
-    .center_x()
-    .width(Length::Fill)
-    .height(Length::Fill)
-    .into()
-}
 
 // New implementation that properly renders the tree structure
 pub fn explorer_panel_professional(app: &App) -> Element<'_, Message> {
@@ -190,13 +176,13 @@ pub fn explorer_panel_professional(app: &App) -> Element<'_, Message> {
 }
 
 // Recursive function to render the explorer tree with proper hierarchy
-fn render_explorer_tree(
-    nodes: &[crate::explorer::model::ExplorerNode],
-    explorer_state: &crate::explorer::state::ExplorerState,
-    typography: &crate::settings::editor::EditorTypographySettings,
-    style: &StyleHelpers,
+fn render_explorer_tree<'a>(
+    nodes: &'a [crate::explorer::model::ExplorerNode],
+    explorer_state: &'a crate::explorer::state::ExplorerState,
+    typography: &'a crate::settings::editor::EditorTypographySettings,
+    style: &'a StyleHelpers,
     depth: usize,
-) -> Vec<Element<'_, Message>> {
+) -> Vec<Element<'a, Message>> {
     let mut elements = Vec::new();
     
     for node in nodes {
@@ -237,8 +223,7 @@ fn render_explorer_tree(
                 .style(iced::theme::Button::Text)
             } else {
                 // Spacer for files to align with directories
-                container(iced::widget::Space::with_width(Length::Fixed(20.0)))
-                    .into()
+                Element::from(container(iced::widget::Space::with_width(Length::Fixed(20.0))))
             },
             // Icon
             if node.is_dir {
