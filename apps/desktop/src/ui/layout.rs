@@ -7,12 +7,20 @@ use iced::{
 };
 use std::ops::Range;
 
-use crate::state::{Activity, FileLoadingState};
+use crate::state::{App, Activity, FileLoadingState};
 use crate::message::Message;
 use crate::theme::QyzerTheme;
 use crate::ui::style::StyleHelpers;
 use crate::settings::editor::EditorTypographySettings;
 use crate::ui::icons::Icon;
+
+// Import layout modules
+use super::layout::topbar::top_bar;
+use super::layout::activity_rail::activity_rail;
+use super::layout::explorer::left_panel_with_expanded;
+use super::layout::editor::editor_panel;
+use super::layout::assistant::ai_panel;
+use super::layout::status_bar::status_bar;
 
 // Helper function to normalize paths for consistent comparison
 fn normalize_path(path: &str) -> String {
@@ -28,13 +36,13 @@ fn normalize_path(path: &str) -> String {
 }
 
 pub fn ide_layout<'a>(
+    app: &'a App,
     workspace_path: &'a str,
     file_entries: &'a [core_types::workspace::DirectoryEntry],
     active_file_path: Option<&'a String>,
     is_dirty: bool,
     status_message: &'a str,
     error_message: Option<&'a String>,
-    active_activity: Activity,
     ai_panel_visible: bool,
     prompt_input: &'a str,
     _expanded_directories: &'a std::collections::HashSet<String>,
@@ -51,8 +59,8 @@ pub fn ide_layout<'a>(
     // Top bar
     let top_bar = top_bar(workspace_path, is_dirty);
 
-    // Activity rail
-    let activity_rail = activity_rail(active_activity);
+    // Activity rail - now uses the consolidated implementation from layout/activity_rail.rs
+    let activity_rail = activity_rail(app);
 
     // Main content area
     let ai_panel_widget: Element<_> = if ai_panel_visible {
@@ -66,13 +74,12 @@ pub fn ide_layout<'a>(
             .into()
     };
 
-
     let main_content = row![
         // Activity rail
         activity_rail,
         vertical_rule(1),
         // Left panel (explorer) - flexible width
-        container(left_panel_with_expanded(file_entries, active_activity, _expanded_directories, workspace_path))
+        container(left_panel_with_expanded(file_entries, app.active_activity, _expanded_directories, workspace_path))
             .width(Length::FillPortion(2))
             .height(Length::Fill),
         vertical_rule(1),
@@ -85,13 +92,8 @@ pub fn ide_layout<'a>(
     ]
     .height(Length::Fill);
 
-    // Status bar
-    let status_bar = status_bar(
-        status_message,
-        error_message,
-        active_file_path,
-        file_entries.len(),
-    );
+    // Status bar - now uses the consolidated implementation from layout/status_bar.rs
+    let status_bar = status_bar(app);
 
     // Combine everything
     let content = column![
