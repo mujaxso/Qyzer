@@ -1,0 +1,9 @@
+pub mod topbar;
+pub mod activity_rail;
+pub mod explorer;
+pub mod editor;
+pub mod assistant;
+pub mod search;
+pub mod terminal;
+pub mod settings;
+pub mod status_bar;
