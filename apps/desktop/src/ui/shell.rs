@@ -48,12 +48,7 @@ pub fn shell(app: &App) -> Element<'_, Message> {
                         container::Appearance {
                             background: Some(style.colors.panel_background.into()),
                             border: iced::Border {
-                                color: iced::Color::from_rgba(
-                                    style.colors.border.r,
-                                    style.colors.border.g,
-                                    style.colors.border.b,
-                                    0.3
-                                ),
+                                color: style.colors.border,
                                 width: 1.0,
                                 radius: 0.0.into(),
                             },
