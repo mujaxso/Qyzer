@@ -30,7 +30,7 @@ mod file_picker {
         /// Open a folder picker dialog with portal support
         pub async fn pick_folder(title: &str) -> Result<PathBuf, FilePickerError> {
             // Log environment for diagnostics
-            let wayland = std::env::var("WAYLAND_DISPLAY").is_ok()
+            let _wayland = std::env::var("WAYLAND_DISPLAY").is_ok()
                 || std::env::var("XDG_SESSION_TYPE").unwrap_or_default() == "wayland";
             let xdg_current_desktop = std::env::var("XDG_CURRENT_DESKTOP").unwrap_or_default();
             let hyprland = std::env::var("HYPRLAND_INSTANCE_SIGNATURE").is_ok()
@@ -72,12 +72,15 @@ mod file_picker {
                 Err(e) => {
                     log::warn!("Async file picker failed: {}. Trying synchronous fallback.", e);
                     
+                    // Clone title to own it for the spawn_blocking closure
+                    let title_clone = title.to_string();
+                    
                     // Try synchronous version as fallback
                     // This might work better in some environments
                     match tokio::task::spawn_blocking(move || {
                         log::debug!("Opening synchronous file picker dialog");
                         let dialog = rfd::FileDialog::new()
-                            .set_title(title);
+                            .set_title(&title_clone);
                         dialog.pick_folder()
                     }).await {
                         Ok(Some(path)) => {
