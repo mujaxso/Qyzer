@@ -1,5 +1,5 @@
 use crate::message::Message;
-use crate::state::{App, FileLoadingState, FileMetadata};
+use crate::state::{App, EditorBuffer, FileLoadingState, FileMetadata};
 use crate::update::dialog;
 use file_ops::{FileLoader, WorkspaceLoader};
 use iced::Command;
@@ -155,6 +155,21 @@ fn handle_file_selected_by_path(app: &mut App, path: String) -> Command<Message>
                 // Update tab dirty state
                 if let Some(tab) = app.tab_manager.find_tab_by_path(&path) {
                     app.tab_manager.set_tab_dirty(tab.id, buffer.is_dirty);
+                }
+                
+                // Update workspace state to ensure it's in sync
+                {
+                    let mut state = app.workspace_state.lock().unwrap();
+                    // Check if the workspace state already has this buffer
+                    if !state.path_to_buffer_id.contains_key(&std::path::PathBuf::from(&path)) {
+                        // If not, open it
+                        state.open_buffer(&path, buffer.content.clone());
+                    } else {
+                        // If it does, make it active
+                        if let Some(buffer_id) = state.path_to_buffer_id.get(&std::path::PathBuf::from(&path)) {
+                            state.set_active_buffer(*buffer_id);
+                        }
+                    }
                 }
             }
         }
@@ -462,6 +477,18 @@ fn handle_file_saved(app: &mut App, result: Result<(), String>) -> Command<Messa
                     // Update tab dirty state
                     if let Some(active_tab) = app.tab_manager.get_active_tab() {
                         app.tab_manager.set_tab_dirty(active_tab.id, buffer.is_dirty);
+                    }
+                    
+                    // Update workspace state
+                    {
+                        let mut state = app.workspace_state.lock().unwrap();
+                        // Find the buffer ID for this path
+                        if let Some(buffer_id) = state.path_to_buffer_id.get(active_path) {
+                            if let Some(open_buffer) = state.open_buffers.get_mut(buffer_id) {
+                                open_buffer.document = buffer.document.clone();
+                                open_buffer.document.mark_saved();
+                            }
+                        }
                     }
                 }
             }

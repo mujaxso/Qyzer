@@ -119,7 +119,7 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             Command::none()
         }
         Message::CloseTab(tab_id) => {
-            if let Some(closed_path) = app.tab_manager.close_tab(tab_id) {
+            if let Some(_closed_path) = app.tab_manager.close_tab(tab_id) {
                 // If this was the last tab, clear the editor state
                 if app.tab_manager.tabs.is_empty() {
                     app.active_file_path = None;
