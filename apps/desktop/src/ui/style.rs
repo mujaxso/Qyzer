@@ -42,14 +42,40 @@ impl common::ThemeConsumer for StyleHelpers {
 
 // Panel container styles
 impl StyleHelpers {
-    /// Panel container style
+    /// Panel container style - refined with subtle borders
     pub fn panel_container(&self) -> container::Appearance {
-        common::containers::panel(&self.colors)
+        container::Appearance {
+            background: Some(self.colors.panel_background.into()),
+            border: iced::Border {
+                color: iced::Color::from_rgba(
+                    self.colors.border.r,
+                    self.colors.border.g,
+                    self.colors.border.b,
+                    0.3
+                ),
+                width: 1.0,
+                radius: 0.0.into(),
+            },
+            ..Default::default()
+        }
     }
     
-    /// Elevated panel container style
+    /// Elevated panel container style - subtle depth
     pub fn elevated_container(&self) -> container::Appearance {
-        common::containers::elevated(&self.colors)
+        container::Appearance {
+            background: Some(self.colors.elevated_panel_background.into()),
+            border: iced::Border {
+                color: iced::Color::from_rgba(
+                    self.colors.border.r,
+                    self.colors.border.g,
+                    self.colors.border.b,
+                    0.2
+                ),
+                width: 1.0,
+                radius: 0.0.into(),
+            },
+            ..Default::default()
+        }
     }
     
     /// Shell container style
@@ -57,12 +83,17 @@ impl StyleHelpers {
         common::containers::shell(&self.colors)
     }
     
-    /// Editor container style - more premium and focused
+    /// Editor container style - premium and focused, minimal border
     pub fn editor_container(&self) -> container::Appearance {
         container::Appearance {
             background: Some(self.colors.editor_background.into()),
             border: iced::Border {
-                color: self.colors.border,
+                color: iced::Color::from_rgba(
+                    self.colors.border.r,
+                    self.colors.border.g,
+                    self.colors.border.b,
+                    0.2
+                ),
                 width: 1.0,
                 radius: 0.0.into(),
             },
@@ -96,9 +127,22 @@ impl StyleHelpers {
         }
     }
     
-    /// Input container style
+    /// Input container style - refined
     pub fn input_container(&self) -> container::Appearance {
-        common::containers::input(&self.colors)
+        container::Appearance {
+            background: Some(self.colors.input_background.into()),
+            border: iced::Border {
+                color: iced::Color::from_rgba(
+                    self.colors.border.r,
+                    self.colors.border.g,
+                    self.colors.border.b,
+                    0.3
+                ),
+                width: 1.0,
+                radius: 2.0.into(),
+            },
+            ..Default::default()
+        }
     }
     
     /// Status bar container style
@@ -115,9 +159,22 @@ impl StyleHelpers {
         }
     }
     
-    /// Card container style
+    /// Card container style - refined with subtle border
     pub fn card_container(&self) -> container::Appearance {
-        common::containers::card(&self.colors)
+        container::Appearance {
+            background: Some(self.colors.elevated_panel_background.into()),
+            border: iced::Border {
+                color: iced::Color::from_rgba(
+                    self.colors.border.r,
+                    self.colors.border.g,
+                    self.colors.border.b,
+                    0.15
+                ),
+                width: 1.0,
+                radius: 4.0.into(),
+            },
+            ..Default::default()
+        }
     }
 }
 
