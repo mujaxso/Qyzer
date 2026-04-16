@@ -145,51 +145,27 @@ fn handle_file_selected_by_path(app: &mut App, path: String) -> Command<Message>
 fn handle_file_metadata_loaded(app: &mut App, result: Result<FileMetadata, String>) -> Command<Message> {
     match result {
         Ok(metadata) => {
-            // Check if file is in cache
-            if let Some((cached_content, cached_document)) = app.file_cache.get(&metadata.path) {
-                // File is cached, use it immediately
-                app.file_loading_state = FileLoadingState::LoadingContent {
-                    path: metadata.path.clone(),
-                    size: metadata.size,
-                };
-                app.status_message = format!("Loading from cache...");
-                
-                // Small delay to show loading state (but much faster than actual loading)
-                let path = metadata.path.clone();
-                let content = cached_content.clone();
-                let document = cached_document.clone();
-                
-                return Command::perform(
-                    async move {
-                        // Very short delay to show loading state
-                        tokio::time::sleep(std::time::Duration::from_millis(10)).await;
-                        Message::FileLoaded(Ok((path, content, document)))
-                    },
-                    |result| result,
-                );
-            } else {
-                // File not in cache, load from disk
-                app.file_loading_state = FileLoadingState::LoadingContent {
-                    path: metadata.path.clone(),
-                    size: metadata.size,
-                };
-                app.status_message = format!("Loading file...");
-                
-                return Command::perform(
-                    async move {
-                        let path = metadata.path;
-                        match FileLoader::load_file(&path) {
-                            Ok((content, _)) => {
-                                // Create a Document from the content
-                                let document = Document::from_text_with_path(&content, path.clone());
-                                Message::FileLoaded(Ok((path, content, document)))
-                            }
-                            Err(e) => Message::FileLoaded(Err(format!("Failed to load file: {}", e))),
+            // File not in buffer cache, load from disk
+            app.file_loading_state = FileLoadingState::LoadingContent {
+                path: metadata.path.clone(),
+                size: metadata.size,
+            };
+            app.status_message = format!("Loading file...");
+        
+            return Command::perform(
+                async move {
+                    let path = metadata.path;
+                    match FileLoader::load_file(&path) {
+                        Ok((content, _)) => {
+                            // Create a Document from the content
+                            let document = Document::from_text_with_path(&content, path.clone());
+                            Message::FileLoaded(Ok((path, content, document)))
                         }
-                    },
-                    |result| result,
-                );
-            }
+                        Err(e) => Message::FileLoaded(Err(format!("Failed to load file: {}", e))),
+                    }
+                },
+                |result| result,
+            );
         }
         Err(e) => {
             app.file_loading_state = FileLoadingState::Idle;

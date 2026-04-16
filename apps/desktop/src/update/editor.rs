@@ -87,18 +87,10 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                         // This is simpler and ensures consistency
                         let current_text = app.text_editor.text();
                         editor_state.document_mut().replace_all(&current_text);
-                        app.is_dirty = editor_state.document().is_dirty();
-                        app.status_message = "Text updated".to_string();
-
-                        // Update tab dirty state
-                        if let Some(active_file_path) = &app.active_file_path {
-                            if let Some(active_tab) = app.tab_manager.get_active_tab() {
-                                if active_tab.file_path == *active_file_path {
-                                    app.tab_manager.set_tab_dirty(active_tab.id, app.is_dirty);
-                                }
-                            }
-                        }
-
+                        
+                        // Update the active buffer
+                        app.update_active_buffer(current_text.clone());
+                        
                         // Update syntax document
                         if let Some(path) = &app.active_file_path {
                             let doc_id = path.clone();
@@ -114,29 +106,46 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                                     // Try to retrieve highlight spans
                                     match syntax_manager.highlight_spans(&doc_id) {
                                         Ok(spans) => {
-                                            app.syntax_highlight_span_count = spans.len();
-                                            app.syntax_highlight_spans = spans.clone();
-                                            // Always rebuild the per‑line cache for the editor widget
-                                            app.syntax_highlight_cache = build_line_cache(
-                                                &current_text,
-                                                &spans,
-                                                app.current_theme,
-                                            );
-                                            app.syntax_cache_version += 1;
-                                            if spans.is_empty() {
-                                                app.status_message = format!(
-                                                    "No syntax spans for {} (language: {:?})",
-                                                    doc_id, language
+                                            // Update the buffer's syntax highlighting
+                                            if let Some(buffer) = app.editor_buffers.get_mut(path) {
+                                                buffer.syntax_highlight_span_count = spans.len();
+                                                buffer.syntax_highlight_spans = spans.clone();
+                                                // Build per‑line cache for the real editor
+                                                buffer.syntax_highlight_cache = build_line_cache(
+                                                    &current_text,
+                                                    &spans,
+                                                    app.current_theme,
                                                 );
-                                            } else {
-                                                app.status_message = format!(
-                                                    "{} highlights for {}",
-                                                    spans.len(),
-                                                    doc_id
-                                                );
+                                                buffer.syntax_cache_version += 1;
+                                                
+                                                // Update app state
+                                                app.syntax_highlight_span_count = spans.len();
+                                                app.syntax_highlight_spans = spans.clone();
+                                                app.syntax_highlight_cache = buffer.syntax_highlight_cache.clone();
+                                                app.syntax_cache_version = buffer.syntax_cache_version;
+                                                
+                                                if spans.is_empty() {
+                                                    app.status_message = format!(
+                                                        "No syntax spans for {} (language: {:?})",
+                                                        doc_id, language
+                                                    );
+                                                } else {
+                                                    app.status_message = format!(
+                                                        "{} highlights for {}",
+                                                        spans.len(),
+                                                        doc_id
+                                                    );
+                                                }
                                             }
                                         }
                                         Err(e) => {
+                                            // Clear syntax highlighting in buffer
+                                            if let Some(buffer) = app.editor_buffers.get_mut(path) {
+                                                buffer.syntax_highlight_span_count = 0;
+                                                buffer.syntax_highlight_spans.clear();
+                                                buffer.syntax_highlight_cache.clear();
+                                                buffer.syntax_cache_version += 1;
+                                            }
                                             app.syntax_highlight_span_count = 0;
                                             app.syntax_highlight_spans.clear();
                                             app.syntax_highlight_cache.clear();
@@ -152,6 +161,13 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                                         syntax_core::SyntaxError::LanguageNotSupported(_)
                                     ) {
                                         app.status_message = format!("Syntax update failed: {}", e);
+                                    }
+                                    // Clear syntax highlighting in buffer
+                                    if let Some(buffer) = app.editor_buffers.get_mut(path) {
+                                        buffer.syntax_highlight_span_count = 0;
+                                        buffer.syntax_highlight_spans.clear();
+                                        buffer.syntax_highlight_cache.clear();
+                                        buffer.syntax_cache_version += 1;
                                     }
                                     app.syntax_highlight_span_count = 0;
                                     app.syntax_highlight_spans.clear();
@@ -258,15 +274,9 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             let char_count = editor_state.document().len_chars();
 
             // Use consistent thresholds with workspace logic
-            // VERY_LARGE_FILE_THRESHOLD is 100 MB = 100 * 1024 * 1024 bytes ≈ 100 million characters
-            // LARGE_FILE_THRESHOLD is 10 MB = 10 * 1024 * 1024 bytes ≈ 10 million characters
             const VERY_LARGE_CHAR_THRESHOLD: usize = 100_000_000; // 100 million characters
             const LARGE_CHAR_THRESHOLD: usize = 10_000_000; // 10 million characters
 
-            // Safety check: if the file was already marked as not too large in handle_file_loaded,
-            // don't mark it as too large here unless it's truly huge (> 100 MB)
-            // This prevents race conditions where handle_file_loaded sets it to false
-            // and then EditorSetDocument incorrectly sets it to true
             if char_count > VERY_LARGE_CHAR_THRESHOLD {
                 // Files > 100 MB: read-only mode
                 app.is_file_too_large_for_editor = true;
@@ -288,51 +298,72 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
                 }
             }
 
-            // The syntax highlighting cache should already be built in handle_file_loaded
-            // for normal files. If not, we can build it here.
+            // Update the buffer if it exists
             if let Some(path) = editor_state.path() {
                 let doc_id = path.to_string();
                 let text = editor_state.text();
 
-                // Only process if cache is empty (for large files or edge cases)
-                if app.syntax_highlight_cache.is_empty() && app.syntax_highlighting_enabled {
-                    let mut syntax_manager = app.syntax_manager.lock().unwrap();
+                // Update the buffer's document
+                if let Some(buffer) = app.editor_buffers.get_mut(&doc_id) {
+                    buffer.document = editor_state.document().clone();
+                    
+                    // Update syntax highlighting if needed
+                    if app.syntax_highlighting_enabled && buffer.syntax_highlight_cache.is_empty() {
+                        let mut syntax_manager = app.syntax_manager.lock().unwrap();
 
-                    if !syntax_manager.contains_document(&doc_id) {
-                        if let Err(e) =
-                            syntax_manager.update_document(&doc_id, &text, Path::new(path))
-                        {
-                            app.status_message = format!("Syntax init failed: {}", e);
-                        }
-                    }
-
-                    match syntax_manager.highlight_spans(&doc_id) {
-                        Ok(spans) => {
-                            app.syntax_highlight_span_count = spans.len();
-                            app.syntax_highlight_spans = spans.clone();
-                            app.syntax_highlight_cache =
-                                build_line_cache(&text, &spans, app.current_theme);
-                            app.syntax_cache_version += 1;
-                            if !spans.is_empty() {
-                                app.status_message =
-                                    format!("Syntax highlighting applied ({} spans)", spans.len());
+                        if !syntax_manager.contains_document(&doc_id) {
+                            if let Err(e) =
+                                syntax_manager.update_document(&doc_id, &text, Path::new(path))
+                            {
+                                app.status_message = format!("Syntax init failed: {}", e);
                             }
                         }
-                        Err(_) => {
-                            // Clear cache
-                            app.syntax_highlight_cache.clear();
-                            app.syntax_highlight_spans.clear();
-                            app.syntax_highlight_span_count = 0;
-                            app.syntax_cache_version += 1;
+
+                        match syntax_manager.highlight_spans(&doc_id) {
+                            Ok(spans) => {
+                                buffer.syntax_highlight_span_count = spans.len();
+                                buffer.syntax_highlight_spans = spans.clone();
+                                buffer.syntax_highlight_cache =
+                                    build_line_cache(&text, &spans, app.current_theme);
+                                buffer.syntax_cache_version += 1;
+                                
+                                // Update app state
+                                app.syntax_highlight_span_count = spans.len();
+                                app.syntax_highlight_spans = spans.clone();
+                                app.syntax_highlight_cache = buffer.syntax_highlight_cache.clone();
+                                app.syntax_cache_version = buffer.syntax_cache_version;
+                                
+                                if !spans.is_empty() {
+                                    app.status_message =
+                                        format!("Syntax highlighting applied ({} spans)", spans.len());
+                                }
+                            }
+                            Err(_) => {
+                                // Clear cache
+                                buffer.syntax_highlight_cache.clear();
+                                buffer.syntax_highlight_spans.clear();
+                                buffer.syntax_highlight_span_count = 0;
+                                buffer.syntax_cache_version += 1;
+                                
+                                app.syntax_highlight_cache.clear();
+                                app.syntax_highlight_spans.clear();
+                                app.syntax_highlight_span_count = 0;
+                                app.syntax_cache_version += 1;
+                            }
                         }
-                    }
-                } else {
-                    // Cache is already built, just update status
-                    if !app.syntax_highlight_cache.is_empty() {
-                        app.status_message = format!(
-                            "Syntax highlighting ready ({} spans)",
-                            app.syntax_highlight_span_count
-                        );
+                    } else {
+                        // Use buffer's existing syntax highlighting
+                        app.syntax_highlight_span_count = buffer.syntax_highlight_span_count;
+                        app.syntax_highlight_spans = buffer.syntax_highlight_spans.clone();
+                        app.syntax_highlight_cache = buffer.syntax_highlight_cache.clone();
+                        app.syntax_cache_version = buffer.syntax_cache_version;
+                        
+                        if !buffer.syntax_highlight_cache.is_empty() {
+                            app.status_message = format!(
+                                "Syntax highlighting ready ({} spans)",
+                                buffer.syntax_highlight_span_count
+                            );
+                        }
                     }
                 }
             }
@@ -342,63 +373,6 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
         }
         Message::EditorUpdateState(editor_state) => {
             app.editor_state = Some(editor_state);
-            Command::none()
-        }
-        Message::ActivateTab(tab_id) => {
-            if app.tab_manager.activate_tab(tab_id) {
-                // Update active file path
-                app.active_file_path = app.tab_manager.get_active_file_path();
-                
-                // Check if the active file is already loaded
-                if let Some(active_tab) = app.tab_manager.get_active_tab() {
-                    let active_path = active_tab.file_path.clone();
-                    
-                    // Always load the file when switching tabs, even if it's the same
-                    // This ensures the editor content is refreshed
-                    return Command::perform(
-                        async move { active_path },
-                        |path| Message::FileSelectedByPath(path),
-                    );
-                }
-            }
-            Command::none()
-        }
-        Message::CloseTab(tab_id) => {
-            // Check if the tab being closed is dirty
-            let _was_dirty = app.tab_manager.tabs.iter()
-                .find(|t| t.id == tab_id)
-                .map(|t| t.is_dirty)
-                .unwrap_or(false);
-            
-            // For now, we'll close without asking for confirmation
-            // In a more complete implementation, we would prompt to save
-            if let Some(_file_path) = app.tab_manager.close_tab(tab_id) {
-                // If this was the active tab, update active file path
-                app.active_file_path = app.tab_manager.get_active_file_path();
-                
-                // If there's no active tab, clear the editor
-                if app.tab_manager.active_tab_id.is_none() {
-                    app.active_file_path = None;
-                    app.editor_state = None;
-                    app.text_editor = iced::widget::text_editor::Content::new();
-                    app.syntax_highlight_cache.clear();
-                    app.syntax_highlight_spans.clear();
-                    app.syntax_highlight_span_count = 0;
-                    app.syntax_cache_version += 1;
-                    app.is_dirty = false;
-                    app.is_file_too_large_for_editor = false;
-                    app.is_file_read_only = false;
-                } else {
-                    // Load the new active tab's file
-                    if let Some(active_tab) = app.tab_manager.get_active_tab() {
-                        let path = active_tab.file_path.clone();
-                        return Command::perform(
-                            async move { path },
-                            |path| Message::FileSelectedByPath(path),
-                        );
-                    }
-                }
-            }
             Command::none()
         }
         Message::KeyPressed(key, _modifiers) => {
