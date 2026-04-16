@@ -46,5 +46,8 @@
 ; ====== LaTeX ======
 (latex_block) @latex
 
+; ====== Heading markers ======
+"#" @heading.marker
+
 ; ====== Fallback for everything else ======
 (_) @plain
