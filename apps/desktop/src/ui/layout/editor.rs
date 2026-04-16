@@ -25,6 +25,10 @@ pub fn editor_panel<'a>(
     
     // Build tab bar - always show with minimum height
     let tab_bar: Element<Message> = {
+        // Debug: Always show tab count
+        let debug_text = format!("Tabs: {}", tab_manager.tabs.len());
+        println!("DEBUG in UI: {}", debug_text);
+        
         let mut tab_row: iced::widget::Row<'_, Message, iced::Theme, iced::Renderer> = row![].spacing(0);
         
         // Show placeholder when no tabs
@@ -41,6 +45,8 @@ pub fn editor_panel<'a>(
         } else {
             for tab in &tab_manager.tabs {
                 let is_active = tab.is_active;
+                
+                println!("DEBUG in UI: Rendering tab: {} (active: {})", tab.display_name, is_active);
                 
                 // Tab label with dirty indicator
                 let label = if tab.is_dirty {
@@ -140,59 +146,47 @@ pub fn editor_panel<'a>(
         tab_bar_container.into()
     };
     
-    // Status header (simplified since tabs show file info)
-    let header: Element<Message> = if let Some(path) = active_file_path {
-        let header_row: iced::widget::Row<'_, Message, iced::Theme, iced::Renderer> = row![
-            // File path (now in tabs, so we can show additional info)
-            text("")
-                .size(13)
-                .style(iced::theme::Text::Color(style.colors.text_primary)),
-            horizontal_space(),
-            // Status indicators
-            {
-                let mut indicators: Vec<Element<Message>> = Vec::new();
-                
-                // Read-only indicator
-                if is_file_too_large_for_editor {
-                    indicators.push(
-                        Element::from(text("Read-only")
-                            .size(11)
-                            .style(iced::theme::Text::Color(iced::Color::from_rgb8(200, 150, 50))))
-                    );
-                }
-                
-                // Dirty status (already shown in tab, but keep for consistency)
-                if !is_file_too_large_for_editor {
-                    let status_text: Element<Message> = if is_dirty {
-                        Element::from(text("● Unsaved")
-                            .size(11)
-                            .style(iced::theme::Text::Color(style.colors.warning)))
-                    } else {
-                        Element::from(text("✓ Saved")
-                            .size(11)
-                            .style(iced::theme::Text::Color(style.colors.success)))
-                    };
-                    indicators.push(status_text);
-                }
-                
+    // Status header - minimal, only shows status indicators
+    let header: Element<Message> = {
+        let mut indicators: Vec<Element<Message>> = Vec::new();
+        
+        // Read-only indicator
+        if is_file_too_large_for_editor {
+            indicators.push(
+                Element::from(text("Read-only")
+                    .size(11)
+                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(200, 150, 50))))
+            );
+        }
+        
+        // Dirty status (already shown in tab, but keep for consistency)
+        if !is_file_too_large_for_editor && is_dirty {
+            indicators.push(
+                Element::from(text("● Unsaved")
+                    .size(11)
+                    .style(iced::theme::Text::Color(style.colors.warning)))
+            );
+        }
+        
+        if indicators.is_empty() {
+            // Show empty header with just horizontal space
+            let header_row: iced::widget::Row<'_, Message, iced::Theme, iced::Renderer> = row![
+                horizontal_space(),
+            ]
+            .align_items(Alignment::Center);
+            
+            Element::from(container(header_row).padding([4, 16]).height(Length::Fixed(1.0)))
+        } else {
+            let header_row: iced::widget::Row<'_, Message, iced::Theme, iced::Renderer> = row![
+                horizontal_space(),
                 row(indicators)
                     .spacing(8)
-                    .align_items(Alignment::Center)
-            },
-        ]
-        .align_items(Alignment::Center);
-        
-        Element::from(container(header_row).padding([8, 16]))
-    } else {
-        let no_file_row: iced::widget::Row<'_, Message, iced::Theme, iced::Renderer> = row![
-            text("No file selected")
-                .size(13)
-                .style(iced::theme::Text::Color(style.colors.text_muted)),
-            horizontal_space(),
-        ]
-        .align_items(Alignment::Center);
-        
-        Element::from(container(no_file_row).padding([8, 16]))
+                    .align_items(Alignment::Center),
+            ]
+            .align_items(Alignment::Center);
+            
+            Element::from(container(header_row).padding([4, 16]))
+        }
     };
 
     // Check loading state
