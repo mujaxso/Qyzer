@@ -22,70 +22,81 @@ pub fn editor_panel<'a>(
 ) -> Element<'a, Message> {
     let style = StyleHelpers::new(theme);
     let header = if let Some(path) = active_file_path {
-        let mut status_elements = Vec::new();
-        
-        // File path
-        status_elements.push(
-            text(path)
-                .size(14)
-                .style(iced::theme::Text::Color(style.colors.text_primary))
-                .into()
-        );
-        
-        status_elements.push(horizontal_space().into());
-        
-        // Large file warning
-        if let Some(document) = editor_document {
-            if document.is_very_large() {
-                status_elements.push(
-                    text("⚠ Very Large (Limited Editing)")
-                        .size(12)
-                        .style(iced::theme::Text::Color(style.colors.error))
-                        .into()
-                );
-                status_elements.push(horizontal_space().width(Length::Fixed(10.0)).into());
-            } else if document.is_large() {
-                status_elements.push(
-                    text("⚠ Large (Performance may be affected)")
-                        .size(12)
-                        .style(iced::theme::Text::Color(style.colors.warning))
-                        .into()
-                );
-                status_elements.push(horizontal_space().width(Length::Fixed(10.0)).into());
-            }
-        }
-        
-        // Show if file is too large for editor
-        if is_file_too_large_for_editor {
-            status_elements.push(
-                text("⚠ Too Large for Editor (Read-Only)")
-                    .size(12)
-                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(255, 50, 50)))
-                    .into()
-            );
-            status_elements.push(horizontal_space().width(Length::Fixed(10.0)).into());
-        }
-        
-        // Dirty status (only show if not read-only)
-        if !is_file_too_large_for_editor {
-            let status_text = if is_dirty {
-                text("● Unsaved").size(12).style(iced::theme::Text::Color(style.colors.warning))
-            } else {
-                text("✓ Saved").size(12).style(iced::theme::Text::Color(style.colors.success))
-            };
-            status_elements.push(status_text.into());
-        }
-        
-        row(status_elements)
-            .padding([12, 16])
+        container(
+            row![
+                // File path
+                text(path)
+                    .size(13)
+                    .style(iced::theme::Text::Color(style.colors.text_primary)),
+                horizontal_space(),
+                // Status indicators
+                row![
+                    // Large file warning
+                    if let Some(document) = editor_document {
+                        if document.is_very_large() {
+                            Some(
+                                text("⚠ Large file")
+                                    .size(11)
+                                    .style(iced::theme::Text::Color(style.colors.error))
+                            )
+                        } else if document.is_large() {
+                            Some(
+                                text("⚠ Large")
+                                    .size(11)
+                                    .style(iced::theme::Text::Color(style.colors.warning))
+                            )
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    },
+                    // Read-only indicator
+                    if is_file_too_large_for_editor {
+                        Some(
+                            text("Read-only")
+                                .size(11)
+                                .style(iced::theme::Text::Color(iced::Color::from_rgb8(200, 150, 50)))
+                        )
+                    } else {
+                        None
+                    },
+                    // Dirty status
+                    if !is_file_too_large_for_editor {
+                        Some(
+                            if is_dirty {
+                                text("● Unsaved")
+                                    .size(11)
+                                    .style(iced::theme::Text::Color(style.colors.warning))
+                            } else {
+                                text("✓ Saved")
+                                    .size(11)
+                                    .style(iced::theme::Text::Color(style.colors.success))
+                            }
+                        )
+                    } else {
+                        None
+                    },
+                ]
+                .spacing(8)
+                .align_items(Alignment::Center),
+            ]
             .align_items(Alignment::Center)
-    } else {
-        row![
-            text("No file selected").size(14).style(iced::theme::Text::Color(style.colors.text_muted)),
-            horizontal_space(),
-        ]
+        )
         .padding([12, 16])
-        .align_items(Alignment::Center)
+        .into()
+    } else {
+        container(
+            row![
+                text("No file selected")
+                    .size(13)
+                    .style(iced::theme::Text::Color(style.colors.text_muted)),
+                horizontal_space(),
+            ]
+            .align_items(Alignment::Center)
+        )
+        .padding([12, 16])
+        .into()
     };
 
     // Check loading state

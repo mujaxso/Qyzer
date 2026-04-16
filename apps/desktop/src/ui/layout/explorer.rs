@@ -163,17 +163,31 @@ pub fn explorer_panel_with_expanded<'a>(
     };
 
     column![
-        row![
-            text("EXPLORER").size(12).style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150))),
-            horizontal_space(),
-            button("Refresh")
-                .on_press(Message::RefreshWorkspace)
-                .padding([4, 8])
-                .style(iced::theme::Button::Secondary),
-        ]
+        // Header with refined spacing
+        container(
+            row![
+                text("EXPLORER").size(11)
+                    .style(iced::theme::Text::Color(iced::Color::from_rgb8(160, 160, 170))),
+                horizontal_space(),
+                button("⟳")
+                    .on_press(Message::RefreshWorkspace)
+                    .padding([4, 6])
+                    .style(iced::theme::Button::Text),
+            ]
+            .align_items(Alignment::Center)
+        )
         .padding([12, 16])
-        .align_items(Alignment::Center),
-        iced::widget::horizontal_rule(1),
+        .width(Length::Fill),
+        // Subtle divider
+        container(iced::widget::Space::with_height(1))
+            .style(iced::theme::Container::Custom(Box::new(|| {
+                container::Appearance {
+                    background: Some(iced::Color::from_rgb8(60, 65, 85).into()),
+                    ..Default::default()
+                }
+            })))
+            .width(Length::Fill)
+            .height(Length::Fixed(1)),
         content,
     ]
     .height(Length::Fill)

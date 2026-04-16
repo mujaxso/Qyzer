@@ -24,81 +24,117 @@ pub fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Messa
         .into()
     };
 
-    row![
-        // Logo/brand
+    container(
         row![
-            text("Q").size(20).style(iced::theme::Text::Color(iced::Color::from_rgb8(100, 160, 255))),
-            text("yzer").size(20).style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 230))),
-        ]
-        .spacing(0)
-        .align_items(Alignment::Center),
-        horizontal_space(),
-        // Workspace path display with manual entry option
-        if workspace_path.is_empty() {
-            // When no workspace is open, show an input field for manual entry
+            // Logo/brand - refined
             container(
-                column![
+                row![
+                    text("Q").size(18).style(iced::theme::Text::Color(iced::Color::from_rgb8(100, 160, 255))),
+                    text("yzer Studio").size(14).style(iced::theme::Text::Color(iced::Color::from_rgb8(200, 210, 230))),
+                ]
+                .spacing(2)
+                .align_items(Alignment::Center)
+            )
+            .padding([0, 16]),
+            
+            // Divider
+            container(iced::widget::Space::with_width(1))
+                .style(iced::theme::Container::Custom(Box::new(|_theme: &iced::Theme| {
+                    container::Appearance {
+                        background: Some(iced::Color::from_rgb8(60, 65, 85).into()),
+                        ..Default::default()
+                    }
+                })))
+                .height(Length::Fixed(20))
+                .width(Length::Fixed(1)),
+            
+            // Workspace path area
+            if workspace_path.is_empty() {
+                container(
                     row![
-                        text_input("Enter workspace path manually...", workspace_path)
+                        text_input("Enter workspace path...", workspace_path)
                             .on_input(Message::WorkspacePathChanged)
                             .on_submit(Message::SubmitManualWorkspacePath(workspace_path.to_string()))
-                            .padding([10, 12])
-                            .width(Length::Fill)
+                            .padding([8, 12])
+                            .width(Length::Fixed(300.0))
                             .style(iced::theme::TextInput::Default),
                         button("Open")
                             .on_press(Message::SubmitManualWorkspacePath(workspace_path.to_string()))
-                            .padding([10, 14])
+                            .padding([8, 12])
                             .style(iced::theme::Button::Secondary),
                     ]
                     .spacing(8)
-                    .align_items(Alignment::Center),
-                    text("Or use the file picker (uses system theme)")
-                        .size(10)
-                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(150, 150, 150)))
-                ]
-                .spacing(4)
-            )
-            .width(Length::FillPortion(3))
-            .into()
-        } else {
-            // When workspace is open, show it as read-only
-            container(
+                    .align_items(Alignment::Center)
+                )
+                .into()
+            } else {
                 container(
                     text(workspace_path)
-                        .size(14)
-                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(220, 220, 220)))
+                        .size(13)
+                        .style(iced::theme::Text::Color(iced::Color::from_rgb8(180, 190, 210)))
                 )
-                .padding([10, 12])
-                .width(Length::Fill)
-                .style(iced::theme::Container::Box)
-            )
-            .width(Length::FillPortion(3))
-            .style(iced::theme::Container::Box)
-        },
-        // Buttons
-        row![
-            button("Open Workspace...")
+                .padding([8, 12])
+                .into()
+            },
+            
+            horizontal_space(),
+            
+            // Action buttons - refined
+            row![
+                button(
+                    container(
+                        row![
+                            text("📂").size(12),
+                            text("Open...").size(13),
+                        ]
+                        .spacing(6)
+                        .align_items(Alignment::Center)
+                    )
+                    .padding([6, 10])
+                )
                 .on_press(Message::OpenWorkspace)
-                .padding([8, 14])
                 .style(iced::theme::Button::Secondary),
-            button("Refresh")
+                button(
+                    container(
+                        text("⟳").size(13)
+                    )
+                    .padding([6, 8])
+                )
                 .on_press(Message::RefreshWorkspace)
-                .padding([8, 14])
-                .style(iced::theme::Button::Secondary),
-        ]
-        .spacing(8),
-        horizontal_space(),
-        // Status indicator
-        container(status_indicator)
-            .padding([6, 12])
-            .style(iced::theme::Container::Box),
-        // Save button
-        button("Save")
+                .style(iced::theme::Button::Text),
+            ]
+            .spacing(4),
+            
+            // Status indicator
+            container(status_indicator)
+                .padding([6, 12]),
+            
+            // Save button - refined
+            button(
+                container(
+                    text("Save")
+                        .size(13)
+                )
+                .padding([8, 16])
+            )
             .on_press(Message::SaveFile)
-            .padding([10, 18])
             .style(iced::theme::Button::Primary),
-    ]
-    .padding([12, 20])
-    .align_items(Alignment::Center)
+        ]
+        .align_items(Alignment::Center)
+    )
+    .padding([8, 16])
+    .width(Length::Fill)
+    .height(Length::Fixed(48))
+    .style(iced::theme::Container::Custom(Box::new(|_theme: &iced::Theme| {
+        container::Appearance {
+            background: Some(iced::Color::from_rgb8(30, 33, 45).into()),
+            border: iced::Border {
+                color: iced::Color::from_rgb8(50, 55, 70),
+                width: 1.0,
+                radius: 0.0.into(),
+            },
+            ..Default::default()
+        }
+    })))
     .into()
 }
