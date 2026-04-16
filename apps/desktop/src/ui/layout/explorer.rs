@@ -186,6 +186,7 @@ pub fn explorer_panel_professional(app: &App) -> Element<'_, Message> {
             .height(Length::Fill),
     ]
     .height(Length::Fill)
+    .spacing(0)
     .into()
 }
 
