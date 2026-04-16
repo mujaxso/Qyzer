@@ -72,6 +72,7 @@ pub struct SemanticColors {
     pub divider: Color,                  // #2B3040
     pub accent: Color,                   // #4C6FFF
     pub accent_hover: Color,             // #5A7BFF
+    pub accent_soft: Color,              // rgba(76, 111, 255, 0.2)
     pub accent_soft_background: Color,   // rgba(76, 111, 255, 0.16)
     
     // States
@@ -189,6 +190,7 @@ impl SemanticColors {
             divider: Color::from_rgb(0.196, 0.208, 0.235),             // #32353C - Same as border
             accent: Color::from_rgb(0.329, 0.584, 0.988),              // #5495FC - Professional blue
             accent_hover: Color::from_rgb(0.400, 0.639, 1.0),          // #66A3FF - Brighter on hover
+            accent_soft: Color::from_rgba(0.329, 0.584, 0.988, 0.2),   // #5495FC with 0.2 alpha
             accent_soft_background: Color::from_rgba(0.329, 0.584, 0.988, 0.12), // Subtle accent background
             
             // States - Subtle but noticeable
@@ -247,6 +249,7 @@ impl SemanticColors {
             divider: Color::from_rgb(0.863, 0.871, 0.886),             // #DCDEE2 - Same as border
             accent: Color::from_rgb(0.329, 0.584, 0.988),              // #5495FC - Same professional blue
             accent_hover: Color::from_rgb(0.259, 0.514, 0.929),        // #4283ED - Slightly darker
+            accent_soft: Color::from_rgba(0.329, 0.584, 0.988, 0.15),  // #5495FC with 0.15 alpha
             accent_soft_background: Color::from_rgba(0.329, 0.584, 0.988, 0.08), // Very subtle
             
             // States - Subtle overlays
