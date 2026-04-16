@@ -89,6 +89,12 @@ pub fn update(app: &mut App, message: Message) -> Command<Message> {
             assistant::update(app, message)
         }
         
+        // Tab management messages
+        Message::ActivateTab(_)
+        | Message::CloseTab(_) => {
+            editor::update(app, message)
+        }
+        
         // Key presses and UI state
         Message::KeyPressed(_, _)
         | Message::ToggleCommandPalette => {
