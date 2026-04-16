@@ -225,7 +225,7 @@ impl SemanticColors {
         }
     }
     
-    /// Light theme semantic colors - Professional light theme
+    /// Light theme semantic colors - Professional light theme with vibrant syntax highlighting
     pub fn light() -> Self {
         Self {
             // Background surfaces - Clean, light gray with blue undertones
@@ -257,7 +257,7 @@ impl SemanticColors {
             active_background: Color::from_rgba(0.0, 0.0, 0.0, 0.05),  // Slightly more
             selected_background: Color::from_rgba(0.329, 0.584, 0.988, 0.1), // Accent tint
             
-            // Status colors - Professional, muted
+            // Status colors - Professional, vibrant
             success: Color::from_rgb(0.180, 0.729, 0.490),             // #2EBA7D - Muted green
             warning: Color::from_rgb(0.949, 0.627, 0.180),             // #F2A02E - Muted amber
             error: Color::from_rgb(0.949, 0.376, 0.376),               // #F26060 - Muted red
@@ -266,20 +266,21 @@ impl SemanticColors {
             // Focus - Subtle
             focus_ring: Color::from_rgba(0.329, 0.584, 0.988, 0.3),    // Subtle focus ring
             
-            // Syntax highlighting colors - Professional light theme
-            syntax_comment: Color::from_rgb(0.706, 0.718, 0.753),      // #B4B7C0 - Faint text
-            syntax_string: Color::from_rgb(0.180, 0.729, 0.490),       // #2EBA7D - Success green
-            syntax_keyword: Color::from_rgb(0.729, 0.337, 0.886),      // #BA56E2 - Elegant purple
-            syntax_function: Color::from_rgb(0.329, 0.584, 0.988),     // #5495FC - Accent blue
-            syntax_type: Color::from_rgb(0.949, 0.627, 0.180),         // #F2A02E - Warning amber
+            // Syntax highlighting colors - Professional light theme with vibrant, readable colors
+            // Inspired by modern IDEs like VS Code, IntelliJ, etc.
+            syntax_comment: Color::from_rgb(0.427, 0.510, 0.588),      // #6D8296 - Slate blue-gray (more visible)
+            syntax_string: Color::from_rgb(0.196, 0.588, 0.196),       // #329632 - Vibrant green
+            syntax_keyword: Color::from_rgb(0.784, 0.157, 0.588),      // #C82896 - Magenta-purple
+            syntax_function: Color::from_rgb(0.157, 0.471, 0.784),     // #2878C8 - Bright blue
+            syntax_type: Color::from_rgb(0.784, 0.392, 0.000),         // #C86400 - Orange-brown
             syntax_variable: Color::from_rgb(0.157, 0.176, 0.208),     // #282D35 - Primary text
-            syntax_constant: Color::from_rgb(0.886, 0.376, 0.549),     // #E2608C - Soft pink
-            syntax_number: Color::from_rgb(0.886, 0.376, 0.549),       // #E2608C - Same as constant
-            syntax_operator: Color::from_rgb(0.392, 0.416, 0.471),     // #646A78 - Secondary text
-            syntax_punctuation: Color::from_rgb(0.392, 0.416, 0.471),  // #646A78 - Same as operator
-            syntax_attribute: Color::from_rgb(0.729, 0.337, 0.886),    // #BA56E2 - Same as keyword
-            syntax_macro: Color::from_rgb(0.329, 0.584, 0.988),        // #5495FC - Same as function
-            syntax_builtin: Color::from_rgb(0.949, 0.627, 0.180),      // #F2A02E - Same as type
+            syntax_constant: Color::from_rgb(0.784, 0.235, 0.392),     // #C83C64 - Pink-red
+            syntax_number: Color::from_rgb(0.392, 0.549, 0.235),       // #648C3C - Olive green
+            syntax_operator: Color::from_rgb(0.549, 0.235, 0.549),     // #8C3C8C - Purple
+            syntax_punctuation: Color::from_rgb(0.549, 0.549, 0.549),  // #8C8C8C - Medium gray
+            syntax_attribute: Color::from_rgb(0.588, 0.235, 0.784),    // #963CC8 - Violet
+            syntax_macro: Color::from_rgb(0.157, 0.471, 0.784),        // #2878C8 - Same as function
+            syntax_builtin: Color::from_rgb(0.784, 0.392, 0.000),      // #C86400 - Same as type
             syntax_plain: Color::from_rgb(0.157, 0.176, 0.208),        // #282D35 - Primary text
         }
     }
