@@ -28,7 +28,7 @@ pub fn top_bar<'a>(workspace_path: &'a str, is_dirty: bool) -> Element<'a, Messa
             container(
                 row![
                     text("Q").size(18).style(iced::theme::Text::Color(iced::Color::from_rgb8(100, 160, 255))),
-                    text("yzer Studio").size(14).style(iced::theme::Text::Color(iced::Color::from_rgb8(200, 210, 230))),
+                    text("Zaroxi Studio").size(14).style(iced::theme::Text::Color(iced::Color::from_rgb8(200, 210, 230))),
                 ]
                 .spacing(2)
                 .align_items(Alignment::Center)
