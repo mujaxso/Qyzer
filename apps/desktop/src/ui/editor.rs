@@ -188,7 +188,8 @@ impl iced::widget::text_editor::StyleSheet for EditorStyle {
     }
 
     fn selection_color(&self, _style: &Self::Style) -> Color {
-        Color::from_rgba(0.5, 0.5, 1.0, 0.3)
+        // Light theme needs better selection visibility
+        Color::from_rgba(0.06, 0.53, 0.98, 0.15) // #1087FA with 0.15 alpha
     }
 
     fn disabled(&self, _style: &Self::Style) -> iced::widget::text_editor::Appearance {

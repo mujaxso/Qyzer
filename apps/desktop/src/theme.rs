@@ -225,63 +225,63 @@ impl SemanticColors {
         }
     }
     
-    /// Light theme semantic colors - Professional light theme with vibrant syntax highlighting
+    /// Light theme semantic colors - Professional developer-focused light theme optimized for readability
     pub fn light() -> Self {
         Self {
-            // Background surfaces - Clean, light gray with blue undertones
-            app_background: Color::from_rgb(0.961, 0.965, 0.973),      // #F5F6F8 - Very light gray
-            shell_background: Color::from_rgb(0.941, 0.945, 0.953),    // #F0F1F3 - Slightly darker
-            panel_background: Color::from_rgb(0.980, 0.980, 0.984),    // #FAFAFB - Almost white
-            elevated_panel_background: Color::from_rgb(1.0, 1.0, 1.0), // #FFFFFF - Pure white
-            editor_background: Color::from_rgb(1.0, 1.0, 1.0),         // #FFFFFF - Pure white for editor
-            input_background: Color::from_rgb(0.980, 0.980, 0.984),    // #FAFAFB - Matches panel
-            status_bar_background: Color::from_rgb(0.941, 0.945, 0.953), // #F0F1F3 - Matches shell
+            // Background surfaces - Soft, comfortable light gray for reduced eye strain
+            app_background: Color::from_rgb(0.973, 0.976, 0.980),      // #F8F9FA - Very soft off-white
+            shell_background: Color::from_rgb(0.961, 0.965, 0.969),    // #F5F6F7 - Slightly darker
+            panel_background: Color::from_rgb(0.980, 0.982, 0.984),    // #FAFBFC - Almost white with blue tint
+            elevated_panel_background: Color::from_rgb(1.0, 1.0, 1.0), // #FFFFFF - Pure white for elevation
+            editor_background: Color::from_rgb(0.996, 0.996, 0.996),   // #FEFEFE - Soft white (not pure #FFF)
+            input_background: Color::from_rgb(1.0, 1.0, 1.0),          // #FFFFFF - Clean white for inputs
+            status_bar_background: Color::from_rgb(0.961, 0.965, 0.969), // #F5F6F7 - Matches shell
             
-            // Text colors - Dark but not pure black
-            text_primary: Color::from_rgb(0.157, 0.176, 0.208),        // #282D35 - Dark slate
-            text_secondary: Color::from_rgb(0.392, 0.416, 0.471),      // #646A78 - Medium gray
-            text_muted: Color::from_rgb(0.549, 0.569, 0.620),          // #8C919E - Lighter gray
-            text_faint: Color::from_rgb(0.706, 0.718, 0.753),          // #B4B7C0 - Very light gray
+            // Text colors - Professional, readable dark grays
+            text_primary: Color::from_rgb(0.20, 0.22, 0.25),           // #33383F - Dark charcoal (not pure black)
+            text_secondary: Color::from_rgb(0.45, 0.48, 0.52),         // #737A80 - Medium gray
+            text_muted: Color::from_rgb(0.60, 0.63, 0.67),             // #99A0A7 - Softer gray
+            text_faint: Color::from_rgb(0.75, 0.77, 0.80),             // #BFC4C8 - Very light gray
             text_on_accent: Color::from_rgb(1.0, 1.0, 1.0),            // #FFFFFF - Pure white
             
-            // UI elements - Subtle borders
-            border: Color::from_rgb(0.863, 0.871, 0.886),              // #DCDEE2 - Very light border
-            divider: Color::from_rgb(0.863, 0.871, 0.886),             // #DCDEE2 - Same as border
-            accent: Color::from_rgb(0.329, 0.584, 0.988),              // #5495FC - Same professional blue
-            accent_hover: Color::from_rgb(0.259, 0.514, 0.929),        // #4283ED - Slightly darker
-            accent_soft: Color::from_rgba(0.329, 0.584, 0.988, 0.15),  // #5495FC with 0.15 alpha
-            accent_soft_background: Color::from_rgba(0.329, 0.584, 0.988, 0.08), // Very subtle
+            // UI elements - Clean, subtle borders
+            border: Color::from_rgb(0.88, 0.89, 0.91),                 // #E0E3E8 - Light border
+            divider: Color::from_rgb(0.88, 0.89, 0.91),                // #E0E3E8 - Same as border
+            accent: Color::from_rgb(0.06, 0.53, 0.98),                 // #1087FA - Professional blue
+            accent_hover: Color::from_rgb(0.04, 0.47, 0.88),           // #0A78E0 - Slightly darker
+            accent_soft: Color::from_rgba(0.06, 0.53, 0.98, 0.12),     // #1087FA with 0.12 alpha
+            accent_soft_background: Color::from_rgba(0.06, 0.53, 0.98, 0.06), // Very subtle
             
-            // States - Subtle overlays
-            hover_background: Color::from_rgba(0.0, 0.0, 0.0, 0.03),   // Very subtle black overlay
-            active_background: Color::from_rgba(0.0, 0.0, 0.0, 0.05),  // Slightly more
-            selected_background: Color::from_rgba(0.329, 0.584, 0.988, 0.1), // Accent tint
+            // States - Subtle but noticeable
+            hover_background: Color::from_rgba(0.0, 0.0, 0.0, 0.04),   // Subtle black overlay
+            active_background: Color::from_rgba(0.0, 0.0, 0.0, 0.06),  // Slightly more
+            selected_background: Color::from_rgba(0.06, 0.53, 0.98, 0.1), // Accent tint for selection
             
-            // Status colors - Professional, vibrant
-            success: Color::from_rgb(0.180, 0.729, 0.490),             // #2EBA7D - Muted green
-            warning: Color::from_rgb(0.949, 0.627, 0.180),             // #F2A02E - Muted amber
-            error: Color::from_rgb(0.949, 0.376, 0.376),               // #F26060 - Muted red
-            info: Color::from_rgb(0.329, 0.584, 0.988),                // #5495FC - Same accent
+            // Status colors - Clear and professional
+            success: Color::from_rgb(0.16, 0.65, 0.33),                // #29A652 - Clean green
+            warning: Color::from_rgb(0.91, 0.58, 0.07),                // #E89412 - Warm amber
+            error: Color::from_rgb(0.91, 0.26, 0.26),                  // #E84242 - Clear red
+            info: Color::from_rgb(0.06, 0.53, 0.98),                   // #1087FA - Matches accent
             
-            // Focus - Subtle
-            focus_ring: Color::from_rgba(0.329, 0.584, 0.988, 0.3),    // Subtle focus ring
+            // Focus - Clear but not distracting
+            focus_ring: Color::from_rgba(0.06, 0.53, 0.98, 0.25),      // Clear focus ring
             
-            // Syntax highlighting colors - VS Code Light+ inspired professional palette
-            // High contrast, well-balanced, and proven in professional IDEs
-            syntax_comment: Color::from_rgb(0.467, 0.533, 0.600),      // #778899 - Slate gray for comments
-            syntax_string: Color::from_rgb(0.627, 0.000, 0.000),       // #A00000 - Deep red for strings
-            syntax_keyword: Color::from_rgb(0.627, 0.125, 0.941),      // #A020F0 - Purple for keywords
-            syntax_function: Color::from_rgb(0.000, 0.000, 0.941),     // #0000F0 - Blue for functions
-            syntax_type: Color::from_rgb(0.941, 0.392, 0.000),         // #F06400 - Bright orange for types
-            syntax_variable: Color::from_rgb(0.000, 0.000, 0.000),     // #000000 - Black for variables
-            syntax_constant: Color::from_rgb(0.627, 0.125, 0.941),     // #A020F0 - Purple for constants
-            syntax_number: Color::from_rgb(0.098, 0.627, 0.098),       // #19A019 - Green for numbers
-            syntax_operator: Color::from_rgb(0.000, 0.000, 0.000),     // #000000 - Black for operators
-            syntax_punctuation: Color::from_rgb(0.549, 0.549, 0.549),  // #8C8C8C - Medium gray for punctuation
-            syntax_attribute: Color::from_rgb(0.627, 0.125, 0.941),    // #A020F0 - Purple for attributes
-            syntax_macro: Color::from_rgb(0.941, 0.392, 0.000),        // #F06400 - Bright orange for macros
-            syntax_builtin: Color::from_rgb(0.000, 0.000, 0.941),      // #0000F0 - Blue for builtins
-            syntax_plain: Color::from_rgb(0.000, 0.000, 0.000),        // #000000 - Black for plain text
+            // Syntax highlighting colors - Professional IDE palette optimized for readability
+            // High contrast, clear differentiation, comfortable for long sessions
+            syntax_comment: Color::from_rgb(0.55, 0.62, 0.70),         // #8C9EB0 - Soft blue-gray (readable but secondary)
+            syntax_string: Color::from_rgb(0.81, 0.18, 0.18),          // #CF2E2E - Warm red (clear but not harsh)
+            syntax_keyword: Color::from_rgb(0.69, 0.18, 0.75),         // #B02EBF - Distinct purple
+            syntax_function: Color::from_rgb(0.00, 0.47, 0.78),        // #0078C6 - Professional blue
+            syntax_type: Color::from_rgb(0.88, 0.43, 0.00),            // #E06D00 - Warm orange
+            syntax_variable: Color::from_rgb(0.20, 0.22, 0.25),        // #33383F - Primary text color
+            syntax_constant: Color::from_rgb(0.69, 0.18, 0.75),        // #B02EBF - Same as keyword for consistency
+            syntax_number: Color::from_rgb(0.16, 0.65, 0.33),          // #29A652 - Success green
+            syntax_operator: Color::from_rgb(0.45, 0.48, 0.52),        // #737A80 - Secondary text color
+            syntax_punctuation: Color::from_rgb(0.60, 0.63, 0.67),     // #99A0A7 - Muted text color
+            syntax_attribute: Color::from_rgb(0.69, 0.18, 0.75),       // #B02EBF - Same as keyword
+            syntax_macro: Color::from_rgb(0.88, 0.43, 0.00),           // #E06D00 - Same as type
+            syntax_builtin: Color::from_rgb(0.00, 0.47, 0.78),         // #0078C6 - Same as function
+            syntax_plain: Color::from_rgb(0.20, 0.22, 0.25),           // #33383F - Primary text color (not pure black)
         }
     }
 }

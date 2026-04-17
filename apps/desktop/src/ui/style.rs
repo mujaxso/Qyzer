@@ -387,7 +387,7 @@ impl StyleHelpers {
             Highlight::Attribute => self.colors.syntax_attribute,
             Highlight::Operator => self.colors.syntax_operator,
             Highlight::Number => self.colors.syntax_number,
-            Highlight::Property => self.colors.syntax_string,           // Use string color for properties
+            Highlight::Property => self.colors.syntax_function,         // Use function color for properties (more visible)
             Highlight::Namespace => self.colors.syntax_type,            // Use type color for namespaces
             Highlight::Plain => self.colors.syntax_plain,
         }
