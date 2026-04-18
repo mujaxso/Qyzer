@@ -78,6 +78,15 @@ Neote is organized as a Cargo workspace with multiple crates, each with a specif
 - `preview`: Previewing patches before application.
 **Dependencies**: `serde`, `anyhow`
 
+### `preview-engine`
+**Purpose**: Device‑aware simulation and preview of AI‑generated experiences.
+**Key Modules**:
+- `simulation`: Core simulation loop and state management.
+- `device_models`: Device profiles (screen sizes, input capabilities).
+- `web_server`: Lightweight HTTP server to serve preview content.
+- `viewport`: Viewport rendering and interaction handling.
+**Dependencies**: `serde`, `tokio`, `warp`, `wry` (or `tauri`)
+
 ### `rpc`
 **Purpose**: Remote Procedure Call framework for inter-process communication.
 **Key Modules**:

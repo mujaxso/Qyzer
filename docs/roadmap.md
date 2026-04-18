@@ -45,6 +45,12 @@ This document outlines the development roadmap for Qyzer Studio, an AI-first IDE
 - Markdown editing and preview
 - Extension system for additional languages
 
+### Preview & Simulation
+- Preview engine crate for device simulation (`preview-engine`)
+- Tauri‑based preview shell for mobile, desktop, and website previews
+- Real‑time synchronization between editor and preview windows
+- Device‑frame rendering and interactive viewport controls
+
 ## Phase 3: User Experience
 **Goal**: Polish the UI/UX and add productivity features.
 

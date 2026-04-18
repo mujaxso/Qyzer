@@ -27,6 +27,19 @@ Neote follows a client-server architecture with a desktop frontend, multiple bac
 - **settings**: Configuration model and loader.
 - **permissions**: Policy and grants for security and access control.
 
+## Frontend Platform Strategy
+
+Zaroxi Studio adopts a hybrid frontend architecture that combines native Rust UI (Iced) for performance‑sensitive editor surfaces with webview‑based (Tauri) windows for previews and design canvases. This approach preserves the investment in the existing Iced codebase while enabling rich, HTML‑based simulations of mobile, desktop, and website outputs.
+
+**Key decisions:**
+
+1. **Desktop shell** – The main window (file tree, editor, terminal) remains an Iced application (`apps/desktop`), ensuring native rendering performance and tight integration with the Rust core.
+2. **Preview shell** – A separate Tauri application (`apps/preview`) provides webview windows for device simulations, visual designers, and live previews of AI‑generated experiences.
+3. **Communication** – Both shells communicate with the same Rust business‑logic crates and background services via the existing RPC framework (`crates/rpc`).
+4. **Separation of concerns** – UI‑specific code is kept out of the core crates; the `preview‑engine` crate encapsulates simulation logic, device models, and the local HTTP server that serves preview content.
+
+This hybrid model allows Zaroxi AI to generate experiences that can be immediately previewed in a realistic environment (mobile, web, desktop) while retaining the responsive, native feel of a professional code editor.
+
 ## Component Relationships
 
 ```
@@ -44,17 +57,29 @@ Neote follows a client-server architecture with a desktop frontend, multiple bac
          │            ┌──────────────────┐    ┌─────────────────┐
          └───────────►│   AI Context     │◄──►│     AI Agent    │
                       └──────────────────┘    └─────────────────┘
-                               │                        │
-                               ▼                        ▼
-                      ┌──────────────────┐    ┌─────────────────┐
-                      │   AI Daemon      │    │  RPC Framework  │
-                      └──────────────────┘    └─────────────────┘
-                               │                        │
-                               ▼                        ▼
-                      ┌──────────────────┐    ┌─────────────────┐
-                      │ Workspace Daemon │◄──►│    Settings     │
-                      └──────────────────┘    └─────────────────┘
+         ▲                     │                        │
+         │                     ▼                        ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  Preview Shell  │    │   AI Daemon      │    │  RPC Framework  │
+│   (Tauri/web)   │    └──────────────────┘    └─────────────────┘
+└─────────────────┘            │                        │
+         ▲                     ▼                        ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ Preview Engine  │◄──►│ Workspace Daemon │◄──►│    Settings     │
+│ (simulation,    │    └──────────────────┘    └─────────────────┘
+│  device models) │
+└─────────────────┘
 ```
+
+**Preview Subsystem:** The Preview Engine crate (`crates/preview-engine`) contains the logic for simulating mobile devices, desktop frames, and browser environments. It runs a local HTTP server that serves the content to be previewed, which is displayed in the Tauri-based Preview Shell. The Desktop App (Iced) communicates with the Preview Engine via RPC to update previews in real time as the user edits code or design specifications.
+
+## Anti‑Patterns to Avoid
+
+- **Rewriting the UI from scratch** – Do not discard the existing Iced codebase; it provides a performant, native editor experience that would be costly to rebuild.
+- **Tight coupling between UI and core logic** – Keep UI‑specific code out of `editor‑core`, `workspace‑model`, and other business‑logic crates.
+- **Direct webview embedding inside Iced** – This is technically complex and unstable; instead use separate windows managed by Tauri.
+- **Blocking the main thread with preview updates** – All communication between the desktop app and the preview engine must be asynchronous (via RPC) to keep the editor responsive.
+- **Premature abstraction** – Build the preview infrastructure for concrete use cases first (mobile, web, desktop simulation) before attempting a generic “everything preview” system.
 
 ## Communication Patterns
 
@@ -85,6 +110,15 @@ Neote follows a client-server architecture with a desktop frontend, multiple bac
 3. **Format**: `cargo fmt --all`
 4. **Lint**: `cargo clippy --workspace --all-targets`
 5. **Run**: Individual binaries can be run directly (e.g., `cargo run -p desktop`)
+
+## Incremental Migration Plan
+
+1. **Phase 1 (Current)** – Keep the existing Iced desktop app unchanged. Introduce the `preview‑engine` crate as a library, with a simple local HTTP server that can serve static HTML. No integration with the UI yet.
+2. **Phase 2** – Create a separate Tauri application (`apps/preview`) that embeds a webview and connects to the preview‑engine via RPC. Provide basic window management and device‑frame rendering. The desktop app can launch this preview window via a command.
+3. **Phase 3** – Implement real‑time synchronization: as the user edits code, the desktop app sends updates through RPC to the preview‑engine, which refreshes the webview. Add mobile and desktop viewport presets.
+4. **Phase 4** – Optionally migrate non‑editor UI panels (AI chat, asset library, design canvas) to webview‑based windows, leveraging the same preview infrastructure. Keep the core editor in Iced.
+
+This plan ensures that each step is self‑contained, does not break existing functionality, and progressively builds towards the hybrid architecture.
 
 ## Future Considerations
 
