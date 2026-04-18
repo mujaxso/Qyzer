@@ -367,6 +367,59 @@ pub fn build_and_install_grammar(language_id: &str) -> Result<(), String> {
     install_library_and_queries(&grammar_info, &source_dir, &repo_dir, language_id, &temp_dir, lib_path)
 }
 
+/// Generate default language.toml content for a language
+fn generate_language_toml(language_id: &str, grammar_info: &crate::grammar_registry::GrammarInfo) -> String {
+    // Determine comment syntax based on language
+    let (comment_line, comment_start, comment_end) = match language_id {
+        "rust" | "c" | "cpp" | "c_sharp" | "java" | "javascript" | "typescript" | "tsx" | "go" => 
+            ("//", "/*", "*/"),
+        "python" | "bash" | "ruby" | "yaml" | "dockerfile" | "cmake" | "toml" =>
+            ("#", "", ""),
+        "lua" =>
+            ("--", "--[[", "]]"),
+        "html" | "css" =>
+            ("", "<!--", "-->"),
+        "markdown" =>
+            ("", "", ""),
+        _ =>
+            ("//", "/*", "*/"), // Default
+    };
+    
+    // Basic template with common settings
+    // This can be expanded based on language-specific needs
+    format!(r#"[language]
+id = "{}"
+name = "{}"
+extensions = [{}]
+comment_line = "{}"
+comment_start = "{}"
+comment_end = "{}"
+
+[brackets]
+pairs = [
+    ["(", ")"],
+    ["[", "]"],
+    ["{{", "}}"],
+    ["\"", "\""],
+    ["'", "'"],
+]
+
+[indentation]
+width = 4
+use_tabs = false
+"#,
+        language_id,
+        grammar_info.name,
+        grammar_info.extensions.iter()
+            .map(|ext| format!("\"{}\"", ext))
+            .collect::<Vec<_>>()
+            .join(", "),
+        comment_line,
+        comment_start,
+        comment_end
+    )
+}
+
 /// Install library and queries after compilation
 fn install_library_and_queries(
     grammar_info: &crate::grammar_registry::GrammarInfo,
@@ -550,6 +603,18 @@ fn install_library_and_queries(
             println!("Note: Query file {} not found for {} (this may be normal if the grammar doesn't provide it)", 
                      query_file, language_id);
         }
+    }
+    
+    // Create language.toml if it doesn't exist
+    let language_toml_path = query_target_dir.join("language.toml");
+    if !language_toml_path.exists() {
+        println!("Creating default language.toml for {}...", language_id);
+        let toml_content = generate_language_toml(language_id, grammar_info);
+        fs::write(&language_toml_path, toml_content)
+            .map_err(|e| format!("Failed to write language.toml: {}", e))?;
+        println!("Created language.toml at: {}", language_toml_path.display());
+    } else {
+        println!("language.toml already exists for {}", language_id);
     }
     
     println!("Successfully installed {} grammar!", language_id);
