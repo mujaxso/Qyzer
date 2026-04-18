@@ -16,7 +16,7 @@
 
 ; Tables
 (table) @type
-(array_table) @type
+(table_array) @type
 (inline_table) @type
 
 ; Keys
