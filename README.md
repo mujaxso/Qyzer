@@ -15,6 +15,7 @@ Zaroxi Studio is an open-source, AI-first integrated development environment bui
 - **Modular Architecture**: Clean separation of concerns with a workspace-based crate structure
 - **Cross-Platform**: Native support for Linux, macOS, and Windows
 - **Extensible**: Plugin system for languages, themes, and AI providers
+- **Hybrid Preview System**: Real‑time mobile, desktop, and website simulation with webview‑based previews
 - **Performance-Focused**: Built in Rust for speed and reliability
 - **Security-First**: Built-in permission system and security best practices
 
@@ -48,7 +49,8 @@ Zaroxi Studio follows a modular architecture with clear separation between UI, b
 ```
 zaroxi/
 ├── apps/                    # Applications
-│   └── desktop/            # Main desktop application (Iced-based GUI)
+│   ├── desktop/            # Main desktop application (Iced-based GUI)
+│   └── preview/            # Tauri-based preview shell for mobile/desktop/website simulation
 ├── crates/                 # Core libraries
 │   ├── core-types/         # Shared data structures and types
 │   ├── editor-core/        # Text editing primitives, rope data structure, cursor management
@@ -58,6 +60,7 @@ zaroxi/
 │   ├── ai-context/         # AI context collection and management from workspace
 │   ├── ai-agent/           # AI task orchestration and execution
 │   ├── patch-engine/       # Diff generation and application for AI suggestions
+│   ├── preview-engine/     # Device-aware simulation and preview of AI-generated experiences
 │   ├── rpc/                # Remote Procedure Call framework for inter-process communication
 │   ├── settings/           # Configuration management and persistence
 │   ├── permissions/        # Access control and security permissions system
@@ -137,6 +140,7 @@ cargo build -p desktop --release
 - **`ai-context`**: AI context collection and management from workspace, prompt engineering
 - **`ai-agent`**: AI task orchestration and execution, model integration, response processing
 - **`patch-engine`**: Diff generation and application for AI suggestions, code transformation
+- **`preview-engine`**: Device‑aware simulation and preview of AI‑generated experiences
 - **`rpc`**: Remote Procedure Call framework for inter-process communication between components
 - **`settings`**: Configuration management and persistence, user preferences storage
 - **`permissions`**: Access control and security permissions system, authorization logic
