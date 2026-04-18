@@ -450,7 +450,27 @@ fn install_library_and_queries(
         // 3. Check repo root queries
         possible_dirs.push(repo_dir.join("queries"));
         
-        // 4. For TypeScript/TSX, also check the specific structure
+        // 4. For all languages, check language-specific query subdirectories
+        // Many grammars store queries in queries/{language_id}/ directory
+        if let Some(parent) = source_dir.parent() {
+            let repo_queries_dir = parent.join("queries");
+            if repo_queries_dir.exists() {
+                // Check for language-specific subdirectory
+                let language_queries_dir = repo_queries_dir.join(language_id);
+                if language_queries_dir.exists() {
+                    possible_dirs.push(language_queries_dir);
+                }
+                // Also add the root queries directory (already added above, but keep for clarity)
+            }
+        }
+        
+        // 5. Also check for queries in the source directory itself (some grammars have queries in src/queries)
+        let source_queries_dir = source_dir.join("queries");
+        if source_queries_dir.exists() {
+            possible_dirs.push(source_queries_dir);
+        }
+        
+        // 6. For TypeScript/TSX, also check the specific structure
         if language_id == "typescript" || language_id == "tsx" {
             // In tree-sitter-typescript, queries might be in the language subdirectory directly
             possible_dirs.push(source_dir.to_path_buf());
