@@ -113,7 +113,34 @@ The built application will be in `src-tauri/target/release/`.
 3. ✅ Run `cd ../.. && cargo build --workspace`
 4. ✅ Run `cd apps/desktop && npm run tauri dev`
 
-If you still have issues, run the setup check:
+If you still have issues:
+
+### Manual Setup
 ```bash
-node check-setup.js
+# 1. Navigate to the desktop app
+cd apps/desktop
+
+# 2. Install npm dependencies
+npm install
+
+# 3. Build Rust dependencies (from the root)
+cd ../..
+cargo build --workspace
+
+# 4. Return and start the app
+cd apps/desktop
+npm run tauri dev
 ```
+
+### If you get "run.sh not found" error:
+The run.sh script should be created automatically. If not, you can:
+1. Make it executable: `chmod +x run.sh`
+2. Run it: `./run.sh`
+
+Or just follow the manual setup steps above.
+
+### Common Issues:
+1. **"package.json not found"**: You're not in the right directory
+2. **"npm install fails"**: Check Node.js version (18+ required)
+3. **"cargo build fails"**: Make sure Rust is installed (rustup.rs)
+4. **"Tauri not found"**: It's installed as a dev dependency, no global install needed
