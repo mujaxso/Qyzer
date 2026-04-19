@@ -222,6 +222,13 @@ pwd  # Should show: /home/yourname/Work/zaroxi
 2. **npm install fails**: Node.js 18+ required
 3. **cargo build fails**: Install Rust via rustup.rs
 4. **Permission denied**: Run `./apps/desktop/fix-permissions.sh`
+5. **Tauri configuration errors**: Clear the Tauri cache:
+   ```bash
+   cd apps/desktop
+   rm -rf src-tauri/target
+   rm -rf node_modules/.vite
+   npm run tauri dev
+   ```
 
 **Quick check:**
 ```bash

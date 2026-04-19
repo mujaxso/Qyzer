@@ -149,6 +149,12 @@ Or just follow the manual setup steps above.
 2. **"npm install fails"**: Check Node.js version (18+ required)
 3. **"cargo build fails"**: Make sure Rust is installed (rustup.rs)
 4. **"Tauri not found"**: It's installed as a dev dependency, no global install needed
+5. **Tauri configuration errors**: Clear the Tauri cache:
+   ```bash
+   rm -rf src-tauri/target
+   rm -rf node_modules/.vite
+   npm run tauri dev
+   ```
 
 ### Quick Test:
 Run the setup check to verify your environment:
@@ -220,6 +226,7 @@ All scripts can be run from **anywhere** in the zaroxi repository:
 - `./apps/desktop/setup.sh` - Install npm dependencies
 - `./apps/desktop/build.sh` - Build for production
 - `./apps/desktop/fix-permissions.sh` - Make scripts executable
+- `./apps/desktop/clear-cache.sh` - Clear Tauri and Vite cache
 
 ## Troubleshooting
 

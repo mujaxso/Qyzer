@@ -12,7 +12,7 @@ if [ ! -x "$0" ]; then
 fi
 
 # Make all scripts in the current directory executable
-for script in run.sh start.sh setup.sh build.sh fix-permissions.sh; do
+for script in run.sh start.sh setup.sh build.sh fix-permissions.sh clear-cache.sh; do
     if [ -f "$script" ]; then
         chmod +x "$script"
         echo "✓ Made $script executable"
