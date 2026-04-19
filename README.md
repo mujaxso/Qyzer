@@ -83,6 +83,7 @@ zaroxi/
 
 - Rust 1.75+ (install via [rustup](https://rustup.rs/))
 - Cargo (comes with Rust)
+- Node.js 18+ and npm
 - Git for version control
 - For AI features: API key for supported AI providers (optional)
 
@@ -93,7 +94,12 @@ zaroxi/
 git clone https://github.com/mujaxso/zaroxi.git
 cd zaroxi
 
+# Install frontend dependencies for the desktop app
+cd apps/desktop
+npm install
+
 # Build all crates
+cd ../..
 cargo build --workspace
 
 # Run tests
@@ -109,11 +115,17 @@ cargo clippy --workspace --all-targets -- -D warnings
 ### Running the Desktop Application
 
 ```bash
-# Build and run the desktop app
-cargo run -p desktop -- /path/to/workspace
+# Navigate to the desktop app
+cd apps/desktop
 
-# Or run with specific workspace
-cargo run -p desktop -- ~/projects/my-project
+# Development mode (with hot reload)
+npm run tauri dev
+
+# Build for production
+npm run tauri build
+
+# Run in development without Tauri (frontend only)
+npm run dev
 ```
 
 ### Development Build
@@ -126,6 +138,10 @@ cargo build -p desktop
 
 # Release build (optimized performance)
 cargo build -p desktop --release
+
+# Frontend development
+cd apps/desktop
+npm run dev  # Frontend only on http://localhost:1420
 ```
 
 ## 📁 Project Structure Deep Dive
