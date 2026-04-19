@@ -12,7 +12,7 @@ export function TauriProvider({ children }: TauriProviderProps) {
     console.log('Tauri provider mounted');
     
     // Check if we're running in Tauri
-    const isTauri = window.__TAURI__ !== undefined;
+    const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
     
     if (isTauri) {
       console.log('Running in Tauri environment');
@@ -20,10 +20,13 @@ export function TauriProvider({ children }: TauriProviderProps) {
       console.warn('Running in browser environment - some features may be limited');
     }
     
-    setIsInitialized(true);
+    // Simulate initialization delay
+    const timer = setTimeout(() => {
+      setIsInitialized(true);
+    }, 100);
     
     return () => {
-      // Cleanup
+      clearTimeout(timer);
     };
   }, []);
 
@@ -32,7 +35,7 @@ export function TauriProvider({ children }: TauriProviderProps) {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Initializing Tauri...</p>
+          <p className="mt-4 text-muted-foreground">Initializing...</p>
         </div>
       </div>
     );

@@ -160,10 +160,31 @@ pwd  # Should show: /home/yourname/Work/zaroxi
 # Navigate to desktop app
 cd apps/desktop
 
-# Now run npm commands
+# Install dependencies
 npm install
+
+# Build Rust dependencies
+cd ../..
+cargo build --workspace
+
+# Return to desktop app and start development
+cd apps/desktop
 npm run tauri dev
 ```
+
+### Troubleshooting Desktop App
+
+If the desktop app doesn't start:
+
+1. **Check directory**: Make sure you're in `apps/desktop`
+2. **Check Node.js**: Version should be 18+
+3. **Check Rust**: Run `cargo build --workspace` from the root
+4. **Check setup**: Run `node check-setup.js` in `apps/desktop`
+
+Common error messages and solutions:
+- **"ENOENT: no such file or directory, open 'package.json'**: Wrong directory
+- **"Cannot find module '@tauri-apps/api'"**: Run `npm install`
+- **"failed to run custom build command for desktop"**: Run `cargo build --workspace` from root
 
 ## 📁 Project Structure Deep Dive
 
