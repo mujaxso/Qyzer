@@ -4,12 +4,12 @@
 use tokio::sync::mpsc;
 use tracing::{info, error};
 
-// Import from new crate structure
-use domain::ai_context::{AiTask, TaskStatus};
-use ai::ai_agent;
+// Import from crate structure
+use ai_agent::{AiAgent, TaskResult as AgentTaskResult};
+use ai_context::{AiTask, TaskStatus};
 
 pub struct AiDaemon {
-    agent: ai_agent::AiAgent,
+    agent: AiAgent,
     task_queue: mpsc::Receiver<AiTask>,
     task_results: mpsc::Sender<TaskResult>,
 }
@@ -23,7 +23,7 @@ pub struct TaskResult {
 
 impl AiDaemon {
     pub fn new() -> Self {
-        let agent = ai_agent::AiAgent::new(
+        let agent = AiAgent::new(
             "openai".to_string(),
             "gpt-4".to_string(),
         );

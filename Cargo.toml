@@ -1,20 +1,20 @@
 [workspace]
 resolver = "3"
 members = [
+  # Applications
   "apps/desktop/src-tauri",
-  "crates/core-types",
-  "crates/editor-core",
-  "crates/workspace-model",
-  "crates/lsp-client",
-  "crates/ai-context",
-  "crates/ai-agent",
-  "crates/patch-engine",
-  "crates/rpc",
-  "crates/settings",
-  "crates/permissions",
-  "crates/file-ops",
-  "crates/syntax-core",
-  "crates/theme",
+  
+  # Shared crates - organized by domain
+  "core-types",
+  "domain",
+  "ai/ai-context",
+  "ai/ai-agent",
+  "infrastructure",
+  "language",
+  "operations",
+  "theme",
+  
+  # Services
   "services/workspace-daemon",
   "services/ai-daemon",
 ]
@@ -44,3 +44,33 @@ parking_lot = "0.12"
 log = "0.4"
 env_logger = "0.11"
 tauri = { version = "2.10.3", features = [] }
+````
+
+Now, we need to update the desktop app's Cargo.toml to reference the correct paths:
+
+apps/desktop/src-tauri/Cargo.toml
+````
+<<<<<<< SEARCH
+[dependencies]
+tauri = { workspace = true, features = [] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["rt", "macros", "sync", "time", "io-util"] }
+tracing = { workspace = true }
+anyhow = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+# Workspace crates
+core-types = { path = "../../../crates/core-types" }
+editor-core = { path = "../../../crates/editor-core" }
+workspace-model = { path = "../../../crates/workspace-model" }
+ai-context = { path = "../../../crates/ai-context" }
+ai-agent = { path = "../../../crates/ai-agent" }
+patch-engine = { path = "../../../crates/patch-engine" }
+rpc = { path = "../../../crates/rpc" }
+settings = { path = "../../../crates/settings" }
+permissions = { path = "../../../crates/permissions" }
+file-ops = { path = "../../../crates/file-ops" }
+syntax-core = { path = "../../../crates/syntax-core" }
+theme = { path = "../../../crates/theme" }

@@ -5,10 +5,6 @@ use std::path::PathBuf;
 use tokio::sync::mpsc;
 use tracing::{info, error};
 
-// Import from new crate structure
-use domain::workspace_model::Workspace as DomainWorkspace;
-use operations::file_ops;
-
 pub struct WorkspaceDaemon {
     workspaces: Vec<Workspace>,
 }
@@ -16,8 +12,8 @@ pub struct WorkspaceDaemon {
 struct Workspace {
     id: String,
     path: PathBuf,
-    watcher: Option<file_ops::FileWatcher>,
-    domain_workspace: DomainWorkspace,
+    // watcher: Option<file_ops::FileWatcher>,
+    // domain_workspace: DomainWorkspace,
 }
 
 impl WorkspaceDaemon {
@@ -50,13 +46,14 @@ impl WorkspaceDaemon {
             .unwrap_or("Untitled")
             .to_string();
         
-        let domain_workspace = DomainWorkspace::new(workspace_name, path.to_string_lossy().to_string());
+        // TODO: Create domain workspace
+        // let domain_workspace = DomainWorkspace::new(workspace_name, path.to_string_lossy().to_string());
         
         let workspace = Workspace {
             id: id.clone(),
             path: path.clone(),
-            watcher: None,
-            domain_workspace,
+            // watcher: None,
+            // domain_workspace,
         };
         
         self.workspaces.push(workspace);
@@ -68,15 +65,14 @@ impl WorkspaceDaemon {
         Ok(id)
     }
     
-    pub async fn list_workspaces(&self) -> Vec<DomainWorkspace> {
+    pub async fn list_workspaces(&self) -> Vec<String> {
         self.workspaces.iter()
-            .map(|w| w.domain_workspace.clone())
+            .map(|w| w.id.clone())
             .collect()
     }
     
-    pub async fn get_workspace(&self, id: &str) -> Option<&DomainWorkspace> {
+    pub async fn get_workspace(&self, id: &str) -> Option<&Workspace> {
         self.workspaces.iter()
             .find(|w| w.id == id)
-            .map(|w| &w.domain_workspace)
     }
 }
