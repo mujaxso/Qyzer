@@ -23,18 +23,18 @@ thiserror = { workspace = true }
 uuid = { workspace = true }
 
 # Workspace crates
-core-types = { path = "../../crates/core-types" }
-editor-core = { path = "../../crates/editor-core" }
-workspace-model = { path = "../../crates/workspace-model" }
-ai-context = { path = "../../crates/ai-context" }
-ai-agent = { path = "../../crates/ai-agent" }
-patch-engine = { path = "../../crates/patch-engine" }
-rpc = { path = "../../crates/rpc" }
-settings = { path = "../../crates/settings" }
-permissions = { path = "../../crates/permissions" }
-file-ops = { path = "../../crates/file-ops" }
-syntax-core = { path = "../../crates/syntax-core" }
-theme = { path = "../../crates/theme" }
+core-types = { path = "../../../crates/core-types" }
+editor-core = { path = "../../../crates/editor-core" }
+workspace-model = { path = "../../../crates/workspace-model" }
+ai-context = { path = "../../../crates/ai-context" }
+ai-agent = { path = "../../../crates/ai-agent" }
+patch-engine = { path = "../../../crates/patch-engine" }
+rpc = { path = "../../../crates/rpc" }
+settings = { path = "../../../crates/settings" }
+permissions = { path = "../../../crates/permissions" }
+file-ops = { path = "../../../crates/file-ops" }
+syntax-core = { path = "../../../crates/syntax-core" }
+theme = { path = "../../../crates/theme" }
 
 [features]
 default = ["custom-protocol"]
