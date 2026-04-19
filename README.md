@@ -21,7 +21,25 @@ Zaroxi Studio is an open-source, AI-first integrated development environment bui
 
 ## 🏗️ Architecture
 
-Zaroxi Studio follows a modular architecture with clear separation between UI, business logic, and AI capabilities:
+Zaroxi Studio follows a modern desktop application architecture built with Tauri, providing a secure, high-performance foundation with web technologies for the UI and Rust for the backend. This approach enables rapid UI development with React while maintaining the performance and safety of Rust for core operations.
+
+**Key Design Principles:**
+1. **Modularity**: Each crate has a single, well-defined responsibility
+2. **Extensibility**: Plugin system for language support and AI providers
+3. **Performance**: Rust backend with optimized web frontend
+4. **Security**: Tauri's security model with permission system for sensitive operations
+5. **Observability**: Built-in tracing and logging throughout
+
+**Current Implementation Status:**
+- ✅ **Desktop App**: Complete Tauri + React frontend with workspace explorer, code editor, and AI assistant
+- ✅ **Core Types**: Shared data structures for commands, events, and workspace protocol
+- ✅ **Theme System**: Complete theming with dark/light modes and design tokens
+- ✅ **Editor Core**: Text editing primitives with rope data structure and document management
+- ✅ **AI Agent**: Task planning, execution, and tool system with patch generation
+- ✅ **Background Services**: Workspace and AI daemons for background operations
+- ✅ **Frontend Components**: React-based UI with error boundaries, keyboard shortcuts, and responsive layout
+- 🔄 **LSP Integration**: Language Server Protocol client in development
+- 🔄 **Preview System**: Planned preview architecture for mobile/desktop simulations
 
 ```
 ┌─────────────────┐    ┌──────────────────┐

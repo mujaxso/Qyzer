@@ -73,15 +73,15 @@ This architecture provides a responsive, modern IDE experience while leveraging 
 └─────────────────┘
 ```
 
-**Preview Subsystem:** The Preview Engine crate (`crates/preview-engine`) contains the logic for simulating mobile devices, desktop frames, and browser environments. It runs a local HTTP server that serves the content to be previewed, which is displayed in the Tauri-based Preview Shell. The Desktop App (Iced) communicates with the Preview Engine via RPC to update previews in real time as the user edits code or design specifications.
+**Preview Subsystem:** The Preview Engine crate (`crates/preview-engine`) contains the logic for simulating mobile devices, desktop frames, and browser environments. It runs a local HTTP server that serves the content to be previewed, which is displayed in the Tauri-based Preview Shell. The Desktop App communicates with the Preview Engine via RPC to update previews in real time as the user edits code or design specifications.
 
 ## Anti‑Patterns to Avoid
 
-- **Rewriting the UI from scratch** – Do not discard the existing Iced codebase; it provides a performant, native editor experience that would be costly to rebuild.
 - **Tight coupling between UI and core logic** – Keep UI‑specific code out of `editor‑core`, `workspace‑model`, and other business‑logic crates.
-- **Direct webview embedding inside Iced** – This is technically complex and unstable; instead use separate windows managed by Tauri.
-- **Blocking the main thread with preview updates** – All communication between the desktop app and the preview engine must be asynchronous (via RPC) to keep the editor responsive.
-- **Premature abstraction** – Build the preview infrastructure for concrete use cases first (mobile, web, desktop simulation) before attempting a generic “everything preview” system.
+- **Blocking the main thread with AI operations** – All AI processing and file operations should be asynchronous to keep the editor responsive.
+- **Premature abstraction** – Build features for concrete use cases first before attempting generic solutions.
+- **Ignoring security** – Leverage Tauri's security model and implement proper permission checks for file operations and AI requests.
+- **Over-engineering** – Start with simple, working solutions and refactor as needed based on actual requirements.
 
 ## Communication Patterns
 
