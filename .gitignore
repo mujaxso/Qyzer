@@ -52,3 +52,24 @@ runtime/treesitter/languages/**
 runtime/treesitter/*
 !runtime/treesitter/grammars
 !runtime/treesitter/languages
+
+# Tauri
+**/target/
+**/dist/
+
+# Frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+dist-ssr/
+*.local
+.env.*.local
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
