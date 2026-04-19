@@ -10,3 +10,5 @@ tracing = { workspace = true }
 anyhow = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
+ai-agent = { path = "../../ai/ai-agent" }
+ai-context = { path = "../../ai/ai-context" }

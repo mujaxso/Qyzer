@@ -7,8 +7,7 @@ members = [
   # Shared crates - organized by domain
   "core-types",
   "domain",
-  "ai/ai-context",
-  "ai/ai-agent",
+  "ai",
   "infrastructure",
   "language",
   "operations",

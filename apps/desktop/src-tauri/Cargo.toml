@@ -23,18 +23,18 @@ thiserror = { workspace = true }
 uuid = { workspace = true }
 
 # Workspace crates
-core-types = { path = "../../../crates/core-types" }
-editor-core = { path = "../../../crates/editor-core" }
-workspace-model = { path = "../../../crates/workspace-model" }
-ai-context = { path = "../../../crates/ai-context" }
-ai-agent = { path = "../../../crates/ai-agent" }
-patch-engine = { path = "../../../crates/patch-engine" }
-rpc = { path = "../../../crates/rpc" }
-settings = { path = "../../../crates/settings" }
-permissions = { path = "../../../crates/permissions" }
-file-ops = { path = "../../../crates/file-ops" }
-syntax-core = { path = "../../../crates/syntax-core" }
-theme = { path = "../../../crates/theme" }
+core-types = { path = "../../../core-types" }
+editor-core = { path = "../../../language/editor-core" }
+workspace-model = { path = "../../../domain/workspace-model" }
+ai-context = { path = "../../../ai/ai-context" }
+ai-agent = { path = "../../../ai/ai-agent" }
+patch-engine = { path = "../../../operations/patch-engine" }
+rpc = { path = "../../../infrastructure/rpc" }
+settings = { path = "../../../infrastructure/settings" }
+permissions = { path = "../../../infrastructure/permissions" }
+file-ops = { path = "../../../operations/file-ops" }
+syntax-core = { path = "../../../language/syntax-core" }
+theme = { path = "../../../theme" }
 
 [features]
 default = []
