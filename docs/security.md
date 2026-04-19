@@ -1,12 +1,12 @@
 # Security Architecture
 
-Qyzer Studio is designed with security as a fundamental principle, implementing multiple layers of protection for user data, system integrity, and AI operations.
+Zaroxi Studio is designed with security as a fundamental principle, implementing multiple layers of protection for user data, system integrity, and AI operations.
 
 ## Security Model
 
 ### Threat Model
 
-Qyzer Studio considers the following primary threats:
+Zaroxi Studio considers the following primary threats:
 
 1. **Data confidentiality**: Unauthorized access to user code, credentials, or AI prompts
 2. **Data integrity**: Unauthorized modification of code, configuration, or AI outputs
@@ -31,7 +31,7 @@ Qyzer Studio considers the following primary threats:
 - **API tokens**: For programmatic access and integrations
 - **Biometric**: Platform-supported biometric authentication where available
 
-### Permission System (`crates/permissions`)
+### Permission System (`infrastructure/permissions`)
 
 The permission system implements fine-grained access control:
 
@@ -77,7 +77,7 @@ if permissions.check(Permission::FileWrite, &resource).await? {
 
 ## Secure Communication
 
-### RPC Security (`crates/rpc`)
+### RPC Security (`infrastructure/rpc`)
 
 - **Authentication**: Mutual TLS for service-to-service communication
 - **Authorization**: Permission checks on all RPC methods
@@ -194,7 +194,7 @@ if permissions.check(Permission::FileWrite, &resource).await? {
 ## Getting Help & Reporting Issues
 
 ### Security Contacts
-- **Security issues**: security@qyzer.dev (encrypted communication preferred)
+- **Security issues**: security@zaroxi.dev (encrypted communication preferred)
 - **Documentation**: Security documentation in `/docs/security.md`
 - **Community**: Security discussions in designated channels
 
@@ -203,4 +203,4 @@ if permissions.check(Permission::FileWrite, &resource).await? {
 2. **Provide details**: Steps to reproduce, impact assessment
 3. **Expect response**: Acknowledgment within 48 hours, resolution timeline
 
-Qyzer Studio's security architecture is designed to protect users while enabling powerful AI-assisted development. Security is an ongoing process, and we welcome feedback and contributions to improve our security posture.
+Zaroxi Studio's security architecture is designed to protect users while enabling powerful AI-assisted development. Security is an ongoing process, and we welcome feedback and contributions to improve our security posture.
