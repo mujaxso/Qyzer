@@ -1,10 +1,10 @@
-# Neote Crates
+# Zaroxi Studio Crates
 
-This document provides an overview of the Rust crates that make up the Neote workspace, their responsibilities, and dependencies.
+This document provides an overview of the Rust crates that make up the Zaroxi Studio workspace, their responsibilities, and dependencies.
 
 ## Overview
 
-Neote is organized as a Cargo workspace with multiple crates, each with a specific responsibility. This modular architecture enables clear separation of concerns, independent development, and efficient compilation.
+Zaroxi Studio is organized as a Cargo workspace with multiple crates, each with a specific responsibility. This modular architecture enables clear separation of concerns, independent development, and efficient compilation.
 
 ## Core Crates
 
@@ -15,47 +15,55 @@ Neote is organized as a Cargo workspace with multiple crates, each with a specif
 - `events`: Event definitions for system communication and state tracking.
 - `commands`: Command structures for editor operations, AI tasks, and workspace actions.
 - `protocol`: Communication protocol definitions for inter-component messaging.
+- `workspace`: Workspace-related structures like DirectoryEntry, ListDirectoryRequest, etc.
 **Dependencies**: `serde`, `uuid`
 
-### `editor-buffer`
+### `theme`
+**Purpose**: Theming system with semantic colors and design tokens.
+**Key Modules**:
+- `colors`: Color representation with RGB/hex conversions.
+- `theme`: Theme variants (Dark, Light, System) with semantic color definitions.
+- Design tokens for spacing, typography, and other design system elements.
+**Dependencies**: `serde`
+
+## Domain Crates
+
+### `workspace-model` (in `domain/`)
+**Purpose**: Modeling and managing workspace domain state.
+**Key Modules**:
+- `workspace`: Workspace domain model with UUID identification and root path management.
+**Dependencies**: `uuid`
+
+## Language & Editor Crates
+
+### `editor-core` (in `language/`)
 **Purpose**: Core text editing functionality for the IDE.
 **Key Modules**:
-- `buffer`: Text storage and basic manipulation operations.
-- `edit`: Insert, delete, and replace operations with transaction support.
-- `position`: Line/column positioning and navigation.
+- `document`: Document management with rope data structure.
+- `cursor`: Cursor positioning and movement.
 - `selection`: Text selection ranges and operations.
-- `undo`: Undo/redo functionality with transaction tracking.
-**Dependencies**: `serde`, `thiserror`
-
-### `workspace-model`
-**Purpose**: Modeling and managing workspace state.
-**Key Modules**:
-- `workspace`: Central workspace state container and high-level operations.
-- `file_tree`: Hierarchical file and directory representation.
-- `open_editors`: Tracking of currently open files and their state.
-- `project_graph`: Dependency relationships between projects and modules.
-- `snapshots`: Workspace state snapshots for undo/redo and persistence.
-**Dependencies**: `serde`, `uuid`
+- `commands`: Editor command definitions (Insert, Delete, MoveCursor, etc.).
+- `events`: Editor event definitions (DocumentChanged, CursorMoved, etc.).
+- `viewport`: Viewport management for visible text regions.
+**Dependencies**: `ropey` (for rope data structure)
 
 ## AI & Intelligence Crates
 
-### `ai-context`
+### `ai-context` (in `ai/`)
 **Purpose**: Gathering, organizing, and preparing context for AI operations.
 **Key Modules**:
-- `collector`: Collects relevant information from various sources.
-- `ranking`: Scores and prioritizes collected context based on relevance.
-- `packing`: Organizes and compresses context to fit model constraints.
-- `prompt`: Constructs structured prompts from context and task descriptions.
+- AI task definitions and context management.
+- Task status tracking (Pending, InProgress, Completed, Failed).
 **Dependencies**: `serde`, `serde_json`
 
-### `ai-agent`
+### `ai-agent` (in `ai/`)
 **Purpose**: Orchestrating AI-driven tasks and operations.
 **Key Modules**:
-- `planner`: Breaks down high-level goals into actionable steps.
-- `executor`: Executes planned tasks and manages state.
-- `tools`: Interface and implementations for AI-accessible tools.
-- `patch`: Generation and management of AI-created patches.
-- `verify`: Validation of AI operation results for correctness and safety.
+- `planner`: Task planning with steps and execution state.
+- `executor`: Task execution with AI agent integration.
+- `tools`: Tool definitions with name, description, and parameters.
+- `patch`: File patch generation and application.
+- `verify`: Result verification for AI operations.
 **Dependencies**: `serde`, `serde_json`, `anyhow`, `tokio`
 
 ## Infrastructure Crates
@@ -112,22 +120,28 @@ Neote is organized as a Cargo workspace with multiple crates, each with a specif
 - `grants`: Permission granting and revocation.
 **Dependencies**: `serde`, `uuid`
 
-## Applications & Services
+## Services
 
-### `desktop` (Application)
-**Purpose**: Main desktop application with native UI.
-**Key Modules**: UI modules for layout, editor, sidebar, chat, and terminal.
-**Dependencies**: `tokio`, `tracing`, `anyhow`
-
-### `workspace-daemon` (Service)
+### `workspace-daemon` (in `services/`)
 **Purpose**: Background service for workspace management.
 **Responsibilities**: File operations, Git integration, terminal sessions, background tasks.
+**Key Modules**: Workspace management, file watching, indexing.
 **Dependencies**: `tokio`, `tracing`, `anyhow`
 
-### `ai-daemon` (Service)
+### `ai-daemon` (in `services/`)
 **Purpose**: Background service for AI operations.
 **Responsibilities**: Provider routing, streaming responses, quota management, request routing.
+**Key Modules**: AI task processing, provider management, quota tracking.
 **Dependencies**: `tokio`, `tracing`, `anyhow`, `serde`, `serde_json`
+
+## Applications
+
+### `desktop` (in `apps/`)
+**Purpose**: Main desktop application built with Tauri + React.
+**Key Features**: Workspace explorer, code editor, AI assistant, command palette, keyboard shortcuts.
+**Frontend**: React with TypeScript, Tailwind CSS
+**Backend**: Tauri with Rust commands for file operations, AI tasks, etc.
+**Dependencies**: `tauri`, `tokio`, `tracing`, `serde`, `serde_json`
 
 ## Development Guidelines
 

@@ -1,15 +1,15 @@
-# Neote Architecture
+# Zaroxi Studio Architecture
 
-Neote is an AI-first IDE built as a modular Rust workspace. This document outlines the high-level architecture and component relationships.
+Zaroxi Studio is an AI-first IDE built as a modular Rust workspace. This document outlines the high-level architecture and component relationships.
 
 ## Overview
 
-Neote follows a client-server architecture with a desktop frontend, multiple background services, and a collection of shared libraries (crates). The system is designed to be extensible, with clear separation between UI, business logic, and AI capabilities.
+Zaroxi Studio follows a client-server architecture with a Tauri desktop frontend, multiple background services, and a collection of shared libraries (crates). The system is designed to be extensible, with clear separation between UI, business logic, and AI capabilities.
 
 ## Workspace Structure
 
 ### Applications (`apps/`)
-- **desktop**: The main desktop application built with a native UI framework (to be chosen). Contains UI modules for editor, sidebar, chat, terminal, and layout management.
+- **desktop**: The main desktop application built with Tauri + React. Contains UI modules for editor, workspace explorer, AI assistant, and layout management.
 
 ### Services (`services/`)
 - **workspace-daemon**: Manages workspace state, file system operations, Git integration, terminal sessions, and background tasks.
@@ -17,28 +17,30 @@ Neote follows a client-server architecture with a desktop frontend, multiple bac
 
 ### Core Crates (`crates/`)
 - **core-types**: Shared data structures for IDs, events, commands, and protocol definitions.
-- **editor-buffer**: Text editing primitives: buffer management, edits, positions, selections, and undo/redo.
-- **workspace-model**: Models for workspace state, file trees, open editors, project graphs, and snapshots.
-- **lsp-client**: Language Server Protocol client with session management, transport, capabilities, and diagnostics.
-- **ai-context**: AI context collection, ranking, packing, and prompt construction.
+- **theme**: Theming system with semantic colors, design tokens, and dark/light mode support.
+
+### Domain (`domain/`)
+- **workspace-model**: Models for workspace state with UUID identification and root path management.
+
+### Language (`language/`)
+- **editor-core**: Text editing primitives with rope data structure, cursor management, commands, and events.
+
+### AI (`ai/`)
 - **ai-agent**: AI agent planning, execution, tool usage, patch generation, and verification.
-- **patch-engine**: Diff generation, patch application, and preview functionality.
-- **rpc**: Remote Procedure Call framework with client/server, framing, and message handling.
-- **settings**: Configuration model and loader.
-- **permissions**: Policy and grants for security and access control.
+- **ai-context**: AI context collection, ranking, packing, and prompt construction.
 
 ## Frontend Platform Strategy
 
-Zaroxi Studio adopts a hybrid frontend architecture that combines native Rust UI (Iced) for performance‑sensitive editor surfaces with webview‑based (Tauri) windows for previews and design canvases. This approach preserves the investment in the existing Iced codebase while enabling rich, HTML‑based simulations of mobile, desktop, and website outputs.
+Zaroxi Studio adopts a modern desktop application architecture built with Tauri, providing a secure, high-performance foundation with web technologies for the UI and Rust for the backend.
 
 **Key decisions:**
 
-1. **Desktop shell** – The main window (file tree, editor, terminal) remains an Iced application (`apps/desktop`), ensuring native rendering performance and tight integration with the Rust core.
-2. **Preview shell** – A separate Tauri application (`apps/preview`) provides webview windows for device simulations, visual designers, and live previews of AI‑generated experiences.
-3. **Communication** – Both shells communicate with the same Rust business‑logic crates and background services via the existing RPC framework (`crates/rpc`).
-4. **Separation of concerns** – UI‑specific code is kept out of the core crates; the `preview‑engine` crate encapsulates simulation logic, device models, and the local HTTP server that serves preview content.
+1. **Tauri-based desktop** – The main application is built with Tauri, using React for the UI and Rust for the backend, ensuring cross-platform compatibility and security.
+2. **Performance** – Critical operations are handled in Rust, providing native performance for text editing, AI processing, and file operations.
+3. **Communication** – Frontend and backend communicate via Tauri commands and events, with additional RPC for service communication.
+4. **Separation of concerns** – UI-specific code is kept in the frontend, while business logic resides in Rust crates and services.
 
-This hybrid model allows Zaroxi AI to generate experiences that can be immediately previewed in a realistic environment (mobile, web, desktop) while retaining the responsive, native feel of a professional code editor.
+This architecture provides a responsive, modern IDE experience while leveraging the safety and performance of Rust for core operations.
 
 ## Component Relationships
 
@@ -111,14 +113,14 @@ This hybrid model allows Zaroxi AI to generate experiences that can be immediate
 4. **Lint**: `cargo clippy --workspace --all-targets`
 5. **Run**: Individual binaries can be run directly (e.g., `cargo run -p desktop`)
 
-## Incremental Migration Plan
+## Development Roadmap
 
-1. **Phase 1 (Current)** – Keep the existing Iced desktop app unchanged. Introduce the `preview‑engine` crate as a library, with a simple local HTTP server that can serve static HTML. No integration with the UI yet.
-2. **Phase 2** – Create a separate Tauri application (`apps/preview`) that embeds a webview and connects to the preview‑engine via RPC. Provide basic window management and device‑frame rendering. The desktop app can launch this preview window via a command.
-3. **Phase 3** – Implement real‑time synchronization: as the user edits code, the desktop app sends updates through RPC to the preview‑engine, which refreshes the webview. Add mobile and desktop viewport presets.
-4. **Phase 4** – Optionally migrate non‑editor UI panels (AI chat, asset library, design canvas) to webview‑based windows, leveraging the same preview infrastructure. Keep the core editor in Iced.
+1. **Phase 1 (Current)** – Core Tauri desktop application with workspace explorer, code editor, and AI assistant panels. Basic file operations and AI task execution.
+2. **Phase 2** – Enhanced AI capabilities with context collection, better tool integration, and improved code editing features.
+3. **Phase 3** – Language Server Protocol (LSP) integration for intelligent code analysis, completion, and diagnostics.
+4. **Phase 4** – Preview system for mobile, desktop, and web simulations with real-time synchronization.
 
-This plan ensures that each step is self‑contained, does not break existing functionality, and progressively builds towards the hybrid architecture.
+This roadmap ensures focused development on core IDE functionality while progressively adding advanced features.
 
 ## Future Considerations
 

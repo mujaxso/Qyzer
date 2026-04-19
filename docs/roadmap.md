@@ -1,6 +1,6 @@
-# Qyzer Studio Roadmap
+# Zaroxi Studio Roadmap
 
-This document outlines the development roadmap for Qyzer Studio, an AI-first IDE. The roadmap is organized into phases, with each phase building upon the previous to deliver increasing functionality and polish.
+This document outlines the development roadmap for Zaroxi Studio, an AI-first IDE. The roadmap is organized into phases, with each phase building upon the previous to deliver increasing functionality and polish.
 
 ## Phase 1: Foundation (Current)
 **Goal**: Establish the basic architecture and development workflow.
@@ -11,16 +11,24 @@ This document outlines the development roadmap for Qyzer Studio, an AI-first IDE
 - ✅ GitHub Actions CI/CD pipeline
 - ✅ Documentation structure
 - ✅ Code formatting and linting setup
+- ✅ Tauri desktop application with React frontend
+- ✅ Core type definitions (`core-types`)
+- ✅ Theme system with dark/light modes (`theme`)
+- ✅ Editor core implementation (`editor-core`)
+- ✅ AI agent and context systems (`ai-agent`, `ai-context`)
+- ✅ Workspace domain model (`workspace-model`)
+- ✅ Background services (`workspace-daemon`, `ai-daemon`)
 
 ### In Progress
-- Core type definitions (`core-types`)
-- Editor buffer implementation (`editor-buffer`)
-- Workspace modeling (`workspace-model`)
+- Enhanced AI task execution and tool integration
+- Improved code editor with syntax highlighting
+- Workspace file operations and Git integration
 
 ### Upcoming
-- Basic RPC framework (`rpc`)
-- Settings management (`settings`)
-- Permission system (`permissions`)
+- Language Server Protocol (LSP) integration
+- Preview system for mobile/desktop simulations
+- Enhanced AI capabilities with multiple providers
+- Plugin system for extensibility
 
 ## Phase 2: Core Functionality
 **Goal**: Implement essential IDE features and AI integration.
