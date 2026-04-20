@@ -5,6 +5,7 @@ import { WorkspaceService } from '../services/workspaceService';
 
 export function ExplorerContainer() {
   const {
+    currentWorkspace,
     workspaceTree,
     explorerUI,
     isLoading,
@@ -12,9 +13,30 @@ export function ExplorerContainer() {
     setSelectedPath,
     setActiveFilePath,
     setWorkspaceTree,
+    setCurrentWorkspace,
     setLoading,
     setError,
   } = useWorkspaceStore();
+
+  const handleOpenWorkspace = async () => {
+    try {
+      setLoading(true);
+      const dialogResult = await WorkspaceService.openFileDialog();
+      
+      if (dialogResult.selectedPath) {
+        const result = await WorkspaceService.openWorkspaceAndLoadTree(dialogResult.selectedPath);
+        setCurrentWorkspace(result.workspace);
+        setWorkspaceTree(result.tree.tree);
+        // Expand the root path by default
+        toggleExpanded(result.workspace.rootPath);
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Failed to open workspace');
+      console.error('Failed to open workspace:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleNodeClick = async (node: ExplorerTreeNode) => {
     setSelectedPath(node.path);
@@ -75,6 +97,34 @@ export function ExplorerContainer() {
     }
   };
 
+  // If no workspace is open, show open workspace button
+  if (!currentWorkspace) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-8">
+        <div className="max-w-md text-center">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-muted flex items-center justify-center">
+            <svg className="w-8 h-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold mb-2">No Workspace Open</h2>
+          <p className="text-sm text-muted-foreground mb-6">
+            Open a folder to browse files and folders in the explorer.
+          </p>
+          <button
+            onClick={handleOpenWorkspace}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium hover:bg-primary/90 transition-colors text-sm"
+          >
+            Open Workspace
+          </button>
+          <p className="mt-4 text-xs text-muted-foreground">
+            You can also use the folder icon in the activity rail.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading && workspaceTree.length === 0) {
     return (
       <div className="p-4">
@@ -91,6 +141,12 @@ export function ExplorerContainer() {
     return (
       <div className="p-8 text-center text-muted-foreground">
         <p>No files found in workspace.</p>
+        <button
+          onClick={handleOpenWorkspace}
+          className="mt-4 px-4 py-2 text-sm bg-muted hover:bg-muted/80 rounded-md transition-colors"
+        >
+          Open Different Workspace
+        </button>
       </div>
     );
   }
