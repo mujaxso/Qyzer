@@ -125,6 +125,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         setLoading: (loading) => set({ isLoading: loading }),
         setError: (error) => set({ error }),
         setCurrentWorkspace: (workspace) => set({ currentWorkspace: workspace }),
+        setCurrentDirectory: (path) => set({ currentDirectory: path }),
         openFolder: async (path: string) => {
           try {
             await get().refreshFileTree(path);
