@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "tauri": "node node_modules/@tauri-apps/cli/tauri.js",
     "tauri:test": "node node_modules/@tauri-apps/cli/tauri.js --version",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "fix:tauri-binary": "rm -f node_modules/.bin/tauri && echo '#!/usr/bin/env node' > node_modules/.bin/tauri && cat node_modules/@tauri-apps/cli/tauri.js >> node_modules/.bin/tauri && chmod +x node_modules/.bin/tauri"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
