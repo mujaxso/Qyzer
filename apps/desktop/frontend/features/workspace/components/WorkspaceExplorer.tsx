@@ -1,5 +1,6 @@
 import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/utils';
+import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 
 interface FileItem {
   path: string;
@@ -21,9 +22,47 @@ export function WorkspaceExplorer({
   onOpenFile, 
   onOpenFolder 
 }: WorkspaceExplorerProps) {
+  const { openWorkspaceViaDialog, currentWorkspace } = useWorkspaceStore();
+
+  const handleOpenWorkspace = async () => {
+    await openWorkspaceViaDialog();
+  };
+
+  if (!currentWorkspace) {
+    return (
+      <div className="p-4">
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">No workspace open</p>
+          <button
+            onClick={handleOpenWorkspace}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Opening...' : 'Open Workspace'}
+          </button>
+          <p className="text-xs text-muted-foreground mt-4">
+            Select a directory to open as a workspace
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Explorer
+          </div>
+          <button
+            onClick={handleOpenWorkspace}
+            className="text-xs px-2 py-1 bg-muted rounded hover:bg-muted/80"
+            disabled={true}
+          >
+            Change
+          </button>
+        </div>
         <div className="animate-pulse space-y-2">
           <div className="h-4 bg-muted rounded w-3/4"></div>
           <div className="h-4 bg-muted rounded w-1/2"></div>
@@ -34,17 +73,43 @@ export function WorkspaceExplorer({
 
   if (files.length === 0) {
     return (
-      <div className="p-4 text-center text-muted-foreground">
-        <p>No files to display</p>
-        <p className="text-sm">Open a workspace to get started</p>
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Explorer
+          </div>
+          <button
+            onClick={handleOpenWorkspace}
+            className="text-xs px-2 py-1 bg-muted rounded hover:bg-muted/80"
+          >
+            Change
+          </button>
+        </div>
+        <div className="text-center text-muted-foreground py-8">
+          <p>No files to display</p>
+          <p className="text-sm mt-1">Workspace: {currentWorkspace.name}</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="py-2">
-      <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        Explorer
+      <div className="flex items-center justify-between px-3 py-2">
+        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Explorer
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-muted-foreground truncate max-w-[100px]">
+            {currentWorkspace.name}
+          </span>
+          <button
+            onClick={handleOpenWorkspace}
+            className="text-xs px-2 py-1 bg-muted rounded hover:bg-muted/80"
+          >
+            Change
+          </button>
+        </div>
       </div>
       <div className="space-y-1">
         {files.map((file) => (

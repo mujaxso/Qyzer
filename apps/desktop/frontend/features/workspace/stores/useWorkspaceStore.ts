@@ -18,7 +18,8 @@ interface WorkspaceStore {
   // Actions
   openWorkspace: (path: string) => Promise<void>;
   openWorkspaceViaDialog: () => Promise<void>;
-  refreshFileTree: () => Promise<void>;
+  refreshFileTree: (path?: string) => Promise<void>;
+  openFolder: (path: string) => Promise<void>;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setCurrentWorkspace: (workspace: Workspace | null) => void;
@@ -95,13 +96,15 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           }
         },
         
-        refreshFileTree: async () => {
+        refreshFileTree: async (path?: string) => {
           const { currentWorkspace } = get();
           if (!currentWorkspace) return;
           
+          const targetPath = path || currentWorkspace.rootPath;
+          
           try {
             const entries = await WorkspaceService.listDirectory({ 
-              path: currentWorkspace.rootPath 
+              path: targetPath 
             });
             
             set({ fileTree: entries });
@@ -113,6 +116,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         setLoading: (loading) => set({ isLoading: loading }),
         setError: (error) => set({ error }),
         setCurrentWorkspace: (workspace) => set({ currentWorkspace: workspace }),
+        openFolder: async (path: string) => {
+          try {
+            await get().refreshFileTree(path);
+          } catch (error) {
+            console.error('Failed to open folder:', error);
+          }
+        },
         setFileTree: (tree) => set({ fileTree: tree }),
       }),
       {
