@@ -12,7 +12,9 @@ export function AppProvider({ children }: AppProviderProps) {
     <ErrorBoundary>
       <TauriProvider>
         <KeyboardShortcutsProvider>
-          {children}
+          <div className="font-sans antialiased">
+            {children}
+          </div>
         </KeyboardShortcutsProvider>
       </TauriProvider>
     </ErrorBoundary>
