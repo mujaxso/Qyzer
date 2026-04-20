@@ -228,33 +228,45 @@ pub async fn save_file(request: SaveFileRequest) -> Result<(), String> {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OpenDialogResponse {
     pub selected_path: Option<String>,
 }
 
 #[command]
-pub async fn open_file_dialog() -> Result<OpenDialogResponse, String> {
+pub async fn open_file_dialog(app: tauri::AppHandle) -> Result<OpenDialogResponse, String> {
     use tracing::{info, warn, error};
-    use rfd::AsyncFileDialog;
     
-    info!("Opening file dialog for workspace selection");
+    info!("Opening file dialog for workspace selection (Hyprland/Wayland)");
     
-    // Open a directory picker dialog
-    let handle = AsyncFileDialog::new()
+    // Use Tauri's dialog API which handles Wayland better
+    use tauri::api::dialog::FileDialogBuilder;
+    
+    let (tx, rx) = std::sync::mpsc::channel();
+    
+    // Show the dialog
+    FileDialogBuilder::new()
         .set_title("Select Workspace Directory")
-        .pick_folder()
-        .await;
+        .pick_folder(move |folder_path| {
+            let _ = tx.send(folder_path);
+        });
     
-    info!("Dialog completed, handle: {:?}", handle.is_some());
+    // Wait for the dialog result
+    let selected_path = rx.recv().map_err(|e| {
+        error!("Failed to receive dialog result: {}", e);
+        format!("Dialog error: {}", e)
+    })?;
     
-    let selected_path = handle.map(|handle| {
-        let path = handle.path().to_string_lossy().to_string();
-        info!("User selected path: {}", path);
-        path
+    info!("Dialog completed, selected_path: {:?}", selected_path);
+    
+    let selected_path = selected_path.map(|path| {
+        let path_str = path.to_string_lossy().to_string();
+        info!("User selected path: {}", path_str);
+        path_str
     });
     
     if selected_path.is_none() {
-        warn!("No path selected - dialog was cancelled or failed");
+        warn!("No path selected - dialog was cancelled");
     } else {
         info!("Dialog completed with path: {:?}", selected_path);
     }
