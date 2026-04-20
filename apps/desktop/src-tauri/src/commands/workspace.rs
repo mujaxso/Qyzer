@@ -234,35 +234,26 @@ pub struct OpenDialogResponse {
 }
 
 #[command]
-pub async fn open_file_dialog(app: tauri::AppHandle) -> Result<OpenDialogResponse, String> {
+pub async fn open_file_dialog() -> Result<OpenDialogResponse, String> {
     use tracing::{info, warn, error};
     
-    info!("Opening file dialog for workspace selection (Hyprland/Wayland)");
+    info!("Opening file dialog for workspace selection");
     
-    // Use Tauri's dialog API which handles Wayland better
-    use tauri::api::dialog::FileDialogBuilder;
+    // Use rfd which works across platforms
+    use rfd::AsyncFileDialog;
     
-    let (tx, rx) = std::sync::mpsc::channel();
-    
-    // Show the dialog
-    FileDialogBuilder::new()
+    // Open a directory picker dialog
+    let handle = AsyncFileDialog::new()
         .set_title("Select Workspace Directory")
-        .pick_folder(move |folder_path| {
-            let _ = tx.send(folder_path);
-        });
+        .pick_folder()
+        .await;
     
-    // Wait for the dialog result
-    let selected_path = rx.recv().map_err(|e| {
-        error!("Failed to receive dialog result: {}", e);
-        format!("Dialog error: {}", e)
-    })?;
+    info!("Dialog completed, handle: {:?}", handle.is_some());
     
-    info!("Dialog completed, selected_path: {:?}", selected_path);
-    
-    let selected_path = selected_path.map(|path| {
-        let path_str = path.to_string_lossy().to_string();
-        info!("User selected path: {}", path_str);
-        path_str
+    let selected_path = handle.map(|handle| {
+        let path = handle.path().to_string_lossy().to_string();
+        info!("User selected path: {}", path);
+        path
     });
     
     if selected_path.is_none() {

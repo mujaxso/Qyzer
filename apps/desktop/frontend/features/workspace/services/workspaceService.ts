@@ -166,12 +166,19 @@ export class WorkspaceService {
     
     try {
       console.log('[WorkspaceService] Invoking Tauri command...');
-      const result = await bridge.invoke<OpenDialogResponse>('open_file_dialog');
+      const result = await bridge.invoke<any>('open_file_dialog');
       console.log('[WorkspaceService] openFileDialog result:', result);
       console.log('[WorkspaceService] result.selectedPath:', result.selectedPath);
+      console.log('[WorkspaceService] result.selected_path:', result.selected_path);
       console.log('[WorkspaceService] result type:', typeof result);
       console.log('[WorkspaceService] result keys:', Object.keys(result));
-      return result;
+      console.log('[WorkspaceService] result JSON:', JSON.stringify(result));
+      
+      // Handle both camelCase and snake_case
+      const selectedPath = result.selectedPath || result.selected_path;
+      console.log('[WorkspaceService] resolved selectedPath:', selectedPath);
+      
+      return { selectedPath };
     } catch (error) {
       console.error('[WorkspaceService] openFileDialog error:', error);
       throw error;
