@@ -1,1 +1,1 @@
-// Placeholder for permissions module
+// Placeholder for zaroxi_infra_permissions module

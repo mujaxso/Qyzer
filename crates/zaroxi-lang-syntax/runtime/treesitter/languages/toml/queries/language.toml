@@ -1,0 +1,20 @@
+[language]
+id = "toml"
+name = "TOML"
+extensions = ["toml"]
+comment_line = "#"
+comment_start = ""
+comment_end = ""
+
+[brackets]
+pairs = [
+    ["(", ")"],
+    ["[", "]"],
+    ["{", "}"],
+    ["\"", "\""],
+    ["'", "'"],
+]
+
+[indentation]
+width = 4
+use_tabs = false

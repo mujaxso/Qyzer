@@ -9,7 +9,7 @@ mod bootstrap;
 mod commands;
 mod events;
 mod menu;
-mod permissions;
+mod zaroxi_infra_permissions;
 mod services;
 mod windows;
 
@@ -40,8 +40,8 @@ pub fn run() {
             commands::assistant::cancel_ai_task,
             commands::search::search_workspace,
             commands::preview::generate_preview,
-            commands::settings::load_settings,
-            commands::settings::save_settings,
+            commands::zaroxi_infra_settings::load_settings,
+            commands::zaroxi_infra_settings::save_settings,
         ])
         .on_window_event(|window, event| {
             windows::handle_window_event(&window, event);

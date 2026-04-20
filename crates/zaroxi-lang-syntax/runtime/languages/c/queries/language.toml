@@ -1,0 +1,20 @@
+[language]
+id = "c"
+name = "C"
+extensions = ["c", "h"]
+comment_line = "//"
+comment_start = "/*"
+comment_end = "*/"
+
+[brackets]
+pairs = [
+    ["(", ")"],
+    ["[", "]"],
+    ["{", "}"],
+    ["\"", "\""],
+    ["'", "'"],
+]
+
+[indentation]
+width = 4
+use_tabs = false

@@ -1,0 +1,20 @@
+[language]
+id = "markdown"
+name = "Markdown"
+extensions = ["md", "markdown"]
+comment_line = ""
+comment_start = ""
+comment_end = ""
+
+[brackets]
+pairs = [
+    ["(", ")"],
+    ["[", "]"],
+    ["{", "}"],
+    ["\"", "\""],
+    ["'", "'"],
+]
+
+[indentation]
+width = 4
+use_tabs = false

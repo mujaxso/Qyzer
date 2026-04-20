@@ -3,4 +3,4 @@ pub mod editor;
 pub mod assistant;
 pub mod search;
 pub mod preview;
-pub mod settings;
+pub mod zaroxi_infra_settings;

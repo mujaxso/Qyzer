@@ -1,0 +1,14 @@
+[package]
+name = "zaroxi-ai-daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+tokio = { workspace = true }
+tracing = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+zaroxi-ai-agent = { path = "../../ai/zaroxi-ai-agent" }
+zaroxi-domain-ai-context = { path = "../../ai/zaroxi-domain-ai-context" }
