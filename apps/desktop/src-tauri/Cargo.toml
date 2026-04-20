@@ -25,6 +25,7 @@ tracing = { workspace = true }
 anyhow = { workspace = true }
 thiserror = { workspace = true }
 uuid = { workspace = true }
+rfd = { workspace = true }
 
 # Workspace crates - all under crates/ directory
 zaroxi-protocol = { workspace = true }

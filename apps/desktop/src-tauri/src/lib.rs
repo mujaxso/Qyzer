@@ -38,6 +38,7 @@ pub fn run() {
             commands::workspace::list_directory,
             commands::workspace::open_file,
             commands::workspace::save_file,
+            commands::workspace::open_file_dialog,
             commands::editor::get_document,
             commands::editor::apply_edit,
             commands::editor::save_document,

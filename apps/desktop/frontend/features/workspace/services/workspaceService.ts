@@ -35,6 +35,10 @@ export interface SaveFileRequest {
   content: string;
 }
 
+export interface OpenDialogResponse {
+  selectedPath?: string;
+}
+
 export class WorkspaceService {
   static async openWorkspace(request: OpenWorkspaceRequest): Promise<OpenWorkspaceResponse> {
     return await invoke<OpenWorkspaceResponse>('open_workspace', { request });
@@ -50,5 +54,9 @@ export class WorkspaceService {
 
   static async saveFile(request: SaveFileRequest): Promise<void> {
     return await invoke<void>('save_file', { request });
+  }
+
+  static async openFileDialog(): Promise<OpenDialogResponse> {
+    return await invoke<OpenDialogResponse>('open_file_dialog');
   }
 }

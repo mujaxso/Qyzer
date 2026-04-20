@@ -3,8 +3,10 @@ use anyhow::Result;
 use zaroxi_domain_editor::document::Document;
 
 /// App-specific editor service that orchestrates domain editor logic
+#[allow(dead_code)]
 pub struct EditorService;
 
+#[allow(dead_code)]
 impl EditorService {
     pub fn new() -> Self {
         Self

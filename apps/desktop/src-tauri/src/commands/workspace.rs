@@ -128,3 +128,25 @@ pub async fn save_file(request: SaveFileRequest) -> Result<(), String> {
     
     Ok(())
 }
+
+#[derive(Debug, Serialize)]
+pub struct OpenDialogResponse {
+    pub selected_path: Option<String>,
+}
+
+#[command]
+pub async fn open_file_dialog() -> Result<OpenDialogResponse, String> {
+    use rfd::AsyncFileDialog;
+    
+    // Open a directory picker dialog
+    let handle = AsyncFileDialog::new()
+        .set_title("Select Workspace Directory")
+        .pick_folder()
+        .await;
+    
+    let selected_path = handle.map(|handle| handle.path().to_string_lossy().to_string());
+    
+    Ok(OpenDialogResponse {
+        selected_path,
+    })
+}

@@ -17,6 +17,7 @@ interface WorkspaceStore {
   
   // Actions
   openWorkspace: (path: string) => Promise<void>;
+  openWorkspaceViaDialog: () => Promise<void>;
   refreshFileTree: () => Promise<void>;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -36,6 +37,41 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         openWorkspace: async (path: string) => {
           set({ isLoading: true, error: null });
           try {
+            const response = await WorkspaceService.openWorkspace({ path });
+            
+            const workspace: Workspace = {
+              id: response.workspaceId,
+              name: path.split(/[\\/]/).pop() || 'Workspace',
+              rootPath: response.rootPath,
+            };
+            
+            set({ 
+              currentWorkspace: workspace,
+              isLoading: false 
+            });
+            
+            // Refresh file tree after opening
+            await get().refreshFileTree();
+          } catch (error) {
+            set({ 
+              error: error instanceof Error ? error.message : 'Unknown error',
+              isLoading: false 
+            });
+          }
+        },
+        
+        // Add a method to open workspace via file dialog
+        openWorkspaceViaDialog: async () => {
+          set({ isLoading: true, error: null });
+          try {
+            const dialogResult = await WorkspaceService.openFileDialog();
+            
+            if (!dialogResult.selectedPath) {
+              set({ isLoading: false });
+              return; // User cancelled
+            }
+            
+            const path = dialogResult.selectedPath;
             const response = await WorkspaceService.openWorkspace({ path });
             
             const workspace: Workspace = {
