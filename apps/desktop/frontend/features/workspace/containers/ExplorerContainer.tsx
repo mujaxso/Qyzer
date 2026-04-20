@@ -33,6 +33,10 @@ export function ExplorerContainer() {
           const workspace = await WorkspaceService.openWorkspace({ path: dialogResult.selectedPath });
           console.log('[ExplorerContainer] Workspace opened:', workspace);
           
+          console.log('[ExplorerContainer] Workspace object:', workspace);
+          console.log('[ExplorerContainer] Workspace workspaceId:', workspace.workspaceId);
+          console.log('[ExplorerContainer] Workspace rootPath:', workspace.rootPath);
+          
           const tree = await WorkspaceService.getWorkspaceTree({
             workspaceId: workspace.workspaceId,
             rootPath: workspace.rootPath

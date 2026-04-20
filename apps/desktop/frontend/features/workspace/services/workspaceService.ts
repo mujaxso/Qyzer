@@ -129,9 +129,26 @@ export class WorkspaceService {
     }
     
     try {
-      const result = await bridge.invoke<OpenWorkspaceResponse>('open_workspace', { request });
+      const result = await bridge.invoke<any>('open_workspace', { request });
       console.log('[WorkspaceService] openWorkspace result:', result);
-      return result;
+      console.log('[WorkspaceService] result keys:', Object.keys(result));
+      
+      // Handle both camelCase and snake_case
+      const workspaceId = result.workspaceId || result.workspace_id;
+      const rootPath = result.rootPath || result.root_path;
+      const fileCount = result.fileCount || result.file_count;
+      
+      console.log('[WorkspaceService] resolved:', { workspaceId, rootPath, fileCount });
+      
+      if (!workspaceId || !rootPath) {
+        throw new Error('Invalid workspace response');
+      }
+      
+      return {
+        workspaceId,
+        rootPath,
+        fileCount: fileCount || 0,
+      };
     } catch (error) {
       console.error('[WorkspaceService] openWorkspace error:', error);
       throw error;
@@ -188,6 +205,8 @@ export class WorkspaceService {
   // Explorer-specific operations
   static async getWorkspaceTree(request: WorkspaceTreeRequest): Promise<WorkspaceTreeResponse> {
     console.log('[WorkspaceService] getWorkspaceTree called with:', request);
+    console.log('[WorkspaceService] Request workspaceId:', request.workspaceId);
+    console.log('[WorkspaceService] Request rootPath:', request.rootPath);
     console.log('[WorkspaceService] Request JSON:', JSON.stringify(request));
     
     // Check if we're in Tauri environment - use multiple detection methods
@@ -244,11 +263,13 @@ export class WorkspaceService {
     
     try {
       console.log('[WorkspaceService] Invoking get_workspace_tree command...');
-      // Pass request as a single object matching the Rust parameter name
+      // The Rust command expects a WorkspaceTreeRequest with camelCase fields
+      // due to #[serde(rename_all = "camelCase")]
+      // We pass it as a single request object
       const result = await bridge.invoke<WorkspaceTreeResponse>('get_workspace_tree', {
         request: {
-          workspace_id: request.workspaceId,
-          root_path: request.rootPath
+          workspaceId: request.workspaceId,
+          rootPath: request.rootPath
         }
       });
       console.log('[WorkspaceService] getWorkspaceTree result:', result);

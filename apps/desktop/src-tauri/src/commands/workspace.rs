@@ -12,6 +12,7 @@ pub struct OpenWorkspaceRequest {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct OpenWorkspaceResponse {
     pub workspace_id: String,
     pub root_path: String,
