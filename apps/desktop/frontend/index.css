@@ -1,6 +1,6 @@
 /* Import fonts */
 @font-face {
-  font-family: "JetBrainsMono Nerd Font";
+  font-family: "JetBrainsMonoNL Nerd Font Mono";
   src: url("/fonts/JetBrainsMonoNerdFont-Regular.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
@@ -8,7 +8,7 @@
 }
 
 @font-face {
-  font-family: "JetBrainsMono Nerd Font";
+  font-family: "JetBrainsMonoNL Nerd Font Mono";
   src: url("/fonts/JetBrainsMonoNerdFont-Bold.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
@@ -16,7 +16,7 @@
 }
 
 @font-face {
-  font-family: "JetBrainsMono Nerd Font";
+  font-family: "JetBrainsMonoNL Nerd Font Mono";
   src: url("/fonts/JetBrainsMonoNerdFont-Italic.ttf") format("truetype");
   font-weight: 400;
   font-style: italic;
@@ -24,7 +24,7 @@
 }
 
 @font-face {
-  font-family: "JetBrainsMono Nerd Font";
+  font-family: "JetBrainsMonoNL Nerd Font Mono";
   src: url("/fonts/JetBrainsMonoNerdFont-BoldItalic.ttf") format("truetype");
   font-weight: 700;
   font-style: italic;
@@ -33,9 +33,9 @@
 
 /* Define CSS custom properties for fonts */
 :root {
-  --font-sans: "JetBrainsMono Nerd Font", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: "JetBrainsMono Nerd Font", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-icon: "JetBrainsMono Nerd Font", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-sans: "JetBrainsMonoNL Nerd Font Mono", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: "JetBrainsMonoNL Nerd Font Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-icon: "JetBrainsMonoNL Nerd Font Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 /* Apply base font to the entire app */
@@ -67,4 +67,23 @@ h1, h2, h3, h4, h5, h6 {
 /* Apply to editor and code surfaces */
 .editor, .code-editor, .monaco-editor {
   font-family: var(--font-mono) !important;
+}
+
+/* Force the font on all elements to ensure consistency */
+* {
+  font-family: inherit;
+}
+
+/* Ensure icons are displayed correctly */
+.font-icon {
+  font-family: var(--font-icon) !important;
+}
+
+/* Show a fallback while fonts are loading */
+body:not(.fonts-loaded) .font-icon {
+  visibility: hidden;
+}
+
+body.fonts-loaded .font-icon {
+  visibility: visible;
 }

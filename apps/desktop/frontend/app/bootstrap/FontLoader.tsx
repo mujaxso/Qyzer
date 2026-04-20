@@ -6,9 +6,9 @@ export function FontLoader() {
   useEffect(() => {
     const checkFont = async () => {
       try {
-        // Try to load the font using the FontFace API
+        // Try to load the font using the FontFace API with the correct font family name
         const font = new FontFace(
-          'JetBrainsMono Nerd Font',
+          'JetBrainsMonoNL Nerd Font Mono',
           'url("/fonts/JetBrainsMonoNerdFont-Regular.ttf") format("truetype")'
         );
         
@@ -18,10 +18,12 @@ export function FontLoader() {
         // Check if the font is actually available
         await document.fonts.ready;
         
+        // Add a class to the body when the font is loaded
+        document.body.classList.add('fonts-loaded');
         setFontsLoaded(true);
-        console.log('JetBrainsMono Nerd Font loaded successfully');
+        console.log('JetBrainsMonoNL Nerd Font Mono loaded successfully');
       } catch (error) {
-        console.error('Failed to load JetBrainsMono Nerd Font:', error);
+        console.error('Failed to load JetBrainsMonoNL Nerd Font Mono:', error);
         setFontsLoaded(false);
       }
     };
