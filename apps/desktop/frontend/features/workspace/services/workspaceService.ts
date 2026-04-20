@@ -42,6 +42,30 @@ export interface OpenDialogResponse {
   selectedPath?: string;
 }
 
+// Explorer-specific types
+export interface ExplorerTreeNode {
+  id: string;
+  path: string;
+  name: string;
+  isDir: boolean;
+  fileType?: string;
+  size?: number;
+  modified?: string;
+  children?: ExplorerTreeNode[];
+  parentPath?: string;
+}
+
+export interface WorkspaceTreeRequest {
+  workspaceId: string;
+  rootPath: string;
+}
+
+export interface WorkspaceTreeResponse {
+  workspaceId: string;
+  rootPath: string;
+  tree: ExplorerTreeNode[];
+}
+
 // Workspace events
 export interface WorkspaceEvent {
   type: 'workspace_opened' | 'workspace_closed' | 'directory_changed';
@@ -78,10 +102,19 @@ export class WorkspaceService {
     return await bridge.invoke<OpenDialogResponse>('open_file_dialog');
   }
 
+  // Explorer-specific operations
+  static async getWorkspaceTree(request: WorkspaceTreeRequest): Promise<WorkspaceTreeResponse> {
+    return await bridge.invoke<WorkspaceTreeResponse>('get_workspace_tree', { request });
+  }
+
+  static async loadDirectoryChildren(path: string): Promise<DirectoryEntryDto[]> {
+    return await this.listDirectory({ path });
+  }
+
   // Event subscriptions
-  static onWorkspaceOpened(handler: (workspaceId: string) => void) {
-    return bridge.listen<{ workspaceId: string }>('workspace:opened', (event) => {
-      handler(event.workspaceId);
+  static onWorkspaceOpened(handler: (workspaceId: string, rootPath: string) => void) {
+    return bridge.listen<{ workspaceId: string; rootPath: string }>('workspace:opened', (event) => {
+      handler(event.workspaceId, event.rootPath);
     });
   }
 
@@ -92,12 +125,19 @@ export class WorkspaceService {
   }
 
   // Business operations (combine multiple commands)
-  static async openWorkspaceAndLoadRoot(
+  static async openWorkspaceAndLoadTree(
     path: string
-  ): Promise<{ workspace: OpenWorkspaceResponse; rootEntries: DirectoryEntryDto[] }> {
+  ): Promise<{ workspace: OpenWorkspaceResponse; tree: WorkspaceTreeResponse }> {
     const workspace = await this.openWorkspace({ path });
-    const rootEntries = await this.listDirectory({ path: workspace.rootPath });
+    const tree = await this.getWorkspaceTree({
+      workspaceId: workspace.workspaceId,
+      rootPath: workspace.rootPath
+    });
     
-    return { workspace, rootEntries };
+    return { workspace, tree };
+  }
+
+  static async openFileInEditor(path: string): Promise<OpenFileResponse> {
+    return await this.openFile({ path });
   }
 }
