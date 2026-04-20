@@ -22,7 +22,10 @@ export function ExplorerContainer() {
     try {
       setLoading(true);
       setError(null);
+      console.log('[ExplorerContainer] Calling openFileDialog...');
       const dialogResult = await WorkspaceService.openFileDialog();
+      console.log('[ExplorerContainer] Dialog result:', dialogResult);
+      console.log('[ExplorerContainer] Dialog result selectedPath:', dialogResult.selectedPath);
       
       if (dialogResult.selectedPath) {
         console.log('[ExplorerContainer] Opening workspace at:', dialogResult.selectedPath);
@@ -46,7 +49,8 @@ export function ExplorerContainer() {
           throw error;
         }
       } else {
-        console.log('[ExplorerContainer] No path selected');
+        console.log('[ExplorerContainer] No path selected - dialog was cancelled or failed');
+        setError('No directory selected. Please select a valid directory.');
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Failed to open workspace';

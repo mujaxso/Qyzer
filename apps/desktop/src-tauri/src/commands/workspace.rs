@@ -234,7 +234,10 @@ pub struct OpenDialogResponse {
 
 #[command]
 pub async fn open_file_dialog() -> Result<OpenDialogResponse, String> {
+    use tracing::{info, warn, error};
     use rfd::AsyncFileDialog;
+    
+    info!("Opening file dialog for workspace selection");
     
     // Open a directory picker dialog
     let handle = AsyncFileDialog::new()
@@ -242,7 +245,19 @@ pub async fn open_file_dialog() -> Result<OpenDialogResponse, String> {
         .pick_folder()
         .await;
     
-    let selected_path = handle.map(|handle| handle.path().to_string_lossy().to_string());
+    info!("Dialog completed, handle: {:?}", handle.is_some());
+    
+    let selected_path = handle.map(|handle| {
+        let path = handle.path().to_string_lossy().to_string();
+        info!("User selected path: {}", path);
+        path
+    });
+    
+    if selected_path.is_none() {
+        warn!("No path selected - dialog was cancelled or failed");
+    } else {
+        info!("Dialog completed with path: {:?}", selected_path);
+    }
     
     Ok(OpenDialogResponse {
         selected_path,
