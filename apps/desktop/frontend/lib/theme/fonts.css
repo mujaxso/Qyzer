@@ -1,10 +1,12 @@
 /* Font utility classes for direct use when needed */
 .font-sans {
   font-family: var(--font-sans);
+  font-feature-settings: "liga" 1, "calt" 1;
 }
 
 .font-mono {
   font-family: var(--font-mono);
+  font-feature-settings: "liga" 1, "calt" 1;
 }
 
 .font-icon {

@@ -33,7 +33,7 @@
 
 /* Define CSS custom properties for fonts */
 :root {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: "JetBrainsMono Nerd Font", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: "JetBrainsMono Nerd Font", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-icon: "JetBrainsMono Nerd Font", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
@@ -43,6 +43,7 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga" 1, "calt" 1;
 }
 
 /* Ensure code and pre elements use the mono font */
@@ -52,3 +53,18 @@ code, pre, kbd, samp {
 
 /* Import font utilities */
 @import '../lib/theme/fonts.css';
+
+/* Apply font to common UI elements */
+button, input, textarea, select {
+  font-family: var(--font-sans);
+}
+
+/* Ensure all headings use the correct font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+}
+
+/* Apply to editor and code surfaces */
+.editor, .code-editor, .monaco-editor {
+  font-family: var(--font-mono) !important;
+}

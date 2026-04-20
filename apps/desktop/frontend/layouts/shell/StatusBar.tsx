@@ -41,6 +41,11 @@ export function StatusBar() {
           <Icon name="cursor" size={12} className="text-muted-foreground" label="Cursor position" />
           <span className="text-muted-foreground">LN 1, COL 1</span>
         </div>
+        {/* Font test indicator */}
+        <div className="flex items-center space-x-1">
+          <Icon name="check" size={12} className="text-green-500" label="Font loaded" />
+          <span className="text-muted-foreground text-[10px]">Nerd Font</span>
+        </div>
       </div>
     </div>
   );
