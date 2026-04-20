@@ -18,6 +18,19 @@ pub struct OpenWorkspaceResponse {
     pub file_count: usize,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct WorkspaceTreeRequest {
+    pub workspace_id: String,
+    pub root_path: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct WorkspaceTreeResponse {
+    pub workspace_id: String,
+    pub root_path: String,
+    pub tree: Vec<crate::services::workspace_service::ExplorerTreeNode>,
+}
+
 #[command]
 pub async fn open_workspace(
     request: OpenWorkspaceRequest,
@@ -86,6 +99,30 @@ pub async fn list_directory(
         .collect();
     
     Ok(dtos)
+}
+
+#[command]
+pub async fn get_workspace_tree(
+    request: WorkspaceTreeRequest,
+    workspace_service: State<'_, Arc<WorkspaceService>>,
+) -> Result<WorkspaceTreeResponse, String> {
+    let path = PathBuf::from(&request.root_path);
+    
+    // Validate path exists
+    if !path.exists() {
+        return Err(format!("Path does not exist: {}", request.root_path));
+    }
+    
+    // Build workspace tree
+    let tree = workspace_service.build_workspace_tree(path)
+        .await
+        .map_err(|e| format!("Failed to build workspace tree: {}", e))?;
+    
+    Ok(WorkspaceTreeResponse {
+        workspace_id: request.workspace_id,
+        root_path: request.root_path,
+        tree,
+    })
 }
 
 #[derive(Debug, Deserialize)]
