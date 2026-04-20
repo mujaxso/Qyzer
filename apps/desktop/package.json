@@ -7,7 +7,7 @@
     "dev": "vite --port 1420",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri",
+    "tauri": "npx tauri",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
