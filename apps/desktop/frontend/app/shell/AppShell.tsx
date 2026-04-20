@@ -2,7 +2,7 @@ import React from 'react';
 import { ActivityRail } from '@/layouts/shell/ActivityRail';
 import { StatusBar } from '@/layouts/shell/StatusBar';
 import { CommandPalette } from '@/layouts/shell/CommandPalette';
-import { WorkspaceExplorerContainer } from '@/features/workspace/containers/WorkspaceExplorerContainer';
+import { ExplorerContainer } from '@/features/workspace/containers/ExplorerContainer';
 import { EditorContainer } from '@/features/editor/containers/EditorContainer';
 import { AssistantPanelContainer } from '@/features/assistant/containers/AssistantPanelContainer';
 
@@ -21,7 +21,7 @@ export function AppShell() {
         <div className="flex-1 flex overflow-hidden">
           {activePanel === 'explorer' && (
             <div className="w-64 border-r border-border overflow-auto">
-              <WorkspaceExplorerContainer />
+              <ExplorerContainer />
             </div>
           )}
           <div className="flex-1 overflow-hidden">
