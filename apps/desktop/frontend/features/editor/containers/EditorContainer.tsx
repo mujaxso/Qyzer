@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
 import { CodeEditor } from '@/components/editor/CodeEditor';
 import { WorkspaceService } from '@/features/workspace/services/workspaceService';
+import { useWorkspaceStore } from '@/features/workspace/stores/useWorkspaceStore';
 
-interface EditorContainerProps {
-  filePath?: string;
-}
-
-export function EditorContainer({ filePath }: EditorContainerProps) {
+export function EditorContainer() {
   const [content, setContent] = useState<string>('');
   const [language, setLanguage] = useState<string>('plaintext');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fileName, setFileName] = useState<string>('editor');
+  
+  // Get active file path from workspace store
+  const { explorerUI } = useWorkspaceStore();
+  const activeFilePath = explorerUI.activeFilePath;
 
   useEffect(() => {
-    if (filePath) {
-      loadFile(filePath);
+    if (activeFilePath) {
+      loadFile(activeFilePath);
     } else {
       // Default placeholder content
       setContent(`// Welcome to Zaroxi Editor
@@ -29,7 +30,7 @@ export function EditorContainer({ filePath }: EditorContainerProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
-        if (filePath) {
+        if (activeFilePath) {
           handleEditorSave();
         }
       }
@@ -39,7 +40,7 @@ export function EditorContainer({ filePath }: EditorContainerProps) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [filePath]);
+  }, [activeFilePath]);
 
   const loadFile = async (path: string) => {
     setIsLoading(true);
@@ -63,14 +64,14 @@ export function EditorContainer({ filePath }: EditorContainerProps) {
   };
 
   const handleEditorSave = async () => {
-    if (!filePath) {
+    if (!activeFilePath) {
       console.warn('No file path to save to');
       return;
     }
     
     try {
       await WorkspaceService.saveFile({
-        path: filePath,
+        path: activeFilePath,
         content: content,
       });
       console.log('File saved successfully');
@@ -113,14 +114,14 @@ export function EditorContainer({ filePath }: EditorContainerProps) {
           {isLoading && (
             <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
           )}
-          {filePath && (
-            <span className="text-xs text-muted-foreground truncate max-w-xs" title={filePath}>
-              {filePath}
+          {activeFilePath && (
+            <span className="text-xs text-muted-foreground truncate max-w-xs" title={activeFilePath}>
+              {activeFilePath}
             </span>
           )}
         </div>
         <div className="flex items-center space-x-2">
-          {filePath && (
+          {activeFilePath && (
             <button
               onClick={handleEditorSave}
               className="save-button px-3 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90 transition-colors"

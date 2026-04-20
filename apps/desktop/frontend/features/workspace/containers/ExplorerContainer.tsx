@@ -22,44 +22,29 @@ export function ExplorerContainer() {
     try {
       setLoading(true);
       setError(null);
-      console.log('[ExplorerContainer] Calling openFileDialog...');
       const dialogResult = await WorkspaceService.openFileDialog();
-      console.log('[ExplorerContainer] Dialog result:', dialogResult);
-      console.log('[ExplorerContainer] Dialog result selectedPath:', dialogResult.selectedPath);
       
       if (dialogResult.selectedPath) {
-        console.log('[ExplorerContainer] Opening workspace at:', dialogResult.selectedPath);
         try {
           const workspace = await WorkspaceService.openWorkspace({ path: dialogResult.selectedPath });
-          console.log('[ExplorerContainer] Workspace opened:', workspace);
-          
-          console.log('[ExplorerContainer] Workspace object:', workspace);
-          console.log('[ExplorerContainer] Workspace workspaceId:', workspace.workspaceId);
-          console.log('[ExplorerContainer] Workspace rootPath:', workspace.rootPath);
-          
           const tree = await WorkspaceService.getWorkspaceTree({
             workspaceId: workspace.workspaceId,
             rootPath: workspace.rootPath
           });
-          console.log('[ExplorerContainer] Tree received with', tree.tree.length, 'nodes');
-          console.log('[ExplorerContainer] Tree sample:', tree.tree.slice(0, 3));
           
           setCurrentWorkspace(workspace);
           setWorkspaceTree(tree.tree);
           // Expand the root path by default
           toggleExpanded(workspace.rootPath);
         } catch (error) {
-          console.error('[ExplorerContainer] Error:', error);
           throw error;
         }
       } else {
-        console.log('[ExplorerContainer] No path selected - dialog was cancelled or failed');
         setError('No directory selected. The file dialog may have been cancelled or encountered an issue. If you\'re using Wayland (Hyprland), ensure xdg-desktop-portal is installed and running. Try installing xdg-desktop-portal-gtk or xdg-desktop-portal-kde.');
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Failed to open workspace';
       setError(errorMsg);
-      console.error('[ExplorerContainer] Failed to open workspace:', error);
     } finally {
       setLoading(false);
     }
@@ -167,16 +152,6 @@ export function ExplorerContainer() {
     );
   }
 
-  console.log('ExplorerContainer render:', {
-    currentWorkspace: currentWorkspace ? {
-      workspaceId: currentWorkspace.workspaceId,
-      rootPath: currentWorkspace.rootPath,
-      fileCount: currentWorkspace.fileCount
-    } : null,
-    workspaceTreeLength: workspaceTree.length,
-    isLoading,
-    hasWorkspace: !!currentWorkspace
-  });
 
   // Loading state
   if (isLoading) {
