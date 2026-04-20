@@ -71,11 +71,13 @@ pub fn file_entry_to_tree_node(entry: &FileEntry) -> ExplorerTreeNode {
         } else {
             None
         },
-        parent_path: std::path::Path::new(&entry.path)
-            .parent()
-            .and_then(|p| p.to_str())
-            .unwrap_or("")
-            .to_string(),
+        parent_path: Some(
+            std::path::Path::new(&entry.path)
+                .parent()
+                .and_then(|p| p.to_str())
+                .unwrap_or("")
+                .to_string()
+        ),
     }
 }
 

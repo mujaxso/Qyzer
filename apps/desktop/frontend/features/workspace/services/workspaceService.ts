@@ -244,8 +244,8 @@ export class WorkspaceService {
     
     try {
       console.log('[WorkspaceService] Invoking get_workspace_tree command...');
-      // Log the exact invocation
-      const result = await bridge.invoke<WorkspaceTreeResponse>('get_workspace_tree', { 
+      // Pass request as a single object matching the Rust parameter name
+      const result = await bridge.invoke<WorkspaceTreeResponse>('get_workspace_tree', {
         request: {
           workspace_id: request.workspaceId,
           root_path: request.rootPath
