@@ -1,14 +1,25 @@
 [package]
-name = "zaroxi-ai-daemon"
+name = "ai-daemon"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+description = "AI daemon for Zaroxi Studio"
+authors = ["Zaroxi Team"]
+repository = "https://github.com/zaroxi/zaroxi"
+readme = "README.md"
+rust-version = "1.85.0"
+
+[[bin]]
+name = "ai-daemon"
+path = "src/main.rs"
 
 [dependencies]
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 anyhow = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-zaroxi-ai-agent = { path = "../../ai/zaroxi-ai-agent" }
-zaroxi-domain-ai-context = { path = "../../ai/zaroxi-domain-ai-context" }
+zaroxi-ai-agent = { workspace = true }
+zaroxi-domain-ai-context = { workspace = true }
+zaroxi-infra-rpc = { workspace = true }
+zaroxi-protocol = { workspace = true }

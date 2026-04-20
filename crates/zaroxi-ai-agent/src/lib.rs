@@ -1,10 +1,12 @@
-//! AI agent module for planning, executing, and verifying AI-driven operations.
-//!
-//! This crate provides components for orchestrating AI tasks including planning,
-//! execution, tool usage, patch generation, and verification.
+//! AI agent for task planning and execution.
 
-pub mod executor;
-pub mod patch;
-pub mod planner;
+pub mod agent;
+pub mod planning;
 pub mod tools;
-pub mod verify;
+
+/// Prelude for convenient imports.
+pub mod prelude {
+    pub use super::agent::*;
+    pub use super::planning::*;
+    pub use super::tools::*;
+}

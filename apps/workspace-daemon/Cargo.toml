@@ -1,19 +1,25 @@
 [package]
-name = "zaroxi-workspace-daemon"
+name = "workspace-daemon"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-
-[lib]
-name = "zaroxi-workspace-daemon"
-path = "src/lib.rs"
+description = "Workspace daemon for Zaroxi Studio"
+authors = ["Zaroxi Team"]
+repository = "https://github.com/zaroxi/zaroxi"
+readme = "README.md"
+rust-version = "1.85.0"
 
 [[bin]]
-name = "zaroxi-workspace-daemon"
+name = "workspace-daemon"
 path = "src/main.rs"
 
 [dependencies]
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 anyhow = { workspace = true }
-zaroxi-protocol = { path = "../../crates/zaroxi-protocol" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+zaroxi-ops-file = { workspace = true }
+zaroxi-infra-rpc = { workspace = true }
+zaroxi-protocol = { workspace = true }
+zaroxi-domain-workspace = { workspace = true }

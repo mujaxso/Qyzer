@@ -1,30 +1,23 @@
-//! AI daemon - long-running service for AI task processing
-//! This daemon handles AI task execution, model management, and provides
-//! AI services to the desktop app via RPC.
+//! AI daemon for Zaroxi Studio.
 
-use ai_daemon::AiDaemon;
-use tracing_subscriber;
-use tracing;
+use tokio::signal;
+use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    // Initialize logging
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .init();
-    
-    tracing::info!("Starting Zaroxi AI daemon...");
-    tracing::info!("Version: {}", env!("CARGO_PKG_VERSION"));
-    
-    let daemon = AiDaemon::new();
-    
-    tracing::info!("AI daemon ready. Press Ctrl+C to stop.");
-    
-    if let Err(e) = daemon.run().await {
-        tracing::error!("AI daemon error: {}", e);
-        return Err(e);
-    }
-    
-    tracing::info!("AI daemon stopped gracefully");
+    // Initialize tracing
+    tracing_subscriber::fmt::init();
+
+    info!("Starting AI daemon");
+
+    // TODO: Initialize AI agent
+    // TODO: Start RPC server
+
+    info!("AI daemon running");
+
+    // Wait for shutdown signal
+    signal::ctrl_c().await?;
+    info!("Shutting down AI daemon");
+
     Ok(())
 }
