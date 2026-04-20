@@ -47,10 +47,27 @@ export function AppProvider({ children }: AppProviderProps) {
     testIcon.textContent = ' Rust Icon Test';
     document.body.appendChild(testIcon);
     
+    // Test CSS variables
+    const testVars = document.createElement('div');
+    testVars.style.position = 'fixed';
+    testVars.style.top = '50px';
+    testVars.style.right = '10px';
+    testVars.style.zIndex = '99999';
+    testVars.style.padding = '10px';
+    testVars.style.backgroundColor = 'rgba(0,0,0,0.8)';
+    testVars.style.color = 'white';
+    testVars.style.fontSize = '12px';
+    testVars.style.borderRadius = '5px';
+    testVars.textContent = `CSS Vars: ${getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim()}`;
+    document.body.appendChild(testVars);
+    
     // Remove after 5 seconds
     setTimeout(() => {
       if (document.body.contains(testIcon)) {
         document.body.removeChild(testIcon);
+      }
+      if (document.body.contains(testVars)) {
+        document.body.removeChild(testVars);
       }
     }, 5000);
   }, []);

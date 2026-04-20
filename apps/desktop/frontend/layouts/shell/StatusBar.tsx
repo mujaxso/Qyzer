@@ -30,21 +30,21 @@ export function StatusBar() {
       
       <div className="flex items-center space-x-4 font-mono">
         <div className="flex items-center space-x-1">
-          <Icon name="file-code" size={12} className="text-muted-foreground" label="Encoding" debug={true} />
-          <span className="text-muted-foreground">UTF-8</span>
+          <Icon name="file-code" size={12} className="text-foreground" label="Encoding" debug={true} />
+          <span className="text-foreground">UTF-8</span>
         </div>
         <div className="flex items-center space-x-1">
-          <Icon name="indent" size={12} className="text-muted-foreground" label="Indentation" />
-          <span className="text-muted-foreground">Spaces: 2</span>
+          <Icon name="indent" size={12} className="text-foreground" label="Indentation" />
+          <span className="text-foreground">Spaces: 2</span>
         </div>
         <div className="flex items-center space-x-1">
-          <Icon name="cursor" size={12} className="text-muted-foreground" label="Cursor position" />
-          <span className="text-muted-foreground">LN 1, COL 1</span>
+          <Icon name="cursor" size={12} className="text-foreground" label="Cursor position" />
+          <span className="text-foreground">LN 1, COL 1</span>
         </div>
         {/* Font test indicator */}
         <div className="flex items-center space-x-1">
           <Icon name="check" size={12} className="text-green-500" label="Font loaded" />
-          <span className="text-muted-foreground text-[10px]">Nerd Font</span>
+          <span className="text-foreground text-[10px]">Nerd Font</span>
         </div>
       </div>
     </div>

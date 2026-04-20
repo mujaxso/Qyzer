@@ -77,7 +77,7 @@ export function ExplorerTree({
                   size={16}
                   className={cn(
                     'mr-2 flex-shrink-0',
-                    node.isDir ? 'text-blue-500' : 'text-muted-foreground'
+                    node.isDir ? 'text-blue-500' : 'text-foreground'
                   )}
                   label={node.isDir ? 'Folder' : 'File'}
                 />
