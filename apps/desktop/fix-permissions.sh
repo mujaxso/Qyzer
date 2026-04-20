@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Fix permissions script for Zaroxi Desktop
 # If this script is not executable, run: chmod +x fix-permissions.sh
@@ -11,9 +11,14 @@ if [ ! -x "$0" ]; then
     chmod +x "$0"
 fi
 
-# Make all scripts in the current directory executable
+# Fix line endings and make scripts executable
 for script in run.sh start.sh setup.sh build.sh fix-permissions.sh clear-cache.sh; do
     if [ -f "$script" ]; then
+        # Fix line endings if needed
+        if file "$script" | grep -q "CRLF"; then
+            echo "Fixing line endings for $script..."
+            dos2unix "$script" 2>/dev/null || sed -i 's/\r$//' "$script"
+        fi
         chmod +x "$script"
         echo "✓ Made $script executable"
     fi
@@ -37,3 +42,6 @@ echo ""
 echo "If you still get 'permission denied', try:"
 echo "  chmod +x *.sh"
 echo "  chmod +x check-setup.js"
+echo ""
+echo "If you get 'bad interpreter' errors, try:"
+echo "  sed -i 's/\r$//' *.sh"

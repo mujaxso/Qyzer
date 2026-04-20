@@ -35,8 +35,7 @@ cd "$DESKTOP_DIR"
 # Check if node_modules exists
 if [ ! -d "node_modules" ]; then
     echo "node_modules not found. Running npm install..."
-    npm install
-    if [ $? -ne 0 ]; then
+    if ! npm install; then
         echo "npm install failed"
         exit 1
     fi
@@ -46,10 +45,78 @@ fi
 if [ ! -d "$ZAROXI_ROOT/target" ]; then
     echo "Rust dependencies not built. Building..."
     cd "$ZAROXI_ROOT"
-    cargo build --workspace
-    if [ $? -ne 0 ]; then
-        echo "cargo build failed"
-        exit 1
+    
+    # First, check if all required crates exist
+    if [ ! -f "crates/zaroxi-core-ids/Cargo.toml" ]; then
+        echo "Creating missing zaroxi-core-ids crate..."
+        mkdir -p crates/zaroxi-core-ids/src
+        cat > crates/zaroxi-core-ids/Cargo.toml << 'EOF'
+[package]
+name = "zaroxi-core-ids"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Strongly-typed identifiers for Zaroxi Studio"
+
+[dependencies]
+uuid = { workspace = true, features = ["v4", "serde"] }
+serde = { workspace = true, features = ["derive"] }
+thiserror = { workspace = true }
+EOF
+        cat > crates/zaroxi-core-ids/src/lib.rs << 'EOF'
+//! Identifier types for Zaroxi Studio.
+//!
+//! Defines strongly-typed identifiers for various entities in the system
+//! (documents, users, sessions, etc.) to prevent mixing different ID types.
+
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+/// A strongly-typed buffer identifier
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct BufferId(pub Uuid);
+
+/// A strongly-typed workspace identifier  
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct WorkspaceId(pub Uuid);
+
+impl BufferId {
+    /// Create a new unique buffer ID
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+}
+
+impl WorkspaceId {
+    /// Create a new unique workspace ID
+    pub fn new() -> Self {
+        Self(Uuid::new_v4())
+    }
+}
+
+impl Default for BufferId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Default for WorkspaceId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+EOF
+        echo "Created zaroxi-core-ids crate"
+    fi
+    
+    # Try to build the workspace
+    if ! cargo build --workspace; then
+        echo "Workspace build failed, trying to build desktop only..."
+        cd "$DESKTOP_DIR/src-tauri"
+        if ! cargo build; then
+            echo "Desktop build also failed"
+            exit 1
+        fi
     fi
     cd "$DESKTOP_DIR"
 fi
