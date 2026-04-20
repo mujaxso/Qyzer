@@ -1,4 +1,4 @@
-use crate::services::workspace_service::FileEntry;
+use crate::services::workspace_service::{FileEntry, ExplorerTreeNode};
 use chrono::{DateTime, Utc};
 
 /// Convert domain workspace to DTO
@@ -30,6 +30,34 @@ pub fn file_entry_to_dto(entry: &FileEntry) -> crate::commands::workspace::Direc
         file_type: entry.file_type.clone(),
         size: entry.size,
         modified: modified_str,
+    }
+}
+
+/// Convert file entry to explorer tree node
+pub fn file_entry_to_tree_node(entry: &FileEntry) -> ExplorerTreeNode {
+    let modified_str = entry.modified.and_then(|time| {
+        let datetime: DateTime<Utc> = time.into();
+        Some(datetime.format("%Y-%m-%d %H:%M:%S").to_string())
+    });
+    
+    ExplorerTreeNode {
+        id: entry.path.clone(),
+        path: entry.path.clone(),
+        name: entry.name.clone(),
+        is_dir: entry.is_dir,
+        file_type: entry.file_type.clone(),
+        size: entry.size,
+        modified: modified_str,
+        children: if entry.is_dir {
+            Some(Vec::new())
+        } else {
+            None
+        },
+        parent_path: std::path::Path::new(&entry.path)
+            .parent()
+            .and_then(|p| p.to_str())
+            .unwrap_or("")
+            .to_string(),
     }
 }
 

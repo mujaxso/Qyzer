@@ -3,6 +3,7 @@ use std::sync::Arc;
 use anyhow::Result;
 use tokio::sync::Mutex;
 use tracing::info;
+use serde::{Deserialize, Serialize};
 
 /// App-specific workspace service that orchestrates domain workspace logic
 pub struct WorkspaceService {
@@ -89,6 +90,53 @@ impl WorkspaceService {
         Ok(entries)
     }
 
+    /// Build workspace tree starting from root path
+    pub async fn build_workspace_tree(&self, root_path: PathBuf) -> Result<Vec<ExplorerTreeNode>> {
+        info!("Building workspace tree from root: {:?}", root_path);
+        
+        let mut tree = Vec::new();
+        self.build_tree_recursive(&root_path, &mut tree, 0).await?;
+        
+        Ok(tree)
+    }
+    
+    async fn build_tree_recursive(&self, current_path: &PathBuf, tree: &mut Vec<ExplorerTreeNode>, depth: usize) -> Result<()> {
+        // Limit recursion depth to prevent infinite loops
+        if depth > 20 {
+            return Ok(());
+        }
+        
+        let entries = self.list_directory(current_path.clone()).await?;
+        
+        for entry in entries {
+            let node = ExplorerTreeNode {
+                id: entry.path.clone(),
+                path: entry.path.clone(),
+                name: entry.name.clone(),
+                is_dir: entry.is_dir,
+                file_type: entry.file_type.clone(),
+                size: entry.size,
+                modified: entry.modified.and_then(|t| {
+                    chrono::DateTime::from_timestamp(
+                        t.duration_since(std::time::UNIX_EPOCH).ok()?.as_secs() as i64,
+                        0
+                    )
+                    .map(|dt| dt.format("%Y-%m-%d %H:%M:%S").to_string())
+                }),
+                children: if entry.is_dir {
+                    // For directories, we'll load children lazily
+                    Some(Vec::new())
+                } else {
+                    None
+                },
+                parent_path: current_path.to_string_lossy().to_string(),
+            };
+            tree.push(node);
+        }
+        
+        Ok(())
+    }
+
     /// Get active workspace
     pub async fn get_active_workspace(&self) -> Option<zaroxi_domain_workspace::workspace::Workspace> {
         let active = self.active_workspace.lock().await;
@@ -105,4 +153,18 @@ pub struct FileEntry {
     pub file_type: Option<String>,
     pub size: Option<u64>,
     pub modified: Option<std::time::SystemTime>,
+}
+
+/// Explorer tree node for frontend consumption
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ExplorerTreeNode {
+    pub id: String,
+    pub path: String,
+    pub name: String,
+    pub is_dir: bool,
+    pub file_type: Option<String>,
+    pub size: Option<u64>,
+    pub modified: Option<String>,
+    pub children: Option<Vec<ExplorerTreeNode>>,
+    pub parent_path: String,
 }
