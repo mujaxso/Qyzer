@@ -1,5 +1,5 @@
 [package]
-name = "desktop"
+name = "zaroxi-desktop"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -22,19 +22,23 @@ anyhow = { workspace = true }
 thiserror = { workspace = true }
 uuid = { workspace = true }
 
-# Workspace crates
-zaroxi-protocol = { path = "../../../crates/zaroxi-protocol" }
-zaroxi-domain-editor = { path = "../../../language/zaroxi-domain-editor" }
-zaroxi-domain-workspace = { path = "../../../domain/zaroxi-domain-workspace" }
-zaroxi-domain-zaroxi-domain-ai-context = { path = "../../../ai/zaroxi-domain-zaroxi-domain-ai-context" }
-zaroxi-zaroxi-ai-agent = { path = "../../../ai/zaroxi-zaroxi-ai-agent" }
-zaroxi-ops-patch = { path = "../../../operations/zaroxi-ops-patch" }
-zaroxi-infra-zaroxi-infra-rpc = { path = "../../../infrastructure/zaroxi-infra-zaroxi-infra-rpc" }
-zaroxi-infra-zaroxi-infra-settings = { path = "../../../infrastructure/zaroxi-infra-zaroxi-infra-settings" }
-zaroxi-infra-zaroxi-infra-permissions = { path = "../../../infrastructure/zaroxi-infra-zaroxi-infra-permissions" }
-zaroxi-ops-file = { path = "../../../operations/zaroxi-ops-file" }
-zaroxi-lang-syntax = { path = "../../../language/zaroxi-lang-syntax" }
-zaroxi-zaroxi-theme = { path = "../../../crates/zaroxi-zaroxi-theme" }
+# Workspace crates - all under crates/ directory
+zaroxi-protocol = { workspace = true }
+zaroxi-domain-editor = { workspace = true }
+zaroxi-domain-workspace = { workspace = true }
+zaroxi-domain-ai-context = { workspace = true }
+zaroxi-ai-agent = { workspace = true }
+zaroxi-ops-patch = { workspace = true }
+zaroxi-infra-rpc = { workspace = true }
+zaroxi-infra-settings = { workspace = true }
+zaroxi-infra-permissions = { workspace = true }
+zaroxi-ops-file = { workspace = true }
+zaroxi-lang-syntax = { workspace = true }
+zaroxi-theme = { workspace = true }
+zaroxi-service-ai = { workspace = true }
+zaroxi-service-workspace = { workspace = true }
+zaroxi-lang-lsp = { workspace = true }
+zaroxi-core-ids = { workspace = true }
 
 [features]
 default = []

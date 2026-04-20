@@ -1,10 +1,12 @@
 [package]
-name = "editor-core"
+name = "zaroxi-domain-editor"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+description = "Editor domain models for Zaroxi Studio"
 
 [dependencies]
+zaroxi-core-ids = { workspace = true }
 ropey = "1.6"
 serde = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
