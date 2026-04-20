@@ -101,12 +101,16 @@ export const useWorkspaceStore = create<WorkspaceStoreState>()(
         
         // Backend state setters
         setCurrentWorkspace: (workspace) => {
-          console.log('setCurrentWorkspace called with:', workspace);
+          console.log('[WorkspaceStore] setCurrentWorkspace called with:', workspace);
           set({ currentWorkspace: workspace });
         },
         setWorkspaceTree: (tree) => {
-          console.log('setWorkspaceTree called with:', tree);
-          console.log('Tree length:', tree.length);
+          console.log('[WorkspaceStore] setWorkspaceTree called with tree of length:', tree.length);
+          if (tree.length > 0) {
+            console.log('[WorkspaceStore] First few nodes:', tree.slice(0, 3));
+          } else {
+            console.log('[WorkspaceStore] Tree is empty');
+          }
           set({ workspaceTree: tree });
         },
         

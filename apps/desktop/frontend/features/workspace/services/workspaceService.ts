@@ -84,6 +84,20 @@ export class WorkspaceService {
   // Command operations
   static async openWorkspace(request: OpenWorkspaceRequest): Promise<OpenWorkspaceResponse> {
     console.log('[WorkspaceService] openWorkspace called with:', request);
+    
+    // Check if we're in Tauri environment
+    const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+    
+    if (!isTauri) {
+      console.warn('[WorkspaceService] Not in Tauri environment - using mock workspace');
+      // Return mock workspace data for development
+      return {
+        workspaceId: 'mock-workspace-id-' + Date.now(),
+        rootPath: request.path,
+        fileCount: 42,
+      };
+    }
+    
     try {
       const result = await bridge.invoke<OpenWorkspaceResponse>('open_workspace', { request });
       console.log('[WorkspaceService] openWorkspace result:', result);
@@ -107,12 +121,82 @@ export class WorkspaceService {
   }
 
   static async openFileDialog(): Promise<OpenDialogResponse> {
-    return await bridge.invoke<OpenDialogResponse>('open_file_dialog');
+    console.log('[WorkspaceService] openFileDialog called');
+    
+    // Check if we're in Tauri environment
+    const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+    console.log('[WorkspaceService] Tauri environment detected:', isTauri);
+    
+    if (!isTauri) {
+      console.warn('[WorkspaceService] Not in Tauri environment - using mock dialog');
+      // For development, return a mock path
+      const mockPath = '/Users/developer/projects/test-workspace';
+      console.log('[WorkspaceService] Using mock path:', mockPath);
+      return { selectedPath: mockPath };
+    }
+    
+    try {
+      const result = await bridge.invoke<OpenDialogResponse>('open_file_dialog');
+      console.log('[WorkspaceService] openFileDialog result:', result);
+      return result;
+    } catch (error) {
+      console.error('[WorkspaceService] openFileDialog error:', error);
+      throw error;
+    }
   }
 
   // Explorer-specific operations
   static async getWorkspaceTree(request: WorkspaceTreeRequest): Promise<WorkspaceTreeResponse> {
     console.log('[WorkspaceService] getWorkspaceTree called with:', request);
+    
+    // Check if we're in Tauri environment
+    const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+    
+    if (!isTauri) {
+      console.warn('[WorkspaceService] Not in Tauri environment - using mock tree');
+      // Return mock tree data for development
+      const mockTree: ExplorerTreeNode[] = [
+        {
+          id: `${request.rootPath}/file1.rs`,
+          path: `${request.rootPath}/file1.rs`,
+          name: 'file1.rs',
+          isDir: false,
+          fileType: 'rs',
+          size: 1234,
+          modified: new Date().toISOString(),
+          children: undefined,
+          parentPath: request.rootPath,
+        },
+        {
+          id: `${request.rootPath}/src`,
+          path: `${request.rootPath}/src`,
+          name: 'src',
+          isDir: true,
+          fileType: undefined,
+          size: undefined,
+          modified: new Date().toISOString(),
+          children: [],
+          parentPath: request.rootPath,
+        },
+        {
+          id: `${request.rootPath}/Cargo.toml`,
+          path: `${request.rootPath}/Cargo.toml`,
+          name: 'Cargo.toml',
+          isDir: false,
+          fileType: 'toml',
+          size: 567,
+          modified: new Date().toISOString(),
+          children: undefined,
+          parentPath: request.rootPath,
+        },
+      ];
+      return {
+        workspaceId: request.workspaceId,
+        rootPath: request.rootPath,
+        tree: mockTree,
+      };
+    }
+    
     try {
       const result = await bridge.invoke<WorkspaceTreeResponse>('get_workspace_tree', { request });
       console.log('[WorkspaceService] getWorkspaceTree result:', result);
