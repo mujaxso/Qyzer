@@ -66,6 +66,10 @@ impl WorkspaceService {
             return Err(anyhow::anyhow!("Path is not a directory: {:?}", path));
         }
 
+        // Check if we can read the directory
+        std::fs::read_dir(&path)
+            .map_err(|e| anyhow::anyhow!("Cannot read directory: {:?}: {}", path, e))?;
+
         let now = Utc::now();
         let workspace = Workspace {
             id: Uuid::new_v4(),
@@ -82,4 +86,25 @@ impl WorkspaceService {
         info!("Opened workspace: {} at {:?}", workspace.name, workspace.root_path);
         Ok(workspace)
     }
+
+    /// Get workspace metadata (future enhancement)
+    pub async fn get_workspace_metadata(&self, workspace_id: Uuid) -> Result<WorkspaceMetadata> {
+        // TODO: Implement actual metadata retrieval
+        Ok(WorkspaceMetadata {
+            id: workspace_id,
+            file_count: 0,
+            total_size: 0,
+            last_indexed: None,
+        })
+    }
+}
+
+/// Workspace metadata
+#[derive(Debug, Clone)]
+pub struct WorkspaceMetadata {
+    pub id: uuid::Uuid,
+    pub file_count: usize,
+    pub total_size: u64,
+    pub last_indexed: Option<chrono::DateTime<chrono::Utc>>,
+}
 }

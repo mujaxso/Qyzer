@@ -22,6 +22,7 @@ pub struct OpenWorkspaceResponse {
 pub async fn open_workspace(
     request: OpenWorkspaceRequest,
     workspace_service: State<'_, Arc<WorkspaceService>>,
+    app_handle: AppHandle,
 ) -> Result<OpenWorkspaceResponse, String> {
     let path = PathBuf::from(&request.path);
     
@@ -37,6 +38,13 @@ pub async fn open_workspace(
     
     // Convert to DTO
     let response = crate::adapters::workspace_adapter::domain_workspace_to_dto(&workspace);
+    
+    // Emit event
+    let emitter = crate::events::workspace_events::WorkspaceEventEmitter::new(&app_handle);
+    if let Err(e) = emitter.emit_workspace_opened(&workspace.id.to_string(), &workspace.root_path) {
+        eprintln!("Failed to emit workspace opened event: {}", e);
+    }
+    
     Ok(response)
 }
 
