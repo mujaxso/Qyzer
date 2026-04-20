@@ -1,6 +1,5 @@
 //! AI agent implementation.
 
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 /// An AI agent that can execute tasks.

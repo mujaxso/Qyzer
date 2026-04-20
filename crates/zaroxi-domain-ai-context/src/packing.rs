@@ -1,6 +1,6 @@
 //! Context packing for prompt construction.
 
-use super::context::{ContextCollection, ContextItem};
+use super::context::ContextCollection;
 
 /// Pack context items into a prompt, respecting token limits.
 pub struct ContextPacker {
