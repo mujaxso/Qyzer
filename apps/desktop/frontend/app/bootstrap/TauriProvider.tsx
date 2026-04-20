@@ -11,8 +11,19 @@ export function TauriProvider({ children }: TauriProviderProps) {
     // Initialize Tauri-specific setup here
     console.log('Tauri provider mounted');
     
-    // Check if we're running in Tauri
-    const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+    // Check if we're running in Tauri - use multiple detection methods
+    const isTauri = 
+      typeof window !== 'undefined' && 
+      (window.__TAURI__ !== undefined || 
+       (window as any).__TAURI_INTERNALS__ !== undefined ||
+       navigator.userAgent.includes('Tauri'));
+    
+    console.log('Tauri detection result:', {
+      hasWindow: typeof window !== 'undefined',
+      hasTauriGlobal: window.__TAURI__ !== undefined,
+      hasTauriInternals: (window as any).__TAURI_INTERNALS__ !== undefined,
+      userAgent: navigator.userAgent
+    });
     
     if (isTauri) {
       console.log('Running in Tauri environment');

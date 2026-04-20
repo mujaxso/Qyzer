@@ -72,6 +72,26 @@ export interface WorkspaceEvent {
   payload: unknown;
 }
 
+// Helper to detect Tauri environment
+function isTauriEnvironment(): boolean {
+  if (typeof window === 'undefined') return false;
+  
+  // Check for Tauri globals
+  if (window.__TAURI__ !== undefined) return true;
+  if ((window as any).__TAURI_INTERNALS__ !== undefined) return true;
+  
+  // Check user agent
+  if (navigator.userAgent.includes('Tauri')) return true;
+  
+  // Try to detect by checking for Tauri-specific APIs
+  try {
+    // @ts-ignore
+    if (window.__TAURI_IPC__ !== undefined) return true;
+  } catch {}
+  
+  return false;
+}
+
 /**
  * WorkspaceService - feature-specific business operations
  * 
@@ -85,8 +105,12 @@ export class WorkspaceService {
   static async openWorkspace(request: OpenWorkspaceRequest): Promise<OpenWorkspaceResponse> {
     console.log('[WorkspaceService] openWorkspace called with:', request);
     
-    // Check if we're in Tauri environment
-    const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+    // Check if we're in Tauri environment - use multiple detection methods
+    const isTauri = 
+      typeof window !== 'undefined' && 
+      (window.__TAURI__ !== undefined || 
+       (window as any).__TAURI_INTERNALS__ !== undefined ||
+       navigator.userAgent.includes('Tauri'));
     
     if (!isTauri) {
       console.warn('[WorkspaceService] Not in Tauri environment - using mock workspace');
@@ -123,8 +147,7 @@ export class WorkspaceService {
   static async openFileDialog(): Promise<OpenDialogResponse> {
     console.log('[WorkspaceService] openFileDialog called');
     
-    // Check if we're in Tauri environment
-    const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+    const isTauri = isTauriEnvironment();
     console.log('[WorkspaceService] Tauri environment detected:', isTauri);
     
     if (!isTauri) {
@@ -149,8 +172,12 @@ export class WorkspaceService {
   static async getWorkspaceTree(request: WorkspaceTreeRequest): Promise<WorkspaceTreeResponse> {
     console.log('[WorkspaceService] getWorkspaceTree called with:', request);
     
-    // Check if we're in Tauri environment
-    const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
+    // Check if we're in Tauri environment - use multiple detection methods
+    const isTauri = 
+      typeof window !== 'undefined' && 
+      (window.__TAURI__ !== undefined || 
+       (window as any).__TAURI_INTERNALS__ !== undefined ||
+       navigator.userAgent.includes('Tauri'));
     
     if (!isTauri) {
       console.warn('[WorkspaceService] Not in Tauri environment - using mock tree');
