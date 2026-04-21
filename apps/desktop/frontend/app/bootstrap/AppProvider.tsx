@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
 import { ErrorBoundary } from './ErrorBoundary';
 import { TauriProvider } from './TauriProvider';
 import { KeyboardShortcutsProvider } from '@/lib/keyboard/KeyboardShortcutsProvider';
@@ -9,69 +9,6 @@ interface AppProviderProps {
 }
 
 export function AppProvider({ children }: AppProviderProps) {
-  useEffect(() => {
-    // Add debug class to body for font checking
-    document.body.classList.add('debug-font-check');
-    
-    // Check which font is actually being used
-    const checkFont = () => {
-      const testElement = document.createElement('div');
-      testElement.style.fontFamily = 'JetBrainsMonoNL Nerd Font Mono';
-      testElement.style.position = 'absolute';
-      testElement.style.opacity = '0';
-      testElement.style.pointerEvents = 'none';
-      testElement.textContent = 'Test';
-      document.body.appendChild(testElement);
-      
-      setTimeout(() => {
-        const computed = window.getComputedStyle(testElement);
-        console.log('Actual font being used:', computed.fontFamily);
-        document.body.removeChild(testElement);
-      }, 100);
-    };
-    
-    checkFont();
-    
-    // Add a visible test icon to verify font rendering
-    const testIcon = document.createElement('div');
-    testIcon.style.position = 'fixed';
-    testIcon.style.top = '10px';
-    testIcon.style.right = '10px';
-    testIcon.style.zIndex = '99999';
-    testIcon.style.padding = '10px';
-    testIcon.style.backgroundColor = 'rgba(0,0,0,0.8)';
-    testIcon.style.color = 'white';
-    testIcon.style.fontFamily = '"JetBrainsMonoNL Nerd Font Mono", monospace';
-    testIcon.style.fontSize = '20px';
-    testIcon.style.borderRadius = '5px';
-    testIcon.textContent = ' Rust Icon Test';
-    document.body.appendChild(testIcon);
-    
-    // Test CSS variables
-    const testVars = document.createElement('div');
-    testVars.style.position = 'fixed';
-    testVars.style.top = '50px';
-    testVars.style.right = '10px';
-    testVars.style.zIndex = '99999';
-    testVars.style.padding = '10px';
-    testVars.style.backgroundColor = 'rgba(0,0,0,0.8)';
-    testVars.style.color = 'white';
-    testVars.style.fontSize = '12px';
-    testVars.style.borderRadius = '5px';
-    testVars.textContent = `CSS Vars: ${getComputedStyle(document.documentElement).getPropertyValue('--font-sans').trim()}`;
-    document.body.appendChild(testVars);
-    
-    // Remove after 5 seconds
-    setTimeout(() => {
-      if (document.body.contains(testIcon)) {
-        document.body.removeChild(testIcon);
-      }
-      if (document.body.contains(testVars)) {
-        document.body.removeChild(testVars);
-      }
-    }, 5000);
-  }, []);
-
   return (
     <ErrorBoundary>
       <TauriProvider>
