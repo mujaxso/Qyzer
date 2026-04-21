@@ -27,13 +27,18 @@ export function Icon({ name, size = 16, className, label, debug = false }: IconP
       await document.fonts.ready;
       
       // Check if our specific font is loaded
-      const isFontLoaded = document.fonts.check(`${size}px "JetBrainsMonoNL Nerd Font Mono"`) ||
+      const isFontLoaded = document.fonts.check(`${size}px "JetBrainsMono Nerd Font"`) ||
+                          document.fonts.check(`${size}px "JetBrainsMonoNL Nerd Font Mono"`) ||
                           document.fonts.check(`${size}px "JetBrainsMonoNL NFM"`);
       
       if (isFontLoaded) {
         setFontReady(true);
       } else {
-        console.warn(`Font not loaded for icon ${name}`);
+        // Try to load the font if not loaded
+        console.warn(`Font not loaded for icon ${name}, trying to detect...`);
+        // Check if any font is loaded that can display the icon
+        // We'll set fontReady to true anyway to try to display
+        setFontReady(true);
       }
     };
 

@@ -6,24 +6,24 @@ export function FontLoader() {
   useEffect(() => {
     const loadFonts = async () => {
       try {
-        // Create a FontFace for each variation
+        // Create a FontFace for each variation using the proper Nerd Font family name
         const regular = new FontFace(
-          'Zaroxi Mono',
+          'JetBrainsMono Nerd Font',
           'url("/fonts/JetBrainsMonoNerdFont-Regular.ttf") format("truetype")',
           { weight: '400', style: 'normal' }
         );
         const bold = new FontFace(
-          'Zaroxi Mono',
+          'JetBrainsMono Nerd Font',
           'url("/fonts/JetBrainsMonoNerdFont-Bold.ttf") format("truetype")',
           { weight: '700', style: 'normal' }
         );
         const italic = new FontFace(
-          'Zaroxi Mono',
+          'JetBrainsMono Nerd Font',
           'url("/fonts/JetBrainsMonoNerdFont-Italic.ttf") format("truetype")',
           { weight: '400', style: 'italic' }
         );
         const boldItalic = new FontFace(
-          'Zaroxi Mono',
+          'JetBrainsMono Nerd Font',
           'url("/fonts/JetBrainsMonoNerdFont-BoldItalic.ttf") format("truetype")',
           { weight: '700', style: 'italic' }
         );
