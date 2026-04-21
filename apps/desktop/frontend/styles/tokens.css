@@ -127,7 +127,10 @@
 }
 
 /* Utility classes for semantic colors */
-.bg-app { background-color: var(--color-app-background); }
+.bg-app { 
+  background-color: var(--color-app-background); 
+  /* Ensure the background is solid to cover transparent window */
+}
 .bg-shell { background-color: var(--color-shell-background); }
 .bg-panel { background-color: var(--color-panel-background); }
 .bg-panel-header { background-color: var(--color-panel-header-background); }
