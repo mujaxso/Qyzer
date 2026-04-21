@@ -71,6 +71,15 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-mono) !important;
 }
 
+/* Ensure Monaco editor lines use our mono font */
+.monaco-editor .view-lines,
+.monaco-editor .mtk1,
+.monaco-editor .mtk2,
+.monaco-editor .line-numbers,
+.monaco-editor .cursors-layer {
+  font-family: var(--font-mono) !important;
+}
+
 /* Reset font inheritance */
 * {
   font-family: inherit;

@@ -122,4 +122,10 @@
     line-height: 1.6;
     letter-spacing: 0;
   }
+  
+  /* Monaco editor line overrides */
+  .monaco-editor .view-lines,
+  .monaco-editor .mtk1 {
+    font-family: var(--font-mono);
+  }
 }
