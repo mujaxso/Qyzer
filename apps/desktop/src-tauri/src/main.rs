@@ -2,5 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    desktop::run().expect("error while running tauri application");
+    if let Err(e) = desktop::run() {
+        eprintln!("Error while running tauri application: {}", e);
+        std::process::exit(1);
+    }
 }

@@ -19,7 +19,7 @@ use crate::services::workspace_service::WorkspaceService;
 
 /// Main entry point for Tauri application
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
+pub fn run() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing subscriber for logging
     #[cfg(debug_assertions)]
     {
@@ -142,8 +142,7 @@ pub fn run() {
         .on_window_event(|window, event| {
             windows::handle_window_event(window, event);
         })
-        .build(tauri::generate_context!())
-        .expect("Failed to build Tauri application")
+        .build(tauri::generate_context!())?
         .run(|app_handle, event| match event {
             RunEvent::Ready => {
                 tracing::info!("App is ready");
@@ -164,4 +163,6 @@ pub fn run() {
             }
             _ => {}
         });
+    
+    Ok(())
 }
