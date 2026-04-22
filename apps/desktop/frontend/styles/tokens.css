@@ -13,75 +13,8 @@ html, body, #root {
   bottom: 0;
 }
 
+/* Default to dark theme to prevent white flash */
 :root {
-  /* Light theme - Professional IDE with better contrast */
-  --color-app-background: #f5f5f5;
-  --color-shell-background: #ffffff;
-  --color-panel-background: #ffffff;
-  --color-panel-header-background: #f8f9fa;
-  --color-elevated-panel-background: #ffffff;
-  --color-editor-background: #ffffff;
-  --color-input-background: #ffffff;
-  --color-status-bar-background: #f8f9fa;
-  --color-title-bar-background: #ffffff;
-  --color-title-bar-foreground: #1a1a1a;
-  --color-activity-rail-background: #f8f9fa;
-  --color-sidebar-background: #ffffff;
-  --color-tab-background: #f8f9fa;
-  --color-tab-active-background: #ffffff;
-  --color-assistant-panel-background: #f8f9fa;
-  --color-workbench-chrome: #f8f9fa;
-  
-  /* Improved text contrast */
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #424242;
-  --color-text-muted: #666666;
-  --color-text-faint: #888888;
-  --color-text-on-accent: #ffffff;
-  --color-text-on-surface: #1a1a1a;
-  --color-text-disabled: #999999;
-  --color-text-link: #0066cc;
-  
-  /* Clearer borders */
-  --color-border: #e0e0e0;
-  --color-border-subtle: rgba(224, 224, 224, 0.7);
-  --color-divider: #e0e0e0;
-  --color-accent: #0066cc;
-  --color-accent-hover: #0052a3;
-  --color-accent-soft: rgba(0, 102, 204, 0.1);
-  --color-accent-soft-background: rgba(0, 102, 204, 0.05);
-  
-  /* More distinct states */
-  --color-hover-background: rgba(0, 0, 0, 0.05);
-  --color-active-background: rgba(0, 0, 0, 0.08);
-  --color-selected-background: rgba(0, 102, 204, 0.1);
-  --color-selected-text-background: rgba(0, 102, 204, 0.2);
-  --color-selected-editor-background: rgba(0, 102, 204, 0.15);
-  
-  --color-success: #2e7d32;
-  --color-warning: #ed6c02;
-  --color-error: #d32f2f;
-  --color-info: #0066cc;
-  
-  --color-focus-ring: rgba(0, 102, 204, 0.3);
-  
-  /* Editor-specific */
-  --color-editor-gutter-background: #f8f9fa;
-  --color-editor-line-highlight: rgba(0, 0, 0, 0.03);
-  --color-editor-cursor: #1a1a1a;
-  --color-editor-selection: rgba(0, 102, 204, 0.2);
-  --color-editor-find-highlight: rgba(237, 108, 2, 0.2);
-  
-  --color-syntax-keyword: #d32f2f;
-  --color-syntax-function: #2e7d32;
-  --color-syntax-string: #ed6c02;
-  --color-syntax-comment: #666666;
-  --color-syntax-type: #0066cc;
-  --color-syntax-variable: #1a1a1a;
-  --color-syntax-constant: #ed6c02;
-}
-
-:root.dark {
   /* Dark theme - Professional IDE with excellent readability */
   --color-app-background: #1e1e1e;
   --color-shell-background: #252526;
@@ -147,6 +80,75 @@ html, body, #root {
   --color-syntax-type: #4ec9b0;
   --color-syntax-variable: #9cdcfe;
   --color-syntax-constant: #4fc1ff;
+}
+
+/* Light theme overrides */
+:root.light {
+  /* Light theme - Professional IDE with better contrast */
+  --color-app-background: #f5f5f5;
+  --color-shell-background: #ffffff;
+  --color-panel-background: #ffffff;
+  --color-panel-header-background: #f8f9fa;
+  --color-elevated-panel-background: #ffffff;
+  --color-editor-background: #ffffff;
+  --color-input-background: #ffffff;
+  --color-status-bar-background: #f8f9fa;
+  --color-title-bar-background: #ffffff;
+  --color-title-bar-foreground: #1a1a1a;
+  --color-activity-rail-background: #f8f9fa;
+  --color-sidebar-background: #ffffff;
+  --color-tab-background: #f8f9fa;
+  --color-tab-active-background: #ffffff;
+  --color-assistant-panel-background: #f8f9fa;
+  --color-workbench-chrome: #f8f9fa;
+  
+  /* Improved text contrast */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #424242;
+  --color-text-muted: #666666;
+  --color-text-faint: #888888;
+  --color-text-on-accent: #ffffff;
+  --color-text-on-surface: #1a1a1a;
+  --color-text-disabled: #999999;
+  --color-text-link: #0066cc;
+  
+  /* Clearer borders */
+  --color-border: #e0e0e0;
+  --color-border-subtle: rgba(224, 224, 224, 0.7);
+  --color-divider: #e0e0e0;
+  --color-accent: #0066cc;
+  --color-accent-hover: #0052a3;
+  --color-accent-soft: rgba(0, 102, 204, 0.1);
+  --color-accent-soft-background: rgba(0, 102, 204, 0.05);
+  
+  /* More distinct states */
+  --color-hover-background: rgba(0, 0, 0, 0.05);
+  --color-active-background: rgba(0, 0, 0, 0.08);
+  --color-selected-background: rgba(0, 102, 204, 0.1);
+  --color-selected-text-background: rgba(0, 102, 204, 0.2);
+  --color-selected-editor-background: rgba(0, 102, 204, 0.15);
+  
+  --color-success: #2e7d32;
+  --color-warning: #ed6c02;
+  --color-error: #d32f2f;
+  --color-info: #0066cc;
+  
+  --color-focus-ring: rgba(0, 102, 204, 0.3);
+  
+  /* Editor-specific */
+  --color-editor-gutter-background: #f8f9fa;
+  --color-editor-line-highlight: rgba(0, 0, 0, 0.03);
+  --color-editor-cursor: #1a1a1a;
+  --color-editor-selection: rgba(0, 102, 204, 0.2);
+  --color-editor-find-highlight: rgba(237, 108, 2, 0.2);
+  
+  --color-syntax-keyword: #d32f2f;
+  --color-syntax-function: #2e7d32;
+  --color-syntax-string: #ed6c02;
+  --color-syntax-comment: #666666;
+  --color-syntax-type: #0066cc;
+  --color-syntax-variable: #1a1a1a;
+  --color-syntax-constant: #ed6c02;
 }
 
 /* Utility classes for semantic colors */
