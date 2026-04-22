@@ -34,18 +34,18 @@
     --editor: 0 0% 98%;   /* #fafafa */
     --editor-foreground: 0 0% 15%;  /* #262626 */
     
-    /* Status bar colors */
-    --status-bar: hsl(0 0% 97%);  /* #f7f7f7 */
+    /* Status bar colors - match the theme */
+    --status-bar: hsl(0 0% 98%);  /* #fafafa */
     --status-bar-foreground: hsl(0 0% 35%);  /* #595959 */
     --status-bar-border: hsl(0 0% 85%);  /* #d9d9d9 */
     
     /* Additional theme-specific colors */
-    --status-bar-background: hsl(0 0% 97%);  /* #f7f7f7 */
+    --status-bar-background: hsl(0 0% 98%);  /* #fafafa */
     --status-bar-foreground: hsl(0 0% 35%);  /* #595959 */
     --status-bar-border: hsl(0 0% 85%);  /* #d9d9d9 */
     
     /* Shell background from theme */
-    --shell-background: hsl(0 0% 97%);  /* #f7f7f7 */
+    --shell-background: hsl(0 0% 98%);  /* #fafafa */
     --text-secondary: hsl(0 0% 35%);  /* #595959 */
   }
 

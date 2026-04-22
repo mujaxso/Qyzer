@@ -274,14 +274,14 @@ impl SemanticColors {
         Self {
             // Background surfaces - All consistent light gray
             app_background: Color::from_rgb(0.98, 0.98, 0.98),           // #fafafa - Very light gray
-            shell_background: Color::from_rgb(0.97, 0.97, 0.97),         // #f7f7f7 - Slightly darker
-            panel_background: Color::from_rgb(0.98, 0.98, 0.98),         // #fafafa - Matches editor
+            shell_background: Color::from_rgb(0.98, 0.98, 0.98),         // #fafafa - Matches everything else
+            panel_background: Color::from_rgb(0.98, 0.98, 0.98),         // #fafafa - Light gray for panels
             elevated_panel_background: Color::from_rgb(0.98, 0.98, 0.98), // #fafafa - Same
-            editor_background: Color::from_rgb(0.98, 0.98, 0.98),        // #fafafa - Professional light gray
+            editor_background: Color::from_rgb(0.98, 0.98, 0.98),        // #fafafa - Light gray for editor
             input_background: Color::from_rgb(1.0, 1.0, 1.0),            // #ffffff - Inputs pure white
             status_bar_background: Color::from_rgb(0.97, 0.97, 0.97),    // #f7f7f7 - Status bar
             title_bar_background: Color::from_rgb(0.97, 0.97, 0.97),     // #f7f7f7 - Title bar
-            activity_rail_background: Color::from_rgb(0.97, 0.97, 0.97), // #f7f7f7 - Activity rail
+            activity_rail_background: Color::from_rgb(0.98, 0.98, 0.98), // #fafafa - Activity rail matches editor
             sidebar_background: Color::from_rgb(0.98, 0.98, 0.98),       // #fafafa - Sidebar matches editor
             tab_background: Color::from_rgb(0.98, 0.98, 0.98),           // #fafafa - Inactive tabs
             tab_active_background: Color::from_rgb(0.98, 0.98, 0.98),    // #fafafa - Active tab matches editor
