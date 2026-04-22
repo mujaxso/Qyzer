@@ -44,24 +44,24 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
       )}
       style={{ width: panelWidth }}
     >
-      <div className="flex-shrink-0 border-b border-divider px-4 py-2.5 bg-activity-rail">
+      <div className="flex-shrink-0 border-b border-divider px-4 py-2 bg-activity-rail">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-sm text-primary">{activityItem.label}</h3>
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-semibold text-sm text-primary leading-none">{activityItem.label}</h3>
             {activityItem.badge !== undefined && activityItem.badge > 0 && (
-              <span className="px-1.5 py-0.5 text-xs rounded-full bg-accent text-on-accent font-medium">
+              <span className="px-1 py-0.5 text-xs rounded-full bg-accent text-on-accent font-medium leading-none">
                 {activityItem.badge}
               </span>
             )}
           </div>
           {activityItem.shortcut && (
-            <span className="text-xs text-primary/80 font-mono">
+            <span className="text-xs text-primary/80 font-mono leading-none">
               {activityItem.shortcut}
             </span>
           )}
         </div>
         {activityItem.description && (
-          <p className="text-xs text-primary/80 mt-1">{activityItem.description}</p>
+          <p className="text-xs text-primary/80 mt-0.5 leading-none">{activityItem.description}</p>
         )}
       </div>
       
