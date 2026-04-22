@@ -54,13 +54,13 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
             )}
           </div>
           {activityItem.shortcut && (
-            <span className="text-xs text-primary/70 font-mono leading-none">
+            <span className="text-xs text-primary/80 font-mono leading-none">
               {activityItem.shortcut}
             </span>
           )}
         </div>
         {activityItem.description && (
-          <p className="text-xs text-primary/70 mt-1.5 leading-tight">{activityItem.description}</p>
+          <p className="text-xs text-primary/80 mt-1.5 leading-tight">{activityItem.description}</p>
         )}
       </div>
       
