@@ -49,13 +49,16 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
             <Icon name={activityItem.icon} size={14} className="text-primary" />
-            <h3 className="font-semibold text-sm text-primary leading-none">{activityItem.label}</h3>
+            <span className="text-sm font-semibold text-primary leading-none">{activityItem.label}</span>
             {activityItem.badge !== undefined && activityItem.badge > 0 && (
               <span className="px-1 py-0.5 text-xs rounded-full bg-accent text-on-accent font-medium leading-none">
                 {activityItem.badge}
               </span>
             )}
           </div>
+          <span className="text-xs text-primary/80 font-mono truncate max-w-md leading-none">
+            &nbsp;
+          </span>
         </div>
         {activityItem.shortcut && (
           <span className="text-xs text-primary/80 font-mono leading-none">
