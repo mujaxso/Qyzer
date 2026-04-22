@@ -137,7 +137,6 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
         <div className="border-b border-divider px-4 py-2 flex items-center justify-between bg-activity-rail h-9">
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              <Icon name={activityItem.icon} size={14} className="text-primary" />
               <span className="text-sm font-semibold text-primary leading-none">{activityItem.label}</span>
               {activityItem.badge !== undefined && activityItem.badge > 0 && (
                 <span className="px-1 py-0.5 text-xs rounded-full bg-accent text-on-accent font-medium leading-none">
