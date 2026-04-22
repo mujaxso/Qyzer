@@ -39,38 +39,39 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
       className={cn(
         'h-full bg-panel overflow-hidden flex flex-col',
         side === 'left' ? 'border-r' : 'border-l',
+        'min-w-[200px] max-w-[400px]',
         className
       )}
       style={{ width: panelWidth }}
     >
-      <div className="flex-shrink-0 border-b px-4 py-2.5 bg-editor">
-        <div className="flex items-center justify-between h-6">
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-sm text-primary leading-none">{activityItem.label}</h3>
+      <div className="flex-shrink-0 border-b px-3 py-1.5 bg-editor">
+        <div className="flex items-center justify-between h-5">
+          <div className="flex items-center gap-1.5">
+            <h3 className="font-semibold text-xs text-primary leading-none tracking-tight">{activityItem.label}</h3>
             {activityItem.badge !== undefined && activityItem.badge > 0 && (
-              <span className="px-1.5 py-0.5 text-xs rounded-full bg-accent text-on-accent leading-none font-medium">
+              <span className="px-1 py-0.5 text-[10px] rounded-full bg-accent text-on-accent leading-none font-medium">
                 {activityItem.badge}
               </span>
             )}
           </div>
           {activityItem.shortcut && (
-            <span className="text-xs text-primary/80 font-mono leading-none">
+            <span className="text-[10px] text-primary/80 font-mono leading-none tracking-tight">
               {activityItem.shortcut}
             </span>
           )}
         </div>
         {activityItem.description && (
-          <p className="text-xs text-primary/80 mt-1.5 leading-tight">{activityItem.description}</p>
+          <p className="text-[10px] text-primary/80 mt-1 leading-tight tracking-tight">{activityItem.description}</p>
         )}
       </div>
       
       <div className="flex-1 overflow-auto bg-panel">
         <Suspense fallback={
-          <div className="p-4">
-            <div className="space-y-2">
-              <div className="h-4 bg-muted rounded animate-pulse w-3/4"></div>
-              <div className="h-4 bg-muted rounded animate-pulse w-1/2"></div>
-              <div className="h-4 bg-muted rounded animate-pulse w-5/6"></div>
+          <div className="p-3">
+            <div className="space-y-1.5">
+              <div className="h-3 bg-muted rounded animate-pulse w-3/4"></div>
+              <div className="h-3 bg-muted rounded animate-pulse w-1/2"></div>
+              <div className="h-3 bg-muted rounded animate-pulse w-5/6"></div>
             </div>
           </div>
         }>

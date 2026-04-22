@@ -72,11 +72,11 @@ export function AppShell() {
         {isSettingsActive && (
           <div className="flex-1 flex flex-col overflow-hidden bg-panel">
             <Suspense fallback={
-              <div className="p-4 bg-panel">
-                <div className="space-y-2">
-                  <div className="h-4 bg-muted rounded animate-pulse w-3/4"></div>
-                  <div className="h-4 bg-muted rounded animate-pulse w-1/2"></div>
-                  <div className="h-4 bg-muted rounded animate-pulse w-5/6"></div>
+              <div className="p-3 bg-panel">
+                <div className="space-y-1.5">
+                  <div className="h-3 bg-muted rounded animate-pulse w-3/4"></div>
+                  <div className="h-3 bg-muted rounded animate-pulse w-1/2"></div>
+                  <div className="h-3 bg-muted rounded animate-pulse w-5/6"></div>
                 </div>
               </div>
             }>
@@ -87,7 +87,7 @@ export function AppShell() {
         
         {/* Main Content Area (Editor) */}
         {showMainContent && (
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
             <div className="flex-1 overflow-hidden bg-editor">
               <EditorContainer />
             </div>

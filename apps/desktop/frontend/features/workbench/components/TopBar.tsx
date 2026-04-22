@@ -75,7 +75,7 @@ export function TopBar({ className }: TopBarProps) {
   return (
     <div 
       className={cn(
-        'h-9 flex items-center justify-between px-4 border-b',
+        'h-8 flex items-center justify-between px-3 border-b',
         'bg-title-bar text-title-bar-foreground',
         'select-none',
         isTauriEnv ? 'cursor-default' : 'cursor-auto',
@@ -96,31 +96,31 @@ export function TopBar({ className }: TopBarProps) {
           <span className="font-semibold text-sm text-primary">Zaroxi Studio</span>
         </div>
         
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0">
           <button
             onClick={() => togglePanel('explorer')}
-            className="px-3 py-1.5 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-semibold rounded-sm"
+            className="px-2 py-1 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-medium rounded-sm"
             data-no-drag="true"
           >
             File
           </button>
           <button
             onClick={() => togglePanel('search')}
-            className="px-3 py-1.5 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-semibold rounded-sm"
+            className="px-2 py-1 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-medium rounded-sm"
             data-no-drag="true"
           >
             Edit
           </button>
           <button
             onClick={() => togglePanel('settings')}
-            className="px-3 py-1.5 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-semibold rounded-sm"
+            className="px-2 py-1 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-medium rounded-sm"
             data-no-drag="true"
           >
             View
           </button>
           <button
             onClick={() => togglePanel('assistant')}
-            className="px-3 py-1.5 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-semibold rounded-sm"
+            className="px-2 py-1 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-medium rounded-sm"
             data-no-drag="true"
           >
             Tools
