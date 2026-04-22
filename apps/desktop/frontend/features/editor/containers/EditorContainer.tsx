@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { CodeEditor } from '@/components/editor/CodeEditor';
 import { WorkspaceService } from '@/features/workspace/services/workspaceService';
 import { useWorkspaceStore } from '@/features/workspace/stores/useWorkspaceStore';
+import { Icon } from '@/components/ui/Icon';
 
 export function EditorContainer() {
   const [content, setContent] = useState<string>('');
@@ -109,24 +110,38 @@ export function EditorContainer() {
   return (
     <div className="h-full flex flex-col bg-editor">
       <div className="border-b border-divider px-4 py-2 flex items-center justify-between bg-panel-header">
-        <div className="text-sm font-medium flex items-center space-x-2">
-          <span className="text-primary">{fileName}</span>
-          {isLoading && (
-            <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-          )}
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Icon name="file" size={14} className="text-primary" />
+            <span className="text-sm font-semibold text-primary">{fileName}</span>
+            {isLoading && (
+              <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+            )}
+          </div>
           {activeFilePath && (
-            <span className="text-xs text-muted truncate max-w-xs" title={activeFilePath}>
-              {activeFilePath}
-            </span>
+            <div className="flex items-center space-x-3">
+              <span className="text-xs text-primary/80 font-mono truncate max-w-md" title={activeFilePath}>
+                {activeFilePath}
+              </span>
+              <div className="flex items-center space-x-1">
+                <span className="px-1.5 py-0.5 text-[10px] rounded bg-muted text-primary/80 font-medium">
+                  {language}
+                </span>
+                <span className="px-1.5 py-0.5 text-[10px] rounded bg-muted text-primary/80 font-mono">
+                  UTF-8
+                </span>
+              </div>
+            </div>
           )}
         </div>
         <div className="flex items-center space-x-2">
           {activeFilePath && (
             <button
               onClick={handleEditorSave}
-              className="save-button px-3 py-1 text-xs bg-accent text-on-accent rounded hover:bg-accent-hover transition-colors"
+              className="save-button px-3 py-1 text-xs bg-accent text-on-accent rounded hover:bg-accent-hover transition-colors flex items-center space-x-1"
             >
-              Save
+              <Icon name="save" size={12} />
+              <span>Save</span>
             </button>
           )}
         </div>
