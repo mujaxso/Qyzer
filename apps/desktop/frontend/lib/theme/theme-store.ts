@@ -126,7 +126,16 @@ export const useThemeStore = create<ThemeStore>()(
         } catch (error) {
           console.error('Failed to load theme settings:', error);
           clearTimeout(timeoutId);
-          set({ isLoading: false });
+          // On error, use system preference
+          const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const isDark = systemPrefersDark;
+          set({ 
+            themeMode: 'system',
+            isDark,
+            isSystem: true,
+            isLoading: false 
+          });
+          updateCssVariables(isDark);
         }
       },
       
@@ -172,10 +181,19 @@ async function setupThemeListener() {
 }
 
 // Update CSS custom properties based on theme
+let currentTheme: 'light' | 'dark' | null = null;
+
 function updateCssVariables(isDark: boolean) {
   const root = document.documentElement;
   
-  console.log(`Setting theme to ${isDark ? 'dark' : 'light'}`);
+  // Prevent unnecessary updates
+  const newTheme = isDark ? 'dark' : 'light';
+  if (currentTheme === newTheme) {
+    return;
+  }
+  
+  currentTheme = newTheme;
+  console.log(`Setting theme to ${newTheme}`);
   
   if (isDark) {
     root.classList.add('dark');
@@ -186,27 +204,17 @@ function updateCssVariables(isDark: boolean) {
   }
   
   // Set data attribute for CSS selectors
-  root.setAttribute('data-theme', isDark ? 'dark' : 'light');
-  
-  // Also update CSS variables for light theme explicitly
-  if (!isDark) {
-    // Ensure light theme variables are applied
-    root.style.setProperty('--editor-background', '0 0% 100%');
-    root.style.setProperty('--panel-background', '0 0% 98%');
-    root.style.setProperty('--activity-rail-background', '0 0% 96%');
-  }
+  root.setAttribute('data-theme', newTheme);
 }
 
 // Initialize theme on app start
 export function initializeTheme() {
   const store = useThemeStore.getState();
   
-  // Apply theme immediately based on current state (from localStorage)
-  // This prevents flash of incorrect theme
-  const { themeMode, isDark } = store;
-  updateCssVariables(isDark);
+  // Don't apply theme immediately from localStorage to prevent flash
+  // Wait for backend to send the correct theme
   
-  // Then load saved theme (which may override if different from localStorage)
+  // Load saved theme from backend
   store.loadThemeSettings().catch(error => {
     console.error('Failed to load theme settings:', error);
     // Ensure loading state is cleared even on error
