@@ -33,6 +33,11 @@
     --sidebar: 210 40% 98%;
     --editor: 0 0% 100%;
     --editor-foreground: 222.2 84% 4.9%;
+    
+    /* Status bar colors */
+    --status-bar: hsl(210 40% 98%);
+    --status-bar-foreground: hsl(215.4 16.3% 46.9%);
+    --status-bar-border: hsl(214.3 31.8% 91.4%);
   }
 
   .dark {
@@ -58,6 +63,11 @@
     --sidebar: 222.2 84% 6.9%;
     --editor: 222.2 84% 4.9%;
     --editor-foreground: 210 40% 98%;
+    
+    /* Status bar colors for dark theme */
+    --status-bar: hsl(217.2 32.6% 10.5%);
+    --status-bar-foreground: hsl(215 20.2% 75.1%);
+    --status-bar-border: hsl(217.2 32.6% 17.5%);
   }
 }
 
@@ -96,5 +106,20 @@
   .monaco-editor .view-lines,
   .monaco-editor .mtk1 {
     font-family: var(--font-mono);
+  }
+}
+
+@layer components {
+  /* Status bar styles */
+  .bg-status-bar {
+    background-color: var(--status-bar);
+  }
+  
+  .text-status-bar {
+    color: var(--status-bar-foreground);
+  }
+  
+  .border-status-bar {
+    border-color: var(--status-bar-border);
   }
 }

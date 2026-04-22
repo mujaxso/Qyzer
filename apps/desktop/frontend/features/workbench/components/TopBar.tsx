@@ -75,7 +75,7 @@ export function TopBar({ className }: TopBarProps) {
   return (
     <div 
       className={cn(
-        'h-10 flex items-center justify-between px-4 border-b border-divider',
+        'h-9 flex items-center justify-between px-4 border-b border-divider',
         'bg-title-bar text-title-bar-foreground',
         'select-none',
         isTauriEnv ? 'cursor-default' : 'cursor-auto',
