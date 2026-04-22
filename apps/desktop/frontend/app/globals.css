@@ -140,4 +140,12 @@
   .border-status-bar {
     border-color: var(--status-bar-border);
   }
+  
+  /* Prevent text selection during resize */
+  .no-select {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
 }
