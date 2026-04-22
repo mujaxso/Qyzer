@@ -9,9 +9,31 @@
     --font-mono: 'Zaroxi Mono', 'JetBrainsMono Nerd Font Mono', 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
     --font-icon: 'Zaroxi Mono', 'JetBrainsMono Nerd Font Mono', monospace;
     
-    /* Color tokens - Professional IDE theme */
-    --background: 0 0% 96%;  /* #f5f5f5 */
-    --foreground: 0 0% 13%;  /* #212121 */
+    /* Color tokens - Professional IDE theme (EXACT match to Rust theme) */
+    /* Backgrounds */
+    --background: 0 0% 96%;  /* #f5f5f5 - app_background, shell_background, activity_rail_background, status_bar_background, title_bar_background */
+    --panel-background: 0 0% 98%;  /* #fafafa - panel_background, sidebar_background, tab_background, assistant_panel_background */
+    --editor-background: 0 0% 100%;  /* #ffffff - editor_background, elevated_panel_background, tab_active_background, input_background */
+    
+    /* Text colors */
+    --foreground: 0 0% 13%;  /* #212121 - text_primary, text_on_surface */
+    --text-secondary: 0 0% 45%;  /* #737373 - text_secondary */
+    --text-muted: 0 0% 60%;  /* #999999 - text_muted */
+    --text-faint: 0 0% 75%;  /* #bfbfbf - text_faint */
+    --text-disabled: 0 0% 80%;  /* #cccccc - text_disabled */
+    --text-link: 210.6 100% 50.2%;  /* #0f87ff - text_link */
+    
+    /* UI elements */
+    --border: 0 0% 88%;  /* #e0e0e0 - border, divider */
+    --accent: 210.6 100% 50.2%;  /* #0f87ff - accent, info */
+    --accent-hover: 210.6 100% 45%;  /* #0d7ae6 - accent_hover */
+    --success: 142.4 70.6% 32.5%;  /* #29a652 - success */
+    --warning: 38.8 100% 47.1%;  /* #f29400 - warning */
+    --error: 0 70.6% 56.5%;  /* #db3b3b - error */
+    
+    /* For compatibility with existing CSS */
+    --sidebar: 0 0% 98%;  /* #fafafa */
+    --editor: 0 0% 100%;  /* #ffffff */
     --card: 0 0% 100%;
     --card-foreground: 0 0% 13%;
     --popover: 0 0% 100%;
@@ -21,32 +43,27 @@
     --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 13%;
     --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;  /* #737373 */
-    --accent: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
     --accent-foreground: 0 0% 13%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: hsl(0 0% 88%);  /* #e0e0e0 */
     --input: 0 0% 100%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
-    --sidebar: 0 0% 98%;  /* #fafafa */
-    --editor: 0 0% 100%;   /* #ffffff */
-    --editor-foreground: 0 0% 13%;  /* #212121 */
     
-    /* Status bar colors */
-    --status-bar: hsl(0 0% 96%);  /* #f5f5f5 */
-    --status-bar-foreground: hsl(0 0% 45%);  /* #737373 */
-    --status-bar-border: hsl(0 0% 88%);  /* #e0e0e0 */
+    /* Status bar */
+    --status-bar-background: 0 0% 96%;  /* #f5f5f5 */
+    --status-bar-foreground: 0 0% 45%;  /* #737373 */
+    --status-bar-border: 0 0% 88%;  /* #e0e0e0 */
     
-    /* Additional theme-specific colors */
-    --status-bar-background: hsl(0 0% 96%);  /* #f5f5f5 */
-    --status-bar-foreground: hsl(0 0% 45%);  /* #737373 */
-    --status-bar-border: hsl(0 0% 88%);  /* #e0e0e0 */
+    /* Shell */
+    --shell-background: 0 0% 96%;  /* #f5f5f5 */
     
-    /* Shell background from theme */
-    --shell-background: hsl(0 0% 96%);  /* #f5f5f5 */
-    --text-secondary: hsl(0 0% 45%);  /* #737373 */
+    /* Activity rail */
+    --activity-rail-background: 0 0% 96%;  /* #f5f5f5 */
+    
+    /* Title bar */
+    --title-bar-background: 0 0% 96%;  /* #f5f5f5 */
   }
 
   .dark {
@@ -160,5 +177,118 @@
   
   .resize-handle:active {
     background-color: rgba(66, 153, 225, 0.8);
+  }
+}
+
+@layer utilities {
+  /* Background utilities */
+  .bg-app {
+    background-color: hsl(var(--background));
+  }
+  
+  .bg-panel {
+    background-color: hsl(var(--panel-background));
+  }
+  
+  .bg-editor {
+    background-color: hsl(var(--editor-background));
+  }
+  
+  .bg-activity-rail {
+    background-color: hsl(var(--activity-rail-background));
+  }
+  
+  .bg-title-bar {
+    background-color: hsl(var(--title-bar-background));
+  }
+  
+  .bg-shell {
+    background-color: hsl(var(--shell-background));
+  }
+  
+  /* Text colors */
+  .text-primary {
+    color: hsl(var(--foreground));
+  }
+  
+  .text-secondary {
+    color: hsl(var(--text-secondary));
+  }
+  
+  .text-muted {
+    color: hsl(var(--text-muted));
+  }
+  
+  .text-faint {
+    color: hsl(var(--text-faint));
+  }
+  
+  .text-disabled {
+    color: hsl(var(--text-disabled));
+  }
+  
+  .text-link {
+    color: hsl(var(--text-link));
+  }
+  
+  /* Borders */
+  .border-border {
+    border-color: hsl(var(--border));
+  }
+  
+  .border-divider {
+    border-color: hsl(var(--border));
+  }
+  
+  /* Accent */
+  .bg-accent {
+    background-color: hsl(var(--accent));
+  }
+  
+  .text-accent {
+    color: hsl(var(--accent));
+  }
+  
+  .text-on-accent {
+    color: white;
+  }
+  
+  .bg-accent-hover:hover {
+    background-color: hsl(var(--accent-hover));
+  }
+  
+  /* Status colors */
+  .bg-success {
+    background-color: hsl(var(--success));
+  }
+  
+  .bg-warning {
+    background-color: hsl(var(--warning));
+  }
+  
+  .bg-error {
+    background-color: hsl(var(--error));
+  }
+  
+  .text-success {
+    color: hsl(var(--success));
+  }
+  
+  .text-warning {
+    color: hsl(var(--warning));
+  }
+  
+  .text-error {
+    color: hsl(var(--error));
+  }
+  
+  /* Hover */
+  .bg-hover-bg {
+    background-color: hsl(var(--accent) / 0.1);
+  }
+  
+  /* Muted */
+  .bg-muted {
+    background-color: hsl(var(--muted));
   }
 }
