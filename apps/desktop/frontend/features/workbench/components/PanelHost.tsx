@@ -44,7 +44,7 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
       )}
       style={{ width: panelWidth }}
     >
-      <div className="flex-shrink-0 border-b px-3 py-1.5 bg-editor">
+      <div className="flex-shrink-0 border-b px-3 py-1.5 bg-panel">
         <div className="flex items-center justify-between h-5">
           <div className="flex items-center gap-1.5">
             <h3 className="font-semibold text-xs text-primary leading-none tracking-tight">{activityItem.label}</h3>

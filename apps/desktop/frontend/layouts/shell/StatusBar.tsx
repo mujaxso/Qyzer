@@ -44,7 +44,7 @@ export function StatusBar({ className }: StatusBarProps) {
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
           <Icon name="workspace" size={12} className="text-primary" label="Workspace" />
-          <span className="text-primary font-semibold">
+          <span className="text-primary font-medium">
             {currentWorkspace ? currentWorkspace.name : 'No workspace'}
           </span>
           {currentWorkspace && (
@@ -65,7 +65,7 @@ export function StatusBar({ className }: StatusBarProps) {
         {branchName && (
           <div className="flex items-center space-x-2">
             <Icon name="git-branch" size={12} className="text-primary" label="Git branch" />
-            <span className="text-primary font-semibold">{branchName}</span>
+            <span className="text-primary font-medium">{branchName}</span>
           </div>
         )}
       </div>
@@ -75,7 +75,7 @@ export function StatusBar({ className }: StatusBarProps) {
         {fileInfo && (
           <div className="flex items-center space-x-2">
             <Icon name="file" size={12} className="text-primary" label="File info" />
-            <span className="text-primary font-semibold">{fileInfo}</span>
+            <span className="text-primary font-medium">{fileInfo}</span>
           </div>
         )}
       </div>
@@ -84,19 +84,19 @@ export function StatusBar({ className }: StatusBarProps) {
       <div className="flex items-center space-x-4 font-mono">
         <div className="flex items-center space-x-2">
           <Icon name="file-code" size={12} className="text-primary" label="Encoding" />
-          <span className="text-primary font-semibold">UTF-8</span>
+          <span className="text-primary font-medium">UTF-8</span>
         </div>
         <div className="flex items-center space-x-2">
           <Icon name="indent" size={12} className="text-primary" label="Indentation" />
-          <span className="text-primary font-semibold">Spaces: 2</span>
+          <span className="text-primary font-medium">Spaces: 2</span>
         </div>
         <div className="flex items-center space-x-2">
           <Icon name="cursor" size={12} className="text-primary" label="Cursor position" />
-          <span className="text-primary font-semibold">Ln 1, Col 1</span>
+          <span className="text-primary font-medium">Ln 1, Col 1</span>
         </div>
         <div className="flex items-center space-x-2">
           <Icon name="clock" size={12} className="text-primary" label="Current time" />
-          <span className="text-primary font-semibold">{formattedTime}</span>
+          <span className="text-primary font-medium">{formattedTime}</span>
         </div>
       </div>
     </div>
