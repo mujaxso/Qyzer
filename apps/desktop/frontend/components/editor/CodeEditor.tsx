@@ -36,24 +36,28 @@ export function CodeEditor({
   const [visibleLines, setVisibleLines] = useState<{ index: number; text: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Compute visible range
-  const visibleRange = useMemo(() => {
+  // Compute visible range – stable reference to avoid infinite effect loops
+  const visibleRangeKey = useMemo(() => {
     const startLine = Math.max(0, Math.floor(scrollTop / LINE_HEIGHT) - OVERSCAN_LINES);
     const endLine = Math.min(
       totalLines ?? Infinity,
       Math.ceil((scrollTop + containerHeight) / LINE_HEIGHT) + OVERSCAN_LINES
     );
-    return { startLine, endLine };
+    return `${startLine}-${endLine}`;
   }, [scrollTop, containerHeight, totalLines]);
 
   // Fetch visible lines when range changes
   useEffect(() => {
     if (!onRequestLines) return;
     
+    const [startStr, endStr] = visibleRangeKey.split('-');
+    const startLine = Number(startStr);
+    const endLine = Number(endStr);
+    
     const fetchLines = async () => {
       setIsLoading(true);
       try {
-        const result = await onRequestLines(visibleRange.startLine, visibleRange.endLine - visibleRange.startLine);
+        const result = await onRequestLines(startLine, endLine - startLine);
         setVisibleLines(result.lines);
       } catch (error) {
         console.error('Failed to fetch visible lines:', error);
@@ -63,7 +67,7 @@ export function CodeEditor({
     };
     
     fetchLines();
-  }, [visibleRange.startLine, visibleRange.endLine, onRequestLines]);
+  }, [visibleRangeKey, onRequestLines]);
 
   // Handle scroll
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -85,9 +89,13 @@ export function CodeEditor({
     return () => observer.disconnect();
   }, []);
 
-  // Sync initial value
+  // Sync initial value only on mount (not on every render)
+  const initialValueRef = useRef(initialValue);
   useEffect(() => {
-    setValue(initialValue);
+    if (initialValueRef.current !== initialValue) {
+      initialValueRef.current = initialValue;
+      setValue(initialValue);
+    }
   }, [initialValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -107,21 +115,50 @@ export function CodeEditor({
 
   // Compute line numbers for visible range
   const lineNumbers = useMemo(() => {
+    const [startStr, endStr] = visibleRangeKey.split('-');
+    const startLine = Number(startStr);
+    const endLine = Number(endStr);
     const numbers: number[] = [];
-    for (let i = visibleRange.startLine; i < visibleRange.endLine && i < (totalLines ?? Infinity); i++) {
+    for (let i = startLine; i < endLine && i < (totalLines ?? Infinity); i++) {
       numbers.push(i + 1);
     }
     return numbers;
-  }, [visibleRange, totalLines]);
+  }, [visibleRangeKey, totalLines]);
 
-  // Build text content for textarea from visible lines
+  // Determine whether we are in virtual‑scrolling mode (large file)
+  const isVirtualScrolling = !!onRequestLines;
+
+  // Build text content for textarea
+  // For small files (no virtual scrolling) we use the full value.
+  // For large files we cannot use a textarea for editing – we show a read‑only view.
   const visibleText = useMemo(() => {
-    if (visibleLines.length > 0) {
-      return visibleLines.map(l => l.text).join('\n');
+    if (!isVirtualScrolling) {
+      return value;
     }
-    // Fallback to initial value for small files
-    return value;
-  }, [visibleLines, value]);
+    // In virtual‑scrolling mode we render lines individually, not a textarea.
+    return '';
+  }, [isVirtualScrolling, value]);
+
+  // Render a read‑only line‑by‑line view when virtual scrolling is active
+  const renderVirtualLines = () => {
+    if (!isVirtualScrolling) return null;
+    return (
+      <div
+        className="absolute left-8 top-0 right-0 pr-4 font-mono"
+        style={{
+          fontSize: '14px',
+          lineHeight: `${LINE_HEIGHT}px`,
+          transform: `translateY(${Number(visibleRangeKey.split('-')[0]) * LINE_HEIGHT}px)`,
+        }}
+      >
+        {visibleLines.map((line) => (
+          <div key={line.index} style={{ height: LINE_HEIGHT, lineHeight: `${LINE_HEIGHT}px` }} className="whitespace-pre overflow-hidden">
+            {line.text || '\u00A0'}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className={cn('relative h-full', className)} ref={containerRef}>
@@ -143,7 +180,7 @@ export function CodeEditor({
             <div
               className="absolute left-0 top-0 w-8 bg-editor border-r border-border flex flex-col items-center font-mono text-xs text-muted-foreground"
               style={{
-                transform: `translateY(${visibleRange.startLine * LINE_HEIGHT}px)`,
+                transform: `translateY(${Number(visibleRangeKey.split('-')[0]) * LINE_HEIGHT}px)`,
               }}
             >
               {lineNumbers.map((num) => (
@@ -153,27 +190,30 @@ export function CodeEditor({
               ))}
             </div>
             
-            {/* Text area for visible lines */}
-            <textarea
-              ref={textareaRef}
-              value={visibleText}
-              onChange={handleChange}
-              readOnly={readOnly}
-              className="absolute left-8 top-0 right-0 bg-transparent text-editor-foreground resize-none outline-none pr-4 whitespace-pre overflow-hidden font-mono"
-              spellCheck="false"
-              style={{
-                tabSize: 2,
-                fontFamily: 'var(--font-mono)',
-                fontSize: '14px',
-                lineHeight: `${LINE_HEIGHT}px`,
-                letterSpacing: '0',
-                height: visibleLines.length > 0
-                  ? visibleLines.length * LINE_HEIGHT
-                  : visibleText.split('\n').length * LINE_HEIGHT,
-                transform: `translateY(${visibleRange.startLine * LINE_HEIGHT}px)`,
-              }}
-              placeholder="Start typing..."
-            />
+            {/* For small files: editable textarea */}
+            {!isVirtualScrolling && (
+              <textarea
+                ref={textareaRef}
+                value={visibleText}
+                onChange={handleChange}
+                readOnly={readOnly}
+                className="absolute left-8 top-0 right-0 bg-transparent text-editor-foreground resize-none outline-none pr-4 whitespace-pre overflow-hidden font-mono"
+                spellCheck="false"
+                style={{
+                  tabSize: 2,
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '14px',
+                  lineHeight: `${LINE_HEIGHT}px`,
+                  letterSpacing: '0',
+                  height: visibleText.split('\n').length * LINE_HEIGHT,
+                  transform: `translateY(${Number(visibleRangeKey.split('-')[0]) * LINE_HEIGHT}px)`,
+                }}
+                placeholder="Start typing..."
+              />
+            )}
+            
+            {/* For large files: read‑only line view */}
+            {renderVirtualLines()}
           </div>
         </div>
         
