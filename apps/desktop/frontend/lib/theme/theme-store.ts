@@ -323,6 +323,77 @@ async function setupThemeListener() {
   }
 }
 
+// Apply semantic color tokens as CSS custom properties on the document root.
+function applyThemeColors(colors: SemanticColors) {
+  const root = document.documentElement;
+  
+  // Background surfaces
+  root.style.setProperty('--color-app-background', colors.app_background);
+  root.style.setProperty('--color-shell-background', colors.shell_background);
+  root.style.setProperty('--color-panel-background', colors.panel_background);
+  root.style.setProperty('--color-elevated-panel-background', colors.elevated_panel_background);
+  root.style.setProperty('--color-editor-background', colors.editor_background);
+  root.style.setProperty('--color-input-background', colors.input_background);
+  root.style.setProperty('--color-status-bar-background', colors.status_bar_background);
+  root.style.setProperty('--color-title-bar-background', colors.title_bar_background);
+  root.style.setProperty('--color-activity-rail-background', colors.activity_rail_background);
+  root.style.setProperty('--color-sidebar-background', colors.sidebar_background);
+  root.style.setProperty('--color-tab-background', colors.tab_background);
+  root.style.setProperty('--color-tab-active-background', colors.tab_active_background);
+  root.style.setProperty('--color-assistant-panel-background', colors.assistant_panel_background);
+  
+  // Text colors
+  root.style.setProperty('--color-text-primary', colors.text_primary);
+  root.style.setProperty('--color-text-secondary', colors.text_secondary);
+  root.style.setProperty('--color-text-muted', colors.text_muted);
+  root.style.setProperty('--color-text-faint', colors.text_faint);
+  root.style.setProperty('--color-text-on-accent', colors.text_on_accent);
+  root.style.setProperty('--color-text-on-surface', colors.text_on_surface);
+  root.style.setProperty('--color-text-disabled', colors.text_disabled);
+  root.style.setProperty('--color-text-link', colors.text_link);
+  
+  // UI elements
+  root.style.setProperty('--color-border', colors.border);
+  root.style.setProperty('--color-border-subtle', colors.border_subtle);
+  root.style.setProperty('--color-divider', colors.divider);
+  root.style.setProperty('--color-accent', colors.accent);
+  root.style.setProperty('--color-accent-hover', colors.accent_hover);
+  root.style.setProperty('--color-accent-soft', colors.accent_soft);
+  root.style.setProperty('--color-accent-soft-background', colors.accent_soft_background);
+  
+  // States
+  root.style.setProperty('--color-hover-background', colors.hover_background);
+  root.style.setProperty('--color-active-background', colors.active_background);
+  root.style.setProperty('--color-selected-background', colors.selected_background);
+  root.style.setProperty('--color-selected-text-background', colors.selected_text_background);
+  root.style.setProperty('--color-selected-editor-background', colors.selected_editor_background);
+  
+  // Status colors
+  root.style.setProperty('--color-success', colors.success);
+  root.style.setProperty('--color-warning', colors.warning);
+  root.style.setProperty('--color-error', colors.error);
+  root.style.setProperty('--color-info', colors.info);
+  
+  // Focus
+  root.style.setProperty('--color-focus-ring', colors.focus_ring);
+  
+  // Editor specific
+  root.style.setProperty('--color-editor-gutter-background', colors.editor_gutter_background);
+  root.style.setProperty('--color-editor-line-highlight', colors.editor_line_highlight);
+  root.style.setProperty('--color-editor-cursor', colors.editor_cursor);
+  root.style.setProperty('--color-editor-selection', colors.editor_selection);
+  root.style.setProperty('--color-editor-find-highlight', colors.editor_find_highlight);
+  
+  // Syntax colors
+  root.style.setProperty('--color-syntax-keyword', colors.syntax_keyword);
+  root.style.setProperty('--color-syntax-function', colors.syntax_function);
+  root.style.setProperty('--color-syntax-string', colors.syntax_string);
+  root.style.setProperty('--color-syntax-comment', colors.syntax_comment);
+  root.style.setProperty('--color-syntax-type', colors.syntax_type);
+  root.style.setProperty('--color-syntax-variable', colors.syntax_variable);
+  root.style.setProperty('--color-syntax-constant', colors.syntax_constant);
+}
+
 // Update CSS custom properties based on theme
 let currentTheme: 'light' | 'dark' | null = null;
 
@@ -348,6 +419,10 @@ function updateCssVariables(isDark: boolean) {
   
   // Set data attribute for CSS selectors
   root.setAttribute('data-theme', newTheme);
+  
+  // Apply the actual color values as CSS custom properties
+  const colors = getDefaultColors(isDark);
+  applyThemeColors(colors);
 }
 
 // Apply theme immediately when this module loads (before any React code runs)
@@ -391,6 +466,9 @@ function applyThemeImmediately() {
     const colors = getDefaultColors(isDark);
     const themeData: ThemeData = { mode: themeMode, isDark, colors };
     
+    // Apply the actual color values as CSS custom properties immediately
+    applyThemeColors(colors);
+    
     // Also update the store state
     useThemeStore.setState({
       themeMode,
@@ -409,6 +487,8 @@ function applyThemeImmediately() {
     document.documentElement.setAttribute('data-theme', 'dark');
     const colors = getDefaultColors(true);
     const themeData: ThemeData = { mode: 'dark', isDark: true, colors };
+    // Apply the actual color values as CSS custom properties
+    applyThemeColors(colors);
     useThemeStore.setState({
       themeMode: 'dark',
       isDark: true,
