@@ -113,7 +113,7 @@ pub async fn get_visible_lines(request: VisibleLinesRequest) -> Result<VisibleLi
         if let Some(text) = document.line(line_idx) {
             lines.push(LineDto {
                 index: line_idx,
-                text,
+                text: text.to_string(),
             });
         }
     }
