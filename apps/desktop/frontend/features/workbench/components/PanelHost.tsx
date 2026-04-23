@@ -43,6 +43,20 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
     : (side === 'left' ? LAYOUT.panelLeft.maxWidth : LAYOUT.panelRight.maxWidth);
   const factor = side === 'left' ? 0.25 : 0.22;
 
+  // Clamp panel width when layout mode changes (e.g., window resize)
+  useEffect(() => {
+    const clamped = Math.max(minPanelWidth, Math.min(maxPanelWidth, panelWidth));
+    if (clamped !== panelWidth) {
+      if (side === 'left') {
+        setLeftPanelWidth(clamped);
+      } else {
+        setRightPanelWidth(clamped);
+      }
+    }
+    // We intentionally only react to layoutMode and the min/max values.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [layoutMode, minPanelWidth, maxPanelWidth]);
+
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -133,7 +147,7 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
           className
         )}
         style={{
-          flex: '0 0 auto',
+          flex: '0 1 auto',
           width: panelWidth,
           minWidth: `${minPanelWidth}px`,
           maxWidth: `min(${maxPanelWidth}px, ${factor * 100}vw)`,
@@ -179,19 +193,17 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
         </div>
         
         <div className="flex-1 overflow-auto bg-panel h-full max-h-full">
-          <div className="h-full min-h-0 overflow-auto">
-            <Suspense fallback={
-              <div className="p-3">
-                <div className="space-y-1.5">
-                  <div className="h-3 bg-muted rounded animate-pulse w-3/4"></div>
-                  <div className="h-3 bg-muted rounded animate-pulse w-1/2"></div>
-                  <div className="h-3 bg-muted rounded animate-pulse w-5/6"></div>
-                </div>
+          <Suspense fallback={
+            <div className="p-3">
+              <div className="space-y-1.5">
+                <div className="h-3 bg-muted rounded animate-pulse w-3/4"></div>
+                <div className="h-3 bg-muted rounded animate-pulse w-1/2"></div>
+                <div className="h-3 bg-muted rounded animate-pulse w-5/6"></div>
               </div>
-            }>
-              <PanelComponent />
-            </Suspense>
-          </div>
+            </div>
+          }>
+            <PanelComponent />
+          </Suspense>
         </div>
       </div>
       {/* Overlay during resizing */}
