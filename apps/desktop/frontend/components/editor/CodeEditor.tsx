@@ -180,6 +180,9 @@ export function CodeEditor({
     );
   };
 
+  // Show a textarea for editable files (not large, not readonly, not virtual)
+  const showTextarea = !readOnly && !largeFileMode && !isVirtualScrolling;
+
   return (
     <div className={cn('relative h-full', className)} ref={containerRef}>
       {largeFileMode && (
@@ -187,41 +190,53 @@ export function CodeEditor({
           Large file mode — some features are disabled for performance
         </div>
       )}
-      <div className="absolute inset-0 bg-editor code-editor-font">
-        {/* Scrollable container */}
-        <div
-          className="absolute inset-0 overflow-auto"
-          onScroll={handleScroll}
-          style={{ paddingTop: largeFileMode ? '20px' : '0' }}
-        >
-          {/* Spacer for scroll height */}
-          <div style={{ height: totalHeight, position: 'relative' }}>
-            {/* Line numbers gutter */}
-            <div
-              className="absolute left-0 top-0 w-8 bg-editor border-r border-border flex flex-col items-center font-mono text-xs text-muted-foreground"
-              style={{
-                transform: `translateY(${firstRenderedLineIndex * LINE_HEIGHT}px)`,
-              }}
-            >
-              {lineNumbers.map((num) => (
-                <div key={num} style={{ height: LINE_HEIGHT, lineHeight: `${LINE_HEIGHT}px` }} className="py-0">
-                  {num}
-                </div>
-              ))}
+      {showTextarea ? (
+        <textarea
+          className="absolute inset-0 w-full h-full resize-none font-mono text-sm leading-[22px] p-0 bg-transparent text-editor-foreground caret-foreground outline-none"
+          value={value}
+          onChange={handleChange}
+          spellCheck={false}
+          autoComplete="off"
+          autoCorrect="off"
+          wrap="off"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-editor code-editor-font">
+          {/* Scrollable container */}
+          <div
+            className="absolute inset-0 overflow-auto"
+            onScroll={handleScroll}
+            style={{ paddingTop: largeFileMode ? '20px' : '0' }}
+          >
+            {/* Spacer for scroll height */}
+            <div style={{ height: totalHeight, position: 'relative' }}>
+              {/* Line numbers gutter */}
+              <div
+                className="absolute left-0 top-0 w-8 bg-editor border-r border-border flex flex-col items-center font-mono text-xs text-muted-foreground"
+                style={{
+                  transform: `translateY(${firstRenderedLineIndex * LINE_HEIGHT}px)`,
+                }}
+              >
+                {lineNumbers.map((num) => (
+                  <div key={num} style={{ height: LINE_HEIGHT, lineHeight: `${LINE_HEIGHT}px` }} className="py-0">
+                    {num}
+                  </div>
+                ))}
+              </div>
+              
+              {/* For all files that use virtual lines: read‑only line view */}
+              {renderVirtualLines()}
             </div>
-            
-            {/* For all files: read‑only line view */}
-            {renderVirtualLines()}
           </div>
+          
+          {/* Loading indicator */}
+          {isLoading && (
+            <div className="absolute bottom-2 right-2 bg-background/80 text-xs px-2 py-1 rounded">
+              Loading...
+            </div>
+          )}
         </div>
-        
-        {/* Loading indicator */}
-        {isLoading && (
-          <div className="absolute bottom-2 right-2 bg-background/80 text-xs px-2 py-1 rounded">
-            Loading...
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
