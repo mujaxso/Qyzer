@@ -1,151 +1,153 @@
 import { useWorkspaceStore } from '@/features/workspace/stores/useWorkspaceStore';
-import { Icon } from '@/components/ui/Icon';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { WorkspaceService } from '@/features/workspace/services/workspaceService';
 
 interface StatusBarProps {
   className?: string;
 }
 
+/**
+ * Simple language detection by file extension.
+ * Used in the status bar to show the language mode without an extra bridge call.
+ */
+function detectLanguageExtension(path: string): string | undefined {
+  const ext = path.split('.').pop()?.toLowerCase() ?? '';
+  const known: Record<string, string> = {
+    rs: 'Rust',
+    ts: 'TypeScript',
+    tsx: 'TypeScript JSX',
+    js: 'JavaScript',
+    jsx: 'JavaScript JSX',
+    py: 'Python',
+    go: 'Go',
+    toml: 'TOML',
+    yaml: 'YAML',
+    yml: 'YAML',
+    json: 'JSON',
+    md: 'Markdown',
+    html: 'HTML',
+    css: 'CSS',
+    scss: 'SCSS',
+    sass: 'SASS',
+    vue: 'Vue',
+    c: 'C',
+    cpp: 'C++',
+    h: 'C Header',
+    hpp: 'C++ Header',
+    java: 'Java',
+    lua: 'Lua',
+    rb: 'Ruby',
+    php: 'PHP',
+    swift: 'Swift',
+    kt: 'Kotlin',
+  };
+  return known[ext];
+}
+
+/** Data we need from the open file response (only metadata, not full content). */
+interface FileMeta {
+  largeFileMode: string;
+  contentTruncated: boolean;
+}
+
 export function StatusBar({ className }: StatusBarProps) {
   const { currentWorkspace, isLoading, explorerUI } = useWorkspaceStore();
   const activeFilePath = explorerUI?.activeFilePath ?? null;
-  const [currentTime, setCurrentTime] = useState(new Date());
-  const [branchName, setBranchName] = useState<string | null>(null);
-  const [fileInfo, setFileInfo] = useState<{
-    lineCount?: number;
-    charCount?: number;
-    largeFileMode?: string;
-    contentTruncated?: boolean;
-  } | null>(null);
+  const [fileMeta, setFileMeta] = useState<FileMeta | null>(null);
 
-  // Update time every minute
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Update every minute
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // Fetch file info when activeFilePath changes
+  // Fetch lightweight file metadata when the active file changes
   useEffect(() => {
     let cancelled = false;
     if (activeFilePath) {
+      // openFile is lightweight enough; it reads the file on the Rust side
+      // but only returns metadata and optionally truncated content.
       WorkspaceService.openFile({ path: activeFilePath }).then((resp) => {
         if (!cancelled) {
-          setFileInfo({
-            lineCount: resp.lineCount,
-            charCount: resp.charCount,
-            largeFileMode: resp.largeFileMode,
-            contentTruncated: resp.contentTruncated,
+          setFileMeta({
+            largeFileMode: resp.largeFileMode ?? 'Normal',
+            contentTruncated: resp.contentTruncated ?? false,
           });
         }
       });
     } else {
-      setFileInfo(null);
+      setFileMeta(null);
     }
     return () => {
       cancelled = true;
     };
   }, [activeFilePath]);
 
-  // Format time as HH:MM
-  const formattedTime = currentTime.toLocaleTimeString([], { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: false 
-  });
+  // Derive presentation values from the active file path
+  const fileName = useMemo(
+    () => (activeFilePath ? activeFilePath.split(/[\\/]/).pop() ?? '—' : null),
+    [activeFilePath]
+  );
+
+  const languageLabel = useMemo(
+    () => (activeFilePath ? detectLanguageExtension(activeFilePath) ?? 'Plain Text' : null),
+    [activeFilePath]
+  );
+
+  // Show a dedicated large‑file indicator only when the file is not normal
+  const largeFileIndicator =
+    fileMeta && fileMeta.largeFileMode !== 'Normal'
+      ? `  ${fileMeta.largeFileMode === 'VeryLarge' ? 'Very Large' : 'Large'} File`
+      : null;
+
+  const truncationIndicator =
+    fileMeta && fileMeta.contentTruncated ? '  (truncated)' : null;
 
   return (
-    <div 
+    <div
       className={cn(
-        "h-7 flex items-center justify-between px-3 text-xs font-sans",
-        "text-primary font-medium",
+        'h-6 flex items-center justify-between px-3 text-[11px] font-sans leading-none',
+        'text-primary',
         className
       )}
-      style={{
-        backgroundColor: 'var(--status-bar-background)',
-      }}
+      style={{ backgroundColor: 'var(--status-bar-background)' }}
     >
-      {/* Left section: Workspace info */}
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-2">
-          <Icon name="workspace" size={12} className="text-primary" label="Workspace" />
-          <span className="text-primary font-medium">
-            {currentWorkspace ? currentWorkspace.name : 'No workspace'}
+      {/* ── Left side: workspace / operational state ── */}
+      <div className="flex items-center space-x-3">
+        <span className="font-medium">{currentWorkspace ? currentWorkspace.name : 'No workspace'}</span>
+        {currentWorkspace && (
+          <span className="text-primary/70 font-mono text-[10px]">
+            {currentWorkspace.rootPath.split('/').pop()}
           </span>
-          {currentWorkspace && (
-            <span className="text-primary/80 ml-1 font-mono text-[10px] hidden md:inline">
-              ({currentWorkspace.rootPath.split('/').pop()})
-            </span>
-          )}
-        </div>
-        
-        {isLoading && (
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-            <span className="text-primary/80">Loading...</span>
-          </div>
         )}
-
-        {/* Git branch info */}
-        {branchName && (
-          <div className="flex items-center space-x-2">
-            <Icon name="git-branch" size={12} className="text-primary" label="Git branch" />
-            <span className="text-primary font-medium">{branchName}</span>
-          </div>
+        {isLoading && (
+          <span className="text-accent font-medium">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-accent animate-pulse mr-1 align-middle" />
+            Loading…
+          </span>
         )}
       </div>
-      
-      {/* Center section: File info */}
-      <div className="flex items-center space-x-4">
-        {fileInfo && (
+
+      {/* ── Right side: file/editor metadata ── */}
+      <div className="flex items-center space-x-3">
+        {activeFilePath && (
           <>
-            <div className="flex items-center space-x-2">
-              <Icon name="file" size={12} className="text-primary" label="File info" />
-              <span className="text-primary font-medium">
-                {fileInfo.lineCount} lines · {fileInfo.charCount} chars
-              </span>
-            </div>
-            {fileInfo.largeFileMode === 'VeryLarge' && (
-              <span className="text-yellow-500 font-medium" title="File is very large – only first part is shown">
-                very large
-              </span>
-            )}
-            {fileInfo.largeFileMode === 'Large' && (
-              <span className="text-yellow-500 font-medium" title="File is large – may affect performance">
-                large
-              </span>
-            )}
-            {fileInfo.contentTruncated && (
-              <span className="text-yellow-500 font-semibold" title="Only the first part of the file is shown to keep the editor responsive.">
-                truncated
+            {/* File name (no icon – text is enough) */}
+            <span className="font-medium max-w-[180px] truncate" title={activeFilePath}>
+              {fileName}
+            </span>
+
+            {/* Language mode */}
+            <span className="text-primary/70">{languageLabel}</span>
+
+            {/* Encoding & line endings – always useful when a file is open */}
+            <span className="text-primary/70">UTF-8</span>
+            <span className="text-primary/70">LF</span>
+
+            {/* Large‑file / truncation indicators – only when relevant */}
+            {(largeFileIndicator != null || truncationIndicator != null) && (
+              <span className="text-yellow-500 font-medium">
+                {largeFileIndicator ?? ''}
+                {truncationIndicator ?? ''}
               </span>
             )}
           </>
         )}
-      </div>
-      
-      {/* Right section: Editor status and time */}
-      <div className="flex items-center space-x-4 font-mono">
-        <div className="flex items-center space-x-2">
-          <Icon name="file-code" size={12} className="text-primary" label="Encoding" />
-          <span className="text-primary font-medium">UTF-8</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Icon name="indent" size={12} className="text-primary" label="Indentation" />
-          <span className="text-primary font-medium">Spaces: 2</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Icon name="cursor" size={12} className="text-primary" label="Cursor position" />
-          <span className="text-primary font-medium">Ln 1, Col 1</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Icon name="clock" size={12} className="text-primary" label="Current time" />
-          <span className="text-primary font-medium">{formattedTime}</span>
-        </div>
       </div>
     </div>
   );
