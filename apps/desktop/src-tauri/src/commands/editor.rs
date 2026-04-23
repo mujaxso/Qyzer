@@ -106,8 +106,10 @@ pub async fn get_visible_lines(request: VisibleLinesRequest) -> Result<VisibleLi
     let total_lines = document.len_lines();
     let mut lines = Vec::new();
 
-    let end_line = (request.start_line + request.count).min(total_lines);
-    for line_idx in request.start_line..end_line {
+    // Clamp start_line to valid range
+    let start_line = request.start_line.min(total_lines);
+    let end_line = (start_line + request.count).min(total_lines);
+    for line_idx in start_line..end_line {
         if let Some(text) = document.line(line_idx) {
             lines.push(LineDto {
                 index: line_idx,
@@ -138,14 +140,21 @@ pub async fn apply_edit(request: EditRequest) -> Result<(), String> {
     let start_char = document.byte_to_char(request.start_byte);
     let old_end_char = document.byte_to_char(request.old_end_byte);
 
+    // Ensure start <= end
+    let (delete_start, delete_end) = if start_char <= old_end_char {
+        (start_char, old_end_char)
+    } else {
+        (old_end_char, start_char)
+    };
+
     // Delete old range
-    if start_char < old_end_char {
-        document.delete(start_char, old_end_char)?;
+    if delete_start < delete_end {
+        document.delete(delete_start, delete_end)?;
     }
 
-    // Insert new text
+    // Insert new text at the start position (after deletion, the insertion point is delete_start)
     if !request.new_text.is_empty() {
-        document.insert(start_char, &request.new_text)?;
+        document.insert(delete_start, &request.new_text)?;
     }
 
     Ok(())

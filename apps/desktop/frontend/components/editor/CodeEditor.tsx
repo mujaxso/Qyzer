@@ -53,7 +53,8 @@ export function CodeEditor({
 
   // Fetch visible lines when range changes
   useEffect(() => {
-    if (!onRequestLines) return;
+    const fetchFn = onRequestLinesRef.current;
+    if (!fetchFn) return;
     
     const [startStr, endStr] = visibleRangeKey.split('-');
     const startLine = Number(startStr);
@@ -62,7 +63,7 @@ export function CodeEditor({
     const fetchLines = async () => {
       setIsLoading(true);
       try {
-        const result = await onRequestLines(startLine, endLine - startLine);
+        const result = await fetchFn(startLine, endLine - startLine);
         setVisibleLines(result.lines);
       } catch (error) {
         console.error('Failed to fetch visible lines:', error);
@@ -72,7 +73,7 @@ export function CodeEditor({
     };
     
     fetchLines();
-  }, [visibleRangeKey, onRequestLines]);
+  }, [visibleRangeKey]);
 
   // Handle scroll
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -149,13 +150,16 @@ export function CodeEditor({
   // Render a read‑only line‑by‑line view when virtual scrolling is active
   const renderVirtualLines = () => {
     if (!isVirtualScrolling) return null;
+    // Use the first fetched line index for offset to align with overscan
+    const firstFetchedLine = visibleLines.length > 0 ? visibleLines[0].index : 0;
+    const offsetY = firstFetchedLine * LINE_HEIGHT;
     return (
       <div
         className="absolute left-8 top-0 right-0 pr-4 font-mono"
         style={{
           fontSize: '14px',
           lineHeight: `${LINE_HEIGHT}px`,
-          transform: `translateY(${actualFirstVisibleLine * LINE_HEIGHT}px)`,
+          transform: `translateY(${offsetY}px)`,
         }}
       >
         {visibleLines.map((line) => (

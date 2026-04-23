@@ -446,21 +446,6 @@ impl Document {
     pub fn char_to_byte(&self, char_idx: usize) -> usize {
         if let Some(source) = &self.file_source {
             let text = source.as_str();
-            // Iterate over characters, tracking byte offset
-            let mut byte_offset = 0usize;
-            for (i, _) in text.char_indices() {
-                if i >= char_idx {
-                    break;
-                }
-                byte_offset = i;
-            }
-            // After the loop, byte_offset is the byte index of the character at (char_idx-1)
-            // We need the byte index of the character at char_idx
-            // If char_idx is 0, return 0
-            if char_idx == 0 {
-                return 0;
-            }
-            // Find the byte index of the character at char_idx
             let mut count = 0usize;
             for (i, _) in text.char_indices() {
                 if count == char_idx {

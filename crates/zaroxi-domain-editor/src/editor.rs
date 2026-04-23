@@ -148,11 +148,16 @@ impl EditorState {
 
     /// Get visible lines for the current viewport.
     pub fn visible_lines(&self, line_height: f32, viewport_height: f32) -> Vec<(usize, String)> {
+        let total_lines = self.document.len_lines();
+        if total_lines == 0 {
+            return Vec::new();
+        }
         let start_line = (self.scroll_offset.1 / line_height).floor() as usize;
         let lines_in_viewport = (viewport_height / line_height).ceil() as usize + 1;
         
         let mut lines = Vec::new();
-        for line_idx in start_line..(start_line + lines_in_viewport) {
+        let end_line = (start_line + lines_in_viewport).min(total_lines);
+        for line_idx in start_line..end_line {
             if let Some(line_text) = self.document.line(line_idx) {
                 lines.push((line_idx, line_text));
             } else {
@@ -164,11 +169,16 @@ impl EditorState {
 
     /// Get visible lines as `Cow<str>` to avoid allocation when possible.
     pub fn visible_lines_cow(&self, line_height: f32, viewport_height: f32) -> Vec<(usize, std::borrow::Cow<'_, str>)> {
+        let total_lines = self.document.len_lines();
+        if total_lines == 0 {
+            return Vec::new();
+        }
         let start_line = (self.scroll_offset.1 / line_height).floor() as usize;
         let lines_in_viewport = (viewport_height / line_height).ceil() as usize + 1;
         
         let mut lines = Vec::new();
-        for line_idx in start_line..(start_line + lines_in_viewport) {
+        let end_line = (start_line + lines_in_viewport).min(total_lines);
+        for line_idx in start_line..end_line {
             if let Some(line_text) = self.document.line_cow(line_idx) {
                 lines.push((line_idx, line_text));
             } else {
