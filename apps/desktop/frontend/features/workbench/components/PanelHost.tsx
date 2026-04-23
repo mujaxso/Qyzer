@@ -1,4 +1,4 @@
-import { Suspense, useRef, useEffect, useState, useCallback } from 'react';
+import { Suspense, useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useWorkbenchStore } from '../store/workbenchStore';
 import { getActivityItem } from '../config/activityRegistry';
 import { cn } from '@/lib/utils';
@@ -42,6 +42,25 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
     ? (side === 'left' ? LAYOUT.panelLeft.maxNarrowWidth : LAYOUT.panelRight.maxNarrowWidth)
     : (side === 'left' ? LAYOUT.panelLeft.maxWidth : LAYOUT.panelRight.maxWidth);
   const factor = side === 'left' ? 0.25 : 0.60;
+
+  // On narrow screens we let the right panel shrink far more than the declared
+  // min‑width, but we keep a proportional limit so it never becomes invisible.
+  const windowWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+  const effectiveMinWidth = useMemo(() => {
+    if (side === 'right' && layoutMode === 'narrow') {
+      // Allow the panel to go down to 18 % of the window or the canonical min,
+      // whichever is smaller (the canonical min is already lowered in layoutConstants).
+      return Math.min(minPanelWidth, windowWidth * 0.18);
+    }
+    return minPanelWidth;
+  }, [side, layoutMode, minPanelWidth, windowWidth]);
+
+  const effectiveMaxWidth = useMemo(() => {
+    if (side === 'right' && layoutMode === 'narrow') {
+      return Math.min(maxPanelWidth, windowWidth * 0.30);
+    }
+    return Math.min(maxPanelWidth, windowWidth * factor);
+  }, [side, layoutMode, maxPanelWidth, factor, windowWidth]);
 
   // Clamp panel width when layout mode changes (e.g., window resize)
   useEffect(() => {
@@ -150,8 +169,8 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
           flex: '0 1 auto',
           width: 'auto',
           flexBasis: panelWidth,
-          minWidth: `${minPanelWidth}px`,
-          maxWidth: `min(${maxPanelWidth}px, ${(factor * 100).toFixed(0)}vw)`,
+          minWidth: `${effectiveMinWidth}px`,
+          maxWidth: `min(${effectiveMaxWidth}px, ${side === 'right' && layoutMode === 'narrow' ? '30vw' : `${(factor * 100).toFixed(0)}vw`})`,
           order: side === 'right' ? 2 : 0,
         }}
       >

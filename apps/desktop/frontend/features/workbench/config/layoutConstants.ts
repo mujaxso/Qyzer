@@ -22,9 +22,9 @@ export const LAYOUT = {
     defaultWidth: 260,
     maxWidth: 350,
     /** Minimum width when the window is narrow (must remain readable). */
-    minNarrowWidth: 240,
+    minNarrowWidth: 100,
     /** Maximum width when the window is narrow. */
-    maxNarrowWidth: 320,
+    maxNarrowWidth: 200,
   },
 
   /** Height of the compact top bar (px) */
