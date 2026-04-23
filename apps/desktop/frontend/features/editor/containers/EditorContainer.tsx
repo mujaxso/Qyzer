@@ -136,7 +136,7 @@ export function EditorContainer() {
           )}
         </div>
       </div>
-      <div className="flex-1 overflow-hidden code-editor-font bg-editor">
+      <div className="flex-1 overflow-hidden code-editor-font min-h-0 bg-editor">
         <CodeEditor
           initialValue={content}
           onChange={handleEditorChange}

@@ -98,7 +98,10 @@ impl Document {
     pub fn line(&self, idx: usize) -> Option<String> {
         self.rope.get_line(idx).map(|slice| {
             let s = slice.to_string();
-            let trimmed = s.trim_end_matches('\n').trim_end_matches('\r');
+            // Remove only the final line terminator; preserve intentional blank lines.
+            let trimmed = s.strip_suffix('\n')
+                .or_else(|| s.strip_suffix("\r\n"))
+                .unwrap_or(&s);
             trimmed.to_owned()
         })
     }

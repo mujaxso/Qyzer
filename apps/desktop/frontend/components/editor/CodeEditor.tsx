@@ -38,10 +38,11 @@ export function CodeEditor({
     return (
       <pre
         className={cn(
-          'relative h-full w-full overflow-auto p-0 font-mono text-sm leading-[22px]',
-          'bg-editor text-editor-foreground overflow-auto',
+          'relative font-mono text-sm leading-[22px] p-0',
+          'bg-editor text-editor-foreground',
           className
         )}
+        style={{ height: '100%', width: '100%', overflow: 'auto', margin: 0, border: 0, padding: 0 }}
       >
         {value}
       </pre>
@@ -51,10 +52,11 @@ export function CodeEditor({
   return (
     <textarea
       className={cn(
-        'relative h-full w-full resize-none font-mono text-sm leading-[22px] p-0 overflow-auto',
-        'bg-transparent text-editor-foreground caret-foreground outline-none overflow-auto',
+        'relative resize-none font-mono text-sm leading-[22px] p-0',
+        'bg-transparent text-editor-foreground caret-foreground outline-none',
         className
       )}
+      style={{ height: '100%', width: '100%', overflow: 'auto', border: 'none', margin: 0, padding: 0 }}
       value={value}
       onChange={handleChange}
       spellCheck={false}
