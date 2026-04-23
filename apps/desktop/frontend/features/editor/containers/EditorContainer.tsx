@@ -123,7 +123,7 @@ export function EditorContainer() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-editor">
+    <div className="h-full flex flex-col bg-editor min-h-0">
       <div className="border-b border-divider px-4 py-2 flex items-center justify-between bg-activity-rail h-9">
         <div className="flex items-center space-x-3 min-w-0">
           <div className="flex items-center space-x-2">

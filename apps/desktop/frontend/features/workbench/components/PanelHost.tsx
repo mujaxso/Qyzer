@@ -128,7 +128,7 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
       <div 
         ref={panelRef}
         className={cn(
-          'h-full bg-panel overflow-hidden flex flex-col relative',
+          'h-full bg-panel overflow-hidden flex flex-col relative min-h-0',
           side === 'left' ? 'border-r' : 'border-l',
           className
         )}
