@@ -31,6 +31,10 @@ export interface OpenFileRequest {
 export interface OpenFileResponse {
   content: string;
   language?: string;
+  lineCount?: number;
+  charCount?: number;
+  largeFileMode?: string;
+  contentTruncated?: boolean;
 }
 
 export interface SaveFileRequest {
@@ -81,6 +85,8 @@ export interface OpenDocumentResponse {
   largeFileMode: string;
   isReadOnly: boolean;
   content?: string;
+  /** Indicates whether the returned content was truncated (file was large). */
+  contentTruncated?: boolean;
 }
 
 export interface VisibleLinesRequest {
@@ -186,13 +192,15 @@ export class WorkspaceService {
   }
 
   static async openFile(request: OpenFileRequest): Promise<OpenFileResponse> {
-    // Use the new document-based approach which returns the full content
     const docResponse = await this.openDocument(request.path);
-    // The response now includes the full file content
     const content = docResponse.content ?? '';
     return {
       content,
-      language: undefined, // Will be determined by the editor component
+      language: undefined,
+      lineCount: docResponse.lineCount,
+      charCount: docResponse.charCount,
+      largeFileMode: docResponse.largeFileMode,
+      contentTruncated: docResponse.contentTruncated,
     };
   }
 

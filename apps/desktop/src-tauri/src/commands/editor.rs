@@ -21,7 +21,12 @@ pub struct OpenDocumentResponse {
     pub large_file_mode: String,
     pub is_read_only: bool,
     pub content: String,
+    /// Indicates whether the returned `content` was truncated (file was large).
+    pub content_truncated: bool,
 }
+
+/// Maximum characters returned in the `content` field for large files.
+const TRUNCATE_CHARS: usize = 50_000;
 
 /// Request for visible lines.
 #[derive(Debug, Deserialize)]
@@ -70,7 +75,14 @@ pub async fn open_document(path: String) -> Result<OpenDocumentResponse, String>
     let is_read_only = large_file_mode.is_read_only();
 
     // Extract the full file content before consuming file_source
-    let content = file_source.as_str().to_string();
+    let mut content = file_source.as_str().to_string();
+
+    // Determine whether content should be truncated for large files
+    let content_truncated = large_file_mode == LargeFileMode::Large
+        || large_file_mode == LargeFileMode::VeryLarge;
+    if content_truncated && content.chars().count() > TRUNCATE_CHARS {
+        content = content.chars().take(TRUNCATE_CHARS).collect();
+    }
 
     // Create the editor document
     let document = match file_source {
@@ -98,6 +110,7 @@ pub async fn open_document(path: String) -> Result<OpenDocumentResponse, String>
         large_file_mode: format!("{:?}", large_file_mode),
         is_read_only,
         content,
+        content_truncated,
     })
 }
 

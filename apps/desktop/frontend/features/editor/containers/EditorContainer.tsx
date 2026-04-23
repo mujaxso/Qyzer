@@ -9,6 +9,12 @@ export function EditorContainer() {
   const [language, setLanguage] = useState<string>('plaintext');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [fileName, setFileName] = useState<string>('editor');
+  const [fileInfo, setFileInfo] = useState<{
+    lineCount?: number;
+    charCount?: number;
+    largeFileMode?: string;
+    contentTruncated?: boolean;
+  }>({});
   
   // Get active file path from workspace store
   const { explorerUI } = useWorkspaceStore();
@@ -25,6 +31,7 @@ export function EditorContainer() {
 // Or create a new file using the command palette (Ctrl+P)`);
       setLanguage('rust');
       setFileName('editor.rs');
+      setFileInfo({});
     }
     
     // Add keyboard shortcut for save (Ctrl+S)
@@ -51,11 +58,18 @@ export function EditorContainer() {
       setContent(response.content);
       setLanguage(response.language || 'plaintext');
       setFileName(path.split(/[\\/]/).pop() || 'file');
+      setFileInfo({
+        lineCount: response.lineCount,
+        charCount: response.charCount,
+        largeFileMode: response.largeFileMode,
+        contentTruncated: response.contentTruncated,
+      });
     } catch (error) {
       // Failed to load file
       setContent(`// Error loading file: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setLanguage('plaintext');
       setFileName('error.txt');
+      setFileInfo({});
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +124,7 @@ export function EditorContainer() {
   return (
     <div className="h-full flex flex-col bg-editor">
       <div className="border-b border-divider px-4 py-2 flex items-center justify-between bg-activity-rail h-9">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 min-w-0">
           <div className="flex items-center space-x-2">
             <Icon name="file" size={14} className="text-primary" />
             <span className="text-sm font-semibold text-primary leading-none">{fileName}</span>
@@ -119,12 +133,28 @@ export function EditorContainer() {
             )}
           </div>
           {activeFilePath && (
-            <span className="text-xs text-primary/80 font-mono truncate max-w-md leading-none" title={activeFilePath}>
+            <span className="text-xs text-primary/80 font-mono truncate max-w-[180px] leading-none" title={activeFilePath}>
               {activeFilePath}
             </span>
           )}
+          {/* file size / line info */}
+          {fileInfo.lineCount !== undefined && (
+            <span className="ml-auto text-xs text-primary/60 whitespace-nowrap">
+              {fileInfo.lineCount} lines · {fileInfo.charCount} chars
+              {fileInfo.largeFileMode === 'VeryLarge'
+                ? ' (very large)'
+                : fileInfo.largeFileMode === 'Large'
+                ? ' (large)'
+                : ''}
+              {fileInfo.contentTruncated && (
+                <span className="ml-1 text-yellow-500 font-semibold" title="Only the first part of the file is shown to keep the editor responsive.">
+                  · truncated
+                </span>
+              )}
+            </span>
+          )}
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 flex-shrink-0">
           {activeFilePath && (
             <button
               onClick={handleEditorSave}
