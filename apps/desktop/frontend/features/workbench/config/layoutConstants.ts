@@ -5,26 +5,26 @@ export const LAYOUT = {
   /** Width of the activity rail (px) */
   activityRailWidth: 48,
 
-  /** Left‑side panel (explorer, search, git, debug etc.) */
+  /** Left‑side panel (explorer, search, git, debug etc.) – intentionally narrower */
   panelLeft: {
     minWidth: 100,
-    defaultWidth: 140,
+    defaultWidth: 110,
     maxWidth: 200,
     /** Minimum width when the window is narrow (< breakpoints.narrow). */
-    minNarrowWidth: 120,
+    minNarrowWidth: 110,
     /** Maximum width when the window is narrow. */
-    maxNarrowWidth: 160,
+    maxNarrowWidth: 150,
   },
 
-  /** Right‑side panel (assistant, extensions etc.) */
+  /** Right‑side panel (assistant, extensions etc.) – wider for chat/reading */
   panelRight: {
-    minWidth: 140,
-    defaultWidth: 220,
-    maxWidth: 300,
-    /** Minimum width when the window is narrow. */
-    minNarrowWidth: 200,
+    minWidth: 180,
+    defaultWidth: 260,
+    maxWidth: 350,
+    /** Minimum width when the window is narrow (must remain readable). */
+    minNarrowWidth: 240,
     /** Maximum width when the window is narrow. */
-    maxNarrowWidth: 280,
+    maxNarrowWidth: 320,
   },
 
   /** Height of the compact top bar (px) */

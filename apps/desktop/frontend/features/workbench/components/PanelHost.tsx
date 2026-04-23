@@ -147,7 +147,7 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
           className
         )}
         style={{
-          flex: side === 'right' ? '0 0 auto' : '0 1 auto',
+          flex: '0 1 auto',
           width: 'auto',
           flexBasis: panelWidth,
           minWidth: `${minPanelWidth}px`,
