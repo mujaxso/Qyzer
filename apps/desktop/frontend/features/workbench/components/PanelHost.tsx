@@ -145,6 +145,24 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
     };
   }, []);
 
+  // Inject styles that force all direct children of the right panel to
+  // respect the available width (critical for the assistant panel).
+  useEffect(() => {
+    if (side !== 'right') return;
+    const style = document.createElement('style');
+    style.textContent = `
+      .panel-host-right > * {
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, [side]);
+
   if (!isVisible || !activePanel) {
     return null;
   }
@@ -164,6 +182,7 @@ export function PanelHost({ className, side = 'left' }: PanelHostProps) {
         className={cn(
           'h-full bg-panel overflow-hidden flex flex-col relative min-h-0',
           side === 'left' ? 'border-r' : 'border-l',
+          side === 'right' ? 'panel-host-right' : '',
           className
         )}
         style={{
