@@ -170,7 +170,6 @@ function detectLanguageExtension(path: string): string | undefined {
     pp: 'Pascal',
     prg: 'Pascal',
     prolog: 'Prolog',
-    pl: 'Prolog',
     proto: 'Protocol Buffers',
     r: 'R',
     rmd: 'R Markdown',
@@ -180,7 +179,6 @@ function detectLanguageExtension(path: string): string | undefined {
     resi: 'Reason Interface',
     re: 'ReScript',
     rei: 'ReScript Interface',
-    ml: 'Standard ML',
     sml: 'Standard ML',
     scala: 'Scala',
     sc: 'Scala Script',
@@ -194,7 +192,6 @@ function detectLanguageExtension(path: string): string | undefined {
     tfstate: 'Terraform State',
     v: 'V',
     verilog: 'Verilog',
-    v: 'Verilog',
     vhd: 'VHDL',
     vhdl: 'VHDL',
     waaa: 'WebAssembly (Text)',
@@ -226,7 +223,6 @@ function detectLanguageExtension(path: string): string | undefined {
     nvmrc: 'Node Version',
     phplintrc: 'PHPLint Config',
     phpcs: 'PHP CodeSniffer Config',
-    phpmd: 'PHPMD Config',
     phpmd: 'PHPMD Config',
   };
   return known[ext];

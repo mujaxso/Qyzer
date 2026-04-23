@@ -205,6 +205,7 @@ pub async fn get_line_count(document_id: String) -> Result<usize, String> {
 }
 
 /// Return the full text content of a document.
+#[allow(dead_code)]
 #[command]
 pub async fn get_document_content(document_id: String) -> Result<String, String> {
     let docs = DOCUMENTS.lock().map_err(|e| format!("Lock error: {}", e))?;
