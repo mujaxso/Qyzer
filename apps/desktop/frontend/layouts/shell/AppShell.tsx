@@ -18,7 +18,8 @@ export function AppShell() {
     activeLeftPanel, 
     isLeftPanelVisible, 
     isRightPanelVisible, 
-    activeRightPanel 
+    activeRightPanel,
+    togglePanel 
   } = useWorkbenchStore();
   
   // Get activity items for the active panels
@@ -28,16 +29,22 @@ export function AppShell() {
   // so the editor always gets enough room.
   const prevWidth = useRef(window.innerWidth);
   useEffect(() => {
-    const currentWidth = window.innerWidth;
-    if (currentWidth < LAYOUT.collapseThreshold && prevWidth.current >= LAYOUT.collapseThreshold) {
-      if (isLeftPanelVisible) {
-        togglePanel(activeLeftPanel ?? 'explorer');
+    const handleResize = () => {
+      const currentWidth = window.innerWidth;
+      if (currentWidth < LAYOUT.collapseThreshold && prevWidth.current >= LAYOUT.collapseThreshold) {
+        if (isLeftPanelVisible) {
+          togglePanel(activeLeftPanel ?? 'explorer');
+        }
+        if (isRightPanelVisible) {
+          togglePanel(activeRightPanel ?? 'assistant');
+        }
       }
-      if (isRightPanelVisible) {
-        togglePanel(activeRightPanel ?? 'assistant');
-      }
-    }
-    prevWidth.current = currentWidth;
+      prevWidth.current = currentWidth;
+    };
+    window.addEventListener('resize', handleResize);
+    // Run on mount
+    handleResize();
+    return () => window.removeEventListener('resize', handleResize);
   }, [isLeftPanelVisible, isRightPanelVisible, activeLeftPanel, activeRightPanel, togglePanel]);
 
   // Determine if we should show full-width panel (only settings)
