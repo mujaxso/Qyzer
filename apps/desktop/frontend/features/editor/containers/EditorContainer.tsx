@@ -158,38 +158,6 @@ export function EditorContainer() {
           readOnly={false}
         />
       </div>
-      {/* Status bar with file information */}
-      {activeFilePath && (
-        <div className="flex items-center border-t border-divider px-3 py-1 text-xs text-primary/60 bg-statusbar">
-          {fileInfo.lineCount !== undefined && (
-            <>
-              <span className="mr-4 whitespace-nowrap">
-                {fileInfo.lineCount} lines
-              </span>
-              <span className="mr-4 whitespace-nowrap">
-                {fileInfo.charCount} chars
-              </span>
-              {fileInfo.largeFileMode === 'VeryLarge' && (
-                <span className="mr-4 text-yellow-500 font-medium" title="File is very large – only first part is shown">
-                  very large
-                </span>
-              )}
-              {fileInfo.largeFileMode === 'Large' && (
-                <span className="mr-4 text-yellow-500 font-medium" title="File is large – may affect performance">
-                  large
-                </span>
-              )}
-              {fileInfo.contentTruncated && (
-                <span className="text-yellow-500 font-semibold" title="Only the first part of the file is shown to keep the editor responsive.">
-                  truncated
-                </span>
-              )}
-            </>
-          )}
-          {/* Right‑aligned cursor position placeholder */}
-          <div className="ml-auto text-primary/40" />
-        </div>
-      )}
     </div>
   );
 }
