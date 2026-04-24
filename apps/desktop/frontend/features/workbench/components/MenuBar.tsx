@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useWorkbenchStore } from '../store/workbenchStore';
 import { invoke } from '@tauri-apps/api/core';
-import { isTauri } from '@/lib/platform/windowControls';
 
 interface MenuItem {
   label: string;
@@ -11,21 +10,14 @@ interface MenuItem {
 
 export function MenuBar() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [isTauriEnv, setIsTauriEnv] = useState(false);
-
-  useEffect(() => {
-    isTauri().then(setIsTauriEnv);
-  }, []);
 
   const handleOpenWorkspace = async () => {
-    if (!isTauriEnv) return;
+    console.log('handleOpenWorkspace triggered');
     try {
-      // Using the already-existing open_file_dialog command
       const result: { selected_path: string | null } = await invoke('open_file_dialog');
+      console.log('Dialog result:', result);
       if (result.selected_path) {
-        // open_workspace expects an OpenWorkspaceRequest { path }
         await invoke('open_workspace', { path: result.selected_path });
-        // Open the explorer panel to show the opened workspace
         const { togglePanel } = useWorkbenchStore.getState();
         togglePanel('explorer');
       }

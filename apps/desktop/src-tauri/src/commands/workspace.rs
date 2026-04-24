@@ -272,6 +272,7 @@ pub struct OpenDialogResponse {
 pub async fn open_file_dialog() -> Result<OpenDialogResponse, String> {
     use tracing::{info, warn};
     
+    tracing::info!("open_file_dialog command called");
     info!("Opening file dialog for workspace selection");
     
     // Check if we're on Wayland
