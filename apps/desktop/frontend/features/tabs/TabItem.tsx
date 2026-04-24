@@ -1,5 +1,6 @@
 import { useTabsStore } from './store';
 import { cn } from '@/lib/utils';
+import { useWorkspaceStore } from '@/features/workbench/store/workbenchStore';
 
 interface TabItemProps {
   tab: { id: string; title: string; isDirty: boolean };
@@ -21,10 +22,13 @@ export function TabItem({ tab, isActive }: TabItemProps) {
       className={cn(
         'group relative flex items-center gap-1.5 px-3 py-2 text-sm font-mono cursor-default select-none border-b-2 transition-colors',
         isActive
-          ? 'bg-editor text-editor-foreground border-b-accent'
-          : 'bg-editor text-muted-foreground hover:bg-elevated-panel border-b-transparent hover:border-b-hover'
+          ? 'bg-panel text-editor-foreground border-b-accent'
+          : 'bg-panel text-muted-foreground hover:bg-elevated-panel border-b-transparent hover:border-b-hover'
       )}
-      onClick={() => setActiveTab(tab.id)}
+      onClick={() => {
+        setActiveTab(tab.id);
+        useWorkspaceStore.getState().setActiveFilePath(tab.id);
+      }}
       onMouseDown={handleMiddleClick}
       data-tab-id={tab.id}
       data-no-drag="true"
