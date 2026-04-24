@@ -8,6 +8,7 @@ import { getActivityItem } from '@/features/workbench/config/activityRegistry';
 import { Suspense, lazy, useEffect, useRef } from 'react';
 import { LAYOUT } from '@/features/workbench/config/layoutConstants';
 import { useTabsStore, WELCOME_TAB_ID } from '@/features/tabs/store';
+import { TabStrip } from '@/features/tabs/TabStrip';
 
 // Lazy load full-width panel components
 const SettingsPanel = lazy(() => import('@/features/settings/panel/SettingsPanel'));
@@ -99,6 +100,7 @@ export function AppShell() {
         {/* Main Content Area (Editor) */}
         {showMainContent && (
           <div className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ order: 1 }}>
+            <TabStrip />
             <div className="flex-1 overflow-hidden w-full min-w-0">
               <EditorContainer />
             </div>

@@ -42,17 +42,8 @@ export function EditorContainer() {
     // Only try to load a real file when we have a path to load.
     if (activeFilePath && activeTab?.kind === 'file') {
       loadFile(activeFilePath);
-    } else if (!activeFilePath) {
-      // Default placeholder content (shown when no file is open)
-      setContent(`// Welcome to Zaroxi Editor
-// Open a file from the workspace explorer to start editing
-
-// Or create a new file using the command palette (Ctrl+P)`);
-      setLanguage('rust');
-      setFileName('editor.rs');
-      setFileInfo({});
     }
-    
+
     // Add keyboard shortcut for save (Ctrl+S)
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
