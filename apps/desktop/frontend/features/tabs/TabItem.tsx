@@ -1,6 +1,7 @@
 import { useTabsStore } from './store';
 import { cn } from '@/lib/utils';
 import { useWorkspaceStore } from '@/features/workbench/store/workbenchStore';
+import { WorkspaceService } from '@/features/workspace/services/workspaceService';
 
 interface TabItemProps {
   tab: { id: string; title: string; isDirty: boolean };
@@ -9,6 +10,16 @@ interface TabItemProps {
 
 export function TabItem({ tab, isActive }: TabItemProps) {
   const { setActiveTab, closeTab } = useTabsStore();
+
+  const handleTabClick = async () => {
+    setActiveTab(tab.id);
+    useWorkspaceStore.getState().setActiveFilePath(tab.id);
+    try {
+      await WorkspaceService.openFileInEditor(tab.id);
+    } catch (error) {
+      console.error('Failed to load file:', error);
+    }
+  };
 
   const handleMiddleClick = (e: React.MouseEvent) => {
     if (e.button === 1) {
@@ -25,10 +36,7 @@ export function TabItem({ tab, isActive }: TabItemProps) {
           ? 'bg-panel text-editor-foreground border-b-accent'
           : 'bg-panel text-muted-foreground hover:bg-elevated-panel border-b-transparent hover:border-b-hover'
       )}
-      onClick={() => {
-        setActiveTab(tab.id);
-        useWorkspaceStore.getState().setActiveFilePath(tab.id);
-      }}
+      onClick={handleTabClick}
       onMouseDown={handleMiddleClick}
       data-tab-id={tab.id}
       data-no-drag="true"
