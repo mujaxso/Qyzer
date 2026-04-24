@@ -14,15 +14,6 @@ export function EditorContainer() {
     [tabs, activeTabId],
   );
 
-  // For the Welcome tab we short‑circuit and render a completely different view.
-  if (activeTab?.kind === 'welcome') {
-    return (
-      <div className="h-full flex flex-col bg-editor min-h-0 w-full min-w-0">
-        <WelcomeView />
-      </div>
-    );
-  }
-
   const [content, setContent] = useState<string>('');
   const [language, setLanguage] = useState<string>('plaintext');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -135,6 +126,15 @@ export function EditorContainer() {
       }
     }
   };
+
+  // Render the Welcome tab as a completely different view (after hooks so rule of hooks is satisfied)
+  if (activeTab?.kind === 'welcome') {
+    return (
+      <div className="h-full flex flex-col bg-editor min-h-0 w-full min-w-0">
+        <WelcomeView />
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-editor min-h-0 w-full min-w-0">

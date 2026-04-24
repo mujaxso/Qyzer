@@ -26,8 +26,13 @@ interface TabsState {
 export const useTabsStore = create<TabsState>()(
   devtools(
     (set, get) => ({
-      tabs: [],
-      activeTabId: null,
+      tabs: [{
+        id: WELCOME_TAB_ID,
+        title: 'Welcome',
+        isDirty: false,
+        kind: 'welcome',
+      }],
+      activeTabId: WELCOME_TAB_ID,
 
       openFile: (id, title, kind = 'file') => {
         const { tabs } = get();
