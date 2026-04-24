@@ -55,6 +55,27 @@ export function AppShell() {
     return () => window.removeEventListener('resize', handleResize);
   }, [isLeftPanelVisible, isRightPanelVisible, activeLeftPanel, activeRightPanel, togglePanel]);
 
+  // Hide scrollbars globally but allow scrolling (matches native app look)
+  useEffect(() => {
+    if (document.getElementById('scrollbar-hide')) return;
+    const style = document.createElement('style');
+    style.id = 'scrollbar-hide';
+    style.textContent = `
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      * {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      const el = document.getElementById('scrollbar-hide');
+      if (el) el.remove();
+    };
+  }, []);
+
   // Determine if we should show full-width panel (only settings)
   const isSettingsActive = leftActivity?.id === 'settings' && isLeftPanelVisible;
   
