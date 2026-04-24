@@ -55,12 +55,17 @@ export function AppShell() {
     return () => window.removeEventListener('resize', handleResize);
   }, [isLeftPanelVisible, isRightPanelVisible, activeLeftPanel, activeRightPanel, togglePanel]);
 
-  // Hide scrollbars globally but allow scrolling (matches native app look)
+  // Hide all scrollbars everywhere – both window and internal
   useEffect(() => {
     if (document.getElementById('scrollbar-hide')) return;
     const style = document.createElement('style');
     style.id = 'scrollbar-hide';
     style.textContent = `
+      html, body {
+        overflow: hidden;
+        height: 100%;
+        margin: 0;
+      }
       ::-webkit-scrollbar {
         display: none;
       }
