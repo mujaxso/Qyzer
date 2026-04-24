@@ -22,30 +22,20 @@ export function MenuBar() {
         // 1. Open workspace via backend (emits workspace:opened event)
         await invoke('open_workspace', { path: selectedPath });
 
-        // 2. Manually fetch the first‑level directory listing
-        const entries: {
-          name: string;
-          path: string;
-          is_dir: boolean;
-          file_type: string | null;
-          size: number | null;
-          modified: string | null;
-        }[] = await invoke('list_directory', { path: selectedPath });
+        // 2. Fetch the full workspace tree using the backend command
+        const treeResult = await invoke<{ tree: any[] }>('get_workspace_tree', {
+          workspaceId: '',
+          rootPath: selectedPath,
+        });
+        const treeData = treeResult?.tree ?? [];
 
-        // 3. Convert to the ExplorerTreeNode shape expected by the front‑end
-        const treeNodes = entries.map((e) => ({
-          name: e.name,
-          path: e.path,
-          is_dir: e.is_dir,
-          children: [],
-        }));
-
-        // 4. Update the workspace store
+        // 3. Update the workspace store with root path and tree
         const { setRootPath, setTree } = useWorkspaceStore.getState();
         setRootPath(selectedPath);
-        setTree(treeNodes);
+        setTree(treeData);
+        console.log(`Workspace tree fetched: ${treeData.length} nodes`);
 
-        // 5. Open the explorer panel
+        // 4. Open the explorer panel
         useWorkbenchStore.getState().togglePanel('explorer');
       }
     } catch (e) {
