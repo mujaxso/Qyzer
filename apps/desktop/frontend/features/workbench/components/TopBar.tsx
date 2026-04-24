@@ -4,8 +4,7 @@ import { useWorkbenchStore } from '../store/workbenchStore';
 import { useEffect, useState } from 'react';
 import { isTauri, getWindowInstance, windowControlActions } from '@/lib/platform/windowControls';
 import { useLayoutMode } from '@/hooks/useLayoutMode';
-import { useTabsStore } from '@/features/tabs/stores/useTabsStore';
-import { useWorkspaceStore } from '@/features/workspace/stores/useWorkspaceStore';
+import { useTabsStore } from '@/features/tabs/store';
 import { MenuBar } from './MenuBar';
 
 interface TopBarProps {
