@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useTabsStore } from '@/features/tabs/store';
 
 interface CodeEditorProps {
   initialValue: string;
@@ -12,6 +13,7 @@ interface CodeEditorProps {
 export function CodeEditor({
   initialValue,
   onChange,
+  filePath,
   language = 'plaintext',
   readOnly = false,
   className,
@@ -46,6 +48,9 @@ export function CodeEditor({
     const newValue = e.target.value;
     setValue(newValue);
     onChange(newValue);
+    if (filePath) {
+      useTabsStore.getState().markDirty(filePath);
+    }
   };
 
   // Common class and style for both read‑only (pre) and editable (textarea)

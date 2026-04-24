@@ -22,7 +22,7 @@ export function TabItem({ tab, isActive }: TabItemProps) {
         'group relative flex items-center gap-1.5 px-3 py-2 text-sm font-mono cursor-default select-none border-b-2 transition-colors',
         isActive
           ? 'bg-editor text-editor-foreground border-b-accent'
-          : 'bg-panel text-muted-foreground hover:bg-elevated-panel border-b-transparent hover:border-b-hover'
+          : 'bg-editor text-muted-foreground hover:bg-elevated-panel border-b-transparent hover:border-b-hover'
       )}
       onClick={() => setActiveTab(tab.id)}
       onMouseDown={handleMiddleClick}
@@ -42,8 +42,8 @@ export function TabItem({ tab, isActive }: TabItemProps) {
       {/* close button – visible on hover */}
       <button
         className={cn(
-          'ml-auto flex-shrink-0 rounded-sm p-0.5 hover:bg-hover-bg text-muted-foreground/50 hover:text-foreground',
-          'opacity-0 group-hover:opacity-100 transition-opacity'
+          'ml-auto flex-shrink-0 rounded-sm p-0.5 hover:bg-hover-bg text-muted-foreground/50 hover:text-foreground transition-opacity',
+          isActive ? 'opacity-70 hover:opacity-100' : 'opacity-0 group-hover:opacity-70'
         )}
         onClick={(e) => {
           e.stopPropagation();
