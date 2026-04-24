@@ -159,6 +159,11 @@ pub struct SemanticColors {
     pub border: Color,
     pub border_subtle: Color,
     pub divider: Color,
+    pub divider_subtle: Color,
+    pub panel_header_background: Color,
+    pub nested_surface_background: Color,
+    pub app_chrome_background: Color,
+    pub tab_strip_background: Color,
     pub accent: Color,
     pub accent_hover: Color,
     pub accent_soft: Color,
@@ -231,6 +236,11 @@ impl SemanticColors {
             border: Color::from_hex("#343944"),                  // Borders - visible but not harsh
             border_subtle: Color::from_rgba(0.20, 0.22, 0.27, 0.5), // Subtle borders
             divider: Color::from_hex("#343944"),                 // Dividers match borders
+            divider_subtle: Color::from_rgba(0.20, 0.22, 0.27, 0.3), // Very soft divider, less visible
+            panel_header_background: Color::from_hex("#282C35"), // Slightly lighter than panel background
+            nested_surface_background: Color::from_hex("#2D313A"), // For cards, input bars
+            app_chrome_background: Color::from_hex("#1B1D22"),   // Matches app_background (shell)
+            tab_strip_background: Color::from_hex("#20232A"),    // Same as activity-rail for consistency
             accent: Color::from_hex("#5B8CFF"),                  // Restrained blue accent
             accent_hover: Color::from_hex("#6B9CFF"),            // Hover accent - slightly brighter
             accent_soft: Color::from_rgba(0.36, 0.55, 1.0, 0.15), // Soft accent background
@@ -303,6 +313,11 @@ impl SemanticColors {
             border: Color::from_hex("#D7D1C7"),                  // Borders - warm neutral
             border_subtle: Color::from_rgba(0.84, 0.82, 0.78, 0.5), // Subtle borders
             divider: Color::from_hex("#D7D1C7"),                 // Dividers match borders
+            divider_subtle: Color::from_rgba(0.84, 0.82, 0.78, 0.4), // Very soft divider
+            panel_header_background: Color::from_hex("#E8E5DE"), // Slightly lighter than panel background
+            nested_surface_background: Color::from_hex("#F0EEE8"), // For cards
+            app_chrome_background: Color::from_hex("#F4F3EF"),   // Matches app_background (shell)
+            tab_strip_background: Color::from_hex("#E7E4DD"),    // Matches activity-rail
             accent: Color::from_hex("#426EDB"),                  // Restrained blue accent
             accent_hover: Color::from_hex("#3A62C8"),            // Hover accent - slightly darker
             accent_soft: Color::from_rgba(0.26, 0.43, 0.86, 0.10), // Soft accent background
