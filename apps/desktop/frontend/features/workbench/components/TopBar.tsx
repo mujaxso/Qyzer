@@ -86,9 +86,9 @@ export function TopBar({ className }: TopBarProps) {
       style={{ borderBottom: '0.5px solid var(--color-divider-subtle)' }}
       {...(isTauriEnv ? { 'data-tauri-drag-region': 'true' } : {})}
     >
-      {/* Left section: Brand and menu */}
+      {/* Left zone: brand + menus */}
       <div 
-        className={`flex items-center ${layoutMode === 'narrow' ? 'gap-2' : 'gap-4'}`} 
+        className="flex items-center gap-4" 
         {...(isTauriEnv ? { 'data-tauri-drag-region': 'true' } : {})}
       >
         <div 
@@ -100,50 +100,52 @@ export function TopBar({ className }: TopBarProps) {
             <span className="font-semibold text-sm text-primary">Zaroxi Studio</span>
           )}
         </div>
-          
-        <div className="flex items-center gap-0">
+        <nav 
+          className="flex items-center gap-1" 
+          {...(isTauriEnv ? { 'data-tauri-drag-region': 'true' } : {})}
+        >
           <button
             onClick={() => togglePanel('explorer')}
-            className="px-2 py-2 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-medium rounded-sm"
+            className="px-2 py-1.5 text-xs hover:bg-hover-bg transition-colors text-secondary rounded-sm font-medium"
             data-no-drag="true"
           >
             File
           </button>
           <button
             onClick={() => togglePanel('search')}
-            className="px-2 py-2 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-medium rounded-sm"
+            className="px-2 py-1.5 text-xs hover:bg-hover-bg transition-colors text-secondary rounded-sm font-medium"
             data-no-drag="true"
           >
             Edit
           </button>
           <button
             onClick={() => togglePanel('settings')}
-            className="px-2 py-2 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-medium rounded-sm"
+            className="px-2 py-1.5 text-xs hover:bg-hover-bg transition-colors text-secondary rounded-sm font-medium"
             data-no-drag="true"
           >
             View
           </button>
           <button
             onClick={() => togglePanel('assistant')}
-            className="px-2 py-2 text-xs hover:bg-hover-bg transition-colors text-primary hover:text-accent font-medium rounded-sm"
+            className="px-2 py-1.5 text-xs hover:bg-hover-bg transition-colors text-secondary rounded-sm font-medium"
             data-no-drag="true"
           >
             Tools
           </button>
-        </div>
+        </nav>
       </div>
 
-      {/* Center section: Workspace context */}
+      {/* Center zone: workspace context */}
       <div 
         className="flex-1 flex justify-center items-center" 
         {...(isTauriEnv ? { 'data-tauri-drag-region': 'true' } : {})}
       >
-        <div className="text-sm text-primary/90 truncate max-w-lg font-medium">
+        <span className="text-sm text-muted-foreground truncate max-w-md">
           No workspace open
-        </div>
+        </span>
       </div>
 
-      {/* Right section: Window controls or quick actions */}
+      {/* Right zone: window controls / global actions */}
       <div className="flex items-center gap-2">
         {isTauriEnv ? (
           <>
@@ -165,7 +167,7 @@ export function TopBar({ className }: TopBarProps) {
             </button>
             <button
               onClick={handleClose}
-              className="w-9 h-9 flex items-center justify-center rounded hover:bg-destructive/20 hover:text-destructive transition-colors"
+              className="w-9 h-9 flex items-center justify-center rounded hover:bg-destructive/10 hover:text-destructive transition-colors"
               aria-label="Close"
               data-no-drag="true"
             >
@@ -180,13 +182,6 @@ export function TopBar({ className }: TopBarProps) {
               aria-label="Settings"
             >
               <Icon name="settings" size={15} />
-            </button>
-            <button
-              onClick={() => {}}
-              className="w-9 h-9 flex items-center justify-center rounded hover:bg-hover-bg transition-colors"
-              aria-label="Theme"
-            >
-              <Icon name="palette" size={15} />
             </button>
           </>
         )}
