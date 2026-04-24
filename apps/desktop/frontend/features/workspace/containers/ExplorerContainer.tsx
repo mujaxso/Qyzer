@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { ExplorerTree } from '../components/ExplorerTree';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore';
 import { WorkspaceService } from '../services/workspaceService';
+import { useTabsStore } from '@/features/tabs/store';
 
 export function ExplorerContainer() {
   const {
@@ -50,13 +51,18 @@ export function ExplorerContainer() {
     }
   };
 
+  const tabsStore = useTabsStore();
+
   const handleNodeClick = async (node: ExplorerTreeNode) => {
     setSelectedPath(node.path);
     
     if (node.isDir) {
       toggleExpanded(node.path);
     } else {
-      // Open file in editor
+      // Register the tab in the tab system
+      tabsStore.openFile(node.path, node.name);
+
+      // Open file in editor (existing behaviour)
       setActiveFilePath(node.path);
       
       // Check if we're in Tauri environment - use multiple detection methods

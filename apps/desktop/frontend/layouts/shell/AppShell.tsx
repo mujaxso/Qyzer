@@ -10,6 +10,7 @@ import { useLayoutMode } from '@/hooks/useLayoutMode';
 import { Suspense, lazy, useEffect, useRef } from 'react';
 import { setupWindowControls } from '@/lib/platform/windowControls';
 import { LAYOUT } from '@/features/workbench/config/layoutConstants';
+import { TabStrip } from '@/features/tabs/TabStrip';
 
 // Lazy load full-width panel components
 const SettingsPanel = lazy(() => import('@/features/settings/panel/SettingsPanel'));
@@ -110,9 +111,10 @@ export function AppShell() {
           </div>
         )}
         
-        {/* Main Content Area (Editor) */}
+        {/* Main Content Area (Tab Strip + Editor) */}
         {showMainContent && (
           <div className="flex-1 flex flex-col overflow-hidden min-w-0" style={{ order: 1 }}>
+            <TabStrip />
             <div className="flex-1 overflow-hidden bg-editor w-full min-w-0">
               <EditorContainer />
             </div>
