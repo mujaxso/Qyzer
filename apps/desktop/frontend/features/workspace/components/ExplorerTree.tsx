@@ -8,7 +8,6 @@ interface ExplorerTreeProps {
   selectedPath: string | null;
   activeFilePath: string | null;
   onNodeClick: (node: ExplorerTreeNode) => void;
-  onLoadChildren?: (path: string) => void;
   depth?: number;
 }
 
@@ -18,16 +17,14 @@ export function ExplorerTree({
   selectedPath,
   activeFilePath,
   onNodeClick,
-  onLoadChildren,
   depth = 0,
 }: ExplorerTreeProps) {
   const handleNodeClick = (node: ExplorerTreeNode) => {
-    onNodeClick(node);
-    
-    // If it's a directory and not expanded, load children
-    if (node.isDir && !expandedPaths.has(node.path) && onLoadChildren) {
-      onLoadChildren(node.path);
+    // For empty directories, do nothing to avoid misleading expansions
+    if (node.isDir && node.children && node.children.length === 0) {
+      return;
     }
+    onNodeClick(node);
   };
 
   const getFileIcon = (node: ExplorerTreeNode): keyof typeof import('@/lib/theme/nerd-font-icons').nerdFontIcons => {
@@ -142,7 +139,7 @@ export function ExplorerTree({
                   {node.name}
                 </span>
               </div>
-              {node.isDir && (
+              {hasChildren && (
                 <Icon
                   name={isExpanded ? 'chevron-down' : 'chevron-right'}
                   size={12}
@@ -152,15 +149,14 @@ export function ExplorerTree({
               )}
             </div>
             
-            {/* Render children if expanded */}
-            {node.isDir && isExpanded && node.children && (
+            {/* Render children only if expanded and children exist */}
+            {node.isDir && isExpanded && hasChildren && (
               <ExplorerTree
-                nodes={node.children}
+                nodes={node.children!}
                 expandedPaths={expandedPaths}
                 selectedPath={selectedPath}
                 activeFilePath={activeFilePath}
                 onNodeClick={onNodeClick}
-                onLoadChildren={onLoadChildren}
                 depth={depth + 1}
               />
             )}

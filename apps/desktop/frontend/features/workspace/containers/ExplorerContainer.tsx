@@ -57,7 +57,17 @@ export function ExplorerContainer() {
     setSelectedPath(node.path);
     
     if (node.isDir) {
-      toggleExpanded(node.path);
+      // Check expansion state before any mutation
+      const wasExpanded = useWorkspaceStore.getState().explorerUI.expandedPaths.has(node.path);
+      
+      if (!wasExpanded) {
+        // Load children before toggling, so the subtree is available for rendering
+        await handleLoadChildren(node.path);
+        toggleExpanded(node.path);
+      } else {
+        // Collapse the directory
+        toggleExpanded(node.path);
+      }
     } else {
       // Register the tab in the tab system
       tabsStore.openFile(node.path, node.name);
@@ -87,7 +97,7 @@ export function ExplorerContainer() {
     }
   };
 
-  const handleLoadChildren = async (path: string) => {
+  const handleLoadChildren = async (path: string): Promise<void> => {
     setLoading(true);
     try {
       const children = await WorkspaceService.loadDirectoryChildren(path);
@@ -200,7 +210,6 @@ export function ExplorerContainer() {
         selectedPath={explorerUI.selectedPath}
         activeFilePath={explorerUI.activeFilePath}
         onNodeClick={handleNodeClick}
-        onLoadChildren={handleLoadChildren}
       />
     </div>
   );
