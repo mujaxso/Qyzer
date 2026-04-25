@@ -5,6 +5,7 @@ import { LineNumberGutter } from './gutter/LineNumberGutter';
 import { GUTTER_CONFIG } from './gutter/GutterConfig';
 import { computeGutterWidth } from './gutter/GutterLayout';
 import { FONT_TOKENS } from '@/lib/theme/font-tokens';
+import { invoke } from '@tauri-apps/api/core';
 
 interface CodeEditorProps {
   initialValue: string;
@@ -77,6 +78,7 @@ function ReadOnlyContent({
   displayLineCount,
   largeFileBanner,
   onScroll,
+  styledSpans,
 }: {
   displayValue: string;
   cursorLine: number;
@@ -85,6 +87,7 @@ function ReadOnlyContent({
   displayLineCount: number;
   largeFileBanner: React.ReactNode;
   onScroll: (st: number) => void;
+  styledSpans: Array<{start: number; end: number; color: string}>;
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(0);
@@ -148,6 +151,44 @@ function ReadOnlyContent({
       const raw = displayValue.slice(start, end);
       // Strip trailing newline(s) so the content doesn't break absolute layout.
       const text = raw.replace(/\r?\n$/, '');
+
+      // Build styled spans for this line
+      const lineStart = start;
+      const lineEnd = end;
+      const lineSpans = styledSpans.filter(
+        (s) => s.start >= lineStart && s.end <= lineEnd
+      );
+
+      // Create colored segments
+      const segments: React.ReactNode[] = [];
+      let currentPos = lineStart;
+      for (const span of lineSpans) {
+        if (span.start > currentPos) {
+          // Unstyled text
+          segments.push(
+            <span key={`${currentPos}-plain`}>
+              {text.slice(currentPos - lineStart, span.start - lineStart)}
+            </span>
+          );
+        }
+        segments.push(
+          <span
+            key={`${span.start}-styled`}
+            style={{ color: span.color }}
+          >
+            {text.slice(span.start - lineStart, span.end - lineStart)}
+          </span>
+        );
+        currentPos = span.end;
+      }
+      if (currentPos < lineEnd) {
+        segments.push(
+          <span key={`${currentPos}-plain-end`}>
+            {text.slice(currentPos - lineStart)}
+          </span>
+        );
+      }
+
       rows.push(
         <div
           key={idx}
@@ -165,12 +206,12 @@ function ReadOnlyContent({
           }}
           className="text-sm p-0 text-editor-foreground"
         >
-          {text}
+          {segments.length > 0 ? segments : text}
         </div>,
       );
     }
     return rows;
-  }, [firstLine, lastLine, lineHeight, displayValue, sentinel]);
+  }, [firstLine, lastLine, lineHeight, displayValue, sentinel, styledSpans]);
 
   const handleScroll = useCallback(() => {
     if (rafRef.current != null) {
@@ -306,6 +347,23 @@ export function CodeEditor({
     };
   }, []);
 
+  // State for styled spans from Rust backend
+  const [styledSpans, setStyledSpans] = useState<Array<{start: number; end: number; color: string}>>([]);
+
+  // Fetch styled spans from Rust backend when file path changes
+  useEffect(() => {
+    if (!filePath) return;
+    console.log('[CodeEditor] Fetching styled spans for:', filePath);
+    invoke('get_styled_spans', { path: filePath })
+      .then((spans: any) => {
+        console.log('[CodeEditor] Received styled spans:', spans);
+        setStyledSpans(spans);
+      })
+      .catch((err: any) => {
+        console.error('[CodeEditor] Failed to get styled spans:', err);
+      });
+  }, [filePath]);
+
   const lineHeight = GUTTER_CONFIG.LINE_HEIGHT;
 
   const rafScrollRef = useRef<number | null>(null);
@@ -418,6 +476,7 @@ export function CodeEditor({
         displayLineCount={displayLineCount}
         largeFileBanner={largeFileBanner}
         onScroll={setScrollTop}
+        styledSpans={styledSpans}
       />
     );
   }

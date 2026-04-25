@@ -74,6 +74,45 @@ pub async fn open_document(path: String) -> Result<OpenDocumentResponse, String>
         .map_err(|e| format!("Failed to open document: {}", e))?;
 
     let document = &cached.document;
+}
+
+#[derive(Serialize)]
+pub struct StyledSpanResponse {
+    pub start: usize,
+    pub end: usize,
+    pub color: String,
+}
+
+#[tauri::command]
+pub async fn get_styled_spans(path: String) -> Result<Vec<StyledSpanResponse>, String> {
+    let path_buf = std::path::PathBuf::from(&path);
+    let canonical = path_buf
+        .canonicalize()
+        .map_err(|e| format!("Cannot canonicalize path: {}", e))?;
+
+    // Load the file content
+    let file_content = std::fs::read_to_string(&canonical)
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+
+    let document = Document::from_text_with_path(&file_content, canonical.to_string_lossy().to_string());
+    let mut editor = EditorState::from_document(document);
+
+    // Use dark theme for now (could be made configurable)
+    let colors = SemanticColors::dark();
+
+    let styled_spans = editor.styled_spans(&colors);
+
+    let response: Vec<StyledSpanResponse> = styled_spans
+        .iter()
+        .map(|span| StyledSpanResponse {
+            start: span.start,
+            end: span.end,
+            color: span.color.to_hex(),
+        })
+        .collect();
+
+    Ok(response)
+}
     let line_count = document.len_lines();
     let char_count = document.len_chars();
     let large_file_mode = document.large_file_mode();
