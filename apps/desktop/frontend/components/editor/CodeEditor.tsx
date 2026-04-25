@@ -611,13 +611,6 @@ export function CodeEditor({
           // Version changed, clear stale state
           stableHighlightState.delete(filePath);
         }
-        // Trigger initial fetch of styled spans now that version is known
-        const lineHeight = GUTTER_CONFIG.LINE_HEIGHT;
-        const containerHeight = containerHeightRef.current;
-        const overscan = 10;
-        const firstLine = 0;
-        const lastLine = Math.ceil(containerHeight / lineHeight) + overscan - 1;
-        fetchStyledSpans(filePath, firstLine, lastLine, versionRef.current);
       } catch (err) {
         console.error('[CodeEditor] Failed to get document version:', err);
       }
@@ -667,8 +660,6 @@ export function CodeEditor({
 
   useEffect(() => {
     if (!filePath) return;
-    // Wait until version is known before fetching
-    if (versionRef.current === 0) return;
     const lineHeight = GUTTER_CONFIG.LINE_HEIGHT;
     const containerHeight = containerHeightRef.current;
     const overscan = 10;
