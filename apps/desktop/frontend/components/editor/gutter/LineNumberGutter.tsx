@@ -44,10 +44,26 @@ export const LineNumberGutter = ({
     );
   }, [lineCount]);
 
+  // Early return if there are no lines
+  if (lineCount === 0) {
+    return (
+      <div
+        ref={outerRef}
+        className="h-full overflow-hidden shrink-0 border-r border-[rgba(128,128,128,0.18)]"
+        style={{
+          width: gutterWidth,
+          pointerEvents: 'none',
+          position: 'relative',
+        }}
+      />
+    );
+  }
+
   // Visible line range (clamped, with overscan)
   const { firstLine, lastLine } = useMemo(() => {
-    if (lineCount === 0 || containerHeight === 0) {
-      return { firstLine: 0, lastLine: 0 };
+    if (containerHeight === 0) {
+      // Container not yet measured – render nothing until we know a height
+      return { firstLine: -1, lastLine: -1 };
     }
     const effectiveScrollTop = Math.max(0, scrollTop);
     const first = Math.max(0, Math.floor(effectiveScrollTop / lineHeight) - OVERSCAN);
@@ -69,7 +85,8 @@ export const LineNumberGutter = ({
           key={lineIndex}
           style={{
             position: 'absolute',
-            top: lineIndex * lineHeight,
+            // Position relative to the parent (scrolled) area
+            top: lineIndex * lineHeight - scrollTop,
             left: 0,
             right: 0,
             height: lineHeight,
@@ -88,9 +105,7 @@ export const LineNumberGutter = ({
       );
     }
     return items;
-  }, [firstLine, lastLine, cursorLine, lineHeight]);
-
-  const totalHeight = lineCount * lineHeight;
+  }, [firstLine, lastLine, cursorLine, lineHeight, scrollTop]);
 
   return (
     <div
@@ -102,17 +117,7 @@ export const LineNumberGutter = ({
         position: 'relative',
       }}
     >
-      {/* Virtual scroll container: same size as the whole document but clipped */}
-      <div
-        className="min-w-full will-change-transform"
-        style={{
-          height: totalHeight,
-          transform: `translateY(-${Math.max(0, scrollTop)}px)`,
-          position: 'relative',
-        }}
-      >
-        {lineNumbers}
-      </div>
+      {lineNumbers}
     </div>
   );
 };
