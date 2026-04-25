@@ -61,8 +61,8 @@ export const LineNumberGutter = ({
 
   // Visible line range (clamped, with overscan)
   const { firstLine, lastLine } = useMemo(() => {
-    if (containerHeight === 0) {
-      // Container not yet measured – render nothing until we know a height
+    if (containerHeight === 0 || lineHeight <= 0) {
+      // Container not yet measured or invalid line height – render nothing
       return { firstLine: -1, lastLine: -1 };
     }
     const effectiveScrollTop = Math.max(0, scrollTop);
@@ -71,6 +71,10 @@ export const LineNumberGutter = ({
       lineCount - 1,
       Math.ceil((effectiveScrollTop + containerHeight) / lineHeight) + OVERSCAN - 1,
     );
+    // Safety guard against non‑finite values that could cause an infinite loop
+    if (!Number.isFinite(first) || !Number.isFinite(last)) {
+      return { firstLine: -1, lastLine: -1 };
+    }
     return { firstLine: first, lastLine: last };
   }, [scrollTop, lineHeight, lineCount, containerHeight]);
 

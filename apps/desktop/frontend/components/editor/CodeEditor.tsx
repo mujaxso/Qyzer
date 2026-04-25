@@ -15,7 +15,7 @@ interface CodeEditorProps {
 
 /** Maximum number of lines we allow to be rendered in the textarea at once.
  * Files exceeding this limit will show a preview of the first lines and forbid editing. */
-const MAX_VISIBLE_LINES = 10_000;
+const MAX_VISIBLE_LINES = 200_000;
 
 /** Fast line‑counting that stops scanning once we exceed MAX_VISIBLE_LINES.
  *  This avoids scanning gigabyte files completely. */
