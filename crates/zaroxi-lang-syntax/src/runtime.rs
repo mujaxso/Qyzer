@@ -177,6 +177,26 @@ impl Runtime {
             }
         }
 
+        // 9. Try to find runtime directory relative to the crate source directory
+        // This handles the case where the runtime directory is inside the crate itself
+        if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+            let manifest_path = PathBuf::from(manifest_dir);
+            // Check if runtime/treesitter exists directly in the crate directory
+            let candidate = manifest_path.join("runtime/treesitter");
+            if candidate.is_dir() {
+                return Some(candidate);
+            }
+            // Check if runtime exists directly in the crate directory
+            let runtime_dir = manifest_path.join("runtime");
+            if runtime_dir.is_dir() {
+                let ts_dir = runtime_dir.join("treesitter");
+                if ts_dir.is_dir() {
+                    return Some(ts_dir);
+                }
+                return Some(runtime_dir);
+            }
+        }
+
         None
     }
 
