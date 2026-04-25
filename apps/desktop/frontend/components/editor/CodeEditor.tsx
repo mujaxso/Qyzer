@@ -421,7 +421,7 @@ export function CodeEditor({
   const lastValidSpansRef = useRef<Array<{start: number; end: number; color: string}>>([]);
   const lastFetchedRangeRef = useRef<{firstLine: number; lastLine: number} | null>(null);
   const containerHeightRef = useRef(600);
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rafRef = useRef<number | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const scrollRef = useRef(scrollTop);
@@ -475,9 +475,9 @@ export function CodeEditor({
 
   useEffect(() => {
     if (!filePath) return;
-    if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); }
+    if (rafRef.current) { cancelAnimationFrame(rafRef.current); }
 
-    debounceTimerRef.current = setTimeout(() => {
+    rafRef.current = requestAnimationFrame(() => {
       const lineHeight = GUTTER_CONFIG.LINE_HEIGHT;
       const containerHeight = containerHeightRef.current;
       const overscan = 5;
@@ -485,13 +485,11 @@ export function CodeEditor({
       const firstLine = Math.max(0, Math.floor(effectiveScrollTop / lineHeight) - overscan);
       const lastLine = Math.ceil((effectiveScrollTop + containerHeight) / lineHeight) + overscan - 1;
 
-      const lastRange = lastFetchedRangeRef.current;
-      if (lastRange && Math.abs(lastRange.firstLine - firstLine) <= 2 && Math.abs(lastRange.lastLine - lastLine) <= 2) { return; }
-
+      // Always fetch (remove early return)
       fetchStyledSpans(filePath, firstLine, lastLine, documentVersion);
-    }, 50);
+    });
 
-    return () => { if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); } };
+    return () => { if (rafRef.current) { cancelAnimationFrame(rafRef.current); } };
   }, [filePath, scrollTop, documentVersion, fetchStyledSpans]);
 
   useEffect(() => {
