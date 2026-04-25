@@ -234,6 +234,7 @@ export function CodeEditor({
             ...codeStyle,
             overflow: 'auto',
           }}
+          onScroll={handleScroll}
         >
           {displayValue}
         </pre>
