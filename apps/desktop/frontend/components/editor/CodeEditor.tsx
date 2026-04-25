@@ -107,6 +107,12 @@ function ReadOnlyContent({
 
   const overscan = 5;
   const totalHeight = localLineCount * lineHeight;
+  const gutterWidth = Math.max(
+    GUTTER_CONFIG.MIN_WIDTH,
+    String(displayLineCount).length * GUTTER_CONFIG.DIGIT_WIDTH +
+      GUTTER_CONFIG.PADDING_LEFT +
+      GUTTER_CONFIG.PADDING_RIGHT,
+  );
 
   const { firstLine, lastLine } = useMemo(() => {
     if (containerHeight === 0 || lineHeight <= 0) {
@@ -141,7 +147,7 @@ function ReadOnlyContent({
           key={idx}
           style={{
             position: 'absolute',
-            left: 0,
+            left: gutterWidth,
             top: idx * lineHeight,
             right: 0,
             height: lineHeight,
@@ -173,14 +179,7 @@ function ReadOnlyContent({
   }, [onScroll]);
 
   return (
-    <div className="flex flex-row h-full w-full bg-editor overflow-hidden">
-      {/* Gutter – uses the modular LineNumberGutter component */}
-      <LineNumberGutter
-        lineCount={displayLineCount}
-        cursorLine={cursorLine}
-        lineHeight={lineHeight}
-        scrollTop={scrollTop}
-      />
+    <div className="flex flex-col h-full w-full bg-editor overflow-hidden">
       <div
         ref={scrollContainerRef}
         className="overflow-auto relative flex-1"
@@ -194,6 +193,25 @@ function ReadOnlyContent({
             minWidth: '100%',
           }}
         >
+          {/* Gutter – positioned absolutely inside the scroll container */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: gutterWidth,
+              height: totalHeight,
+              pointerEvents: 'none',
+              overflow: 'visible',
+            }}
+          >
+            <LineNumberGutter
+              lineCount={displayLineCount}
+              cursorLine={cursorLine}
+              lineHeight={lineHeight}
+              scrollTop={scrollTop}
+            />
+          </div>
           {/* Virtualised code rows – only visible lines are rendered */}
           {codeRows}
         </div>

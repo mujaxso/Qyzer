@@ -68,7 +68,6 @@ export const GutterView: React.FC<GutterViewProps> = React.memo(
       pointerEvents: 'none',
       position: 'relative',
       overflow: 'visible',
-      height: '100%',
     };
 
     const innerStyle: React.CSSProperties = {
@@ -80,7 +79,7 @@ export const GutterView: React.FC<GutterViewProps> = React.memo(
 
     return (
       <div
-        className={`h-full shrink-0 border-r border-[rgba(128,128,128,0.18)] ${className || ''}`}
+        className={`border-r border-[rgba(128,128,128,0.18)] ${className || ''}`}
         style={containerStyle}
       >
         <div style={innerStyle}>{lineNumbers}</div>
