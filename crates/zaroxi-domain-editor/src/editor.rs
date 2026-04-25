@@ -215,14 +215,25 @@ impl EditorState {
     /// Get styled spans for the current document, applying the given theme.
     ///
     /// This is the main method for the rendering layer to get syntax-colored spans.
+    /// All returned spans use **character offsets** (not byte offsets).
     pub fn styled_spans(&mut self, colors: &SemanticColors) -> Vec<StyledSpan> {
         let highlights = self.highlights();
-        apply_theme(&highlights, colors)
+        let mut spans = apply_theme(&highlights, colors);
+        // Convert byte offsets to character offsets
+        for span in &mut spans {
+            let start_char = self.document.byte_to_char(span.start);
+            let end_char = self.document.byte_to_char(span.end);
+            span.start = start_char;
+            span.end = end_char;
+        }
+        spans
     }
 
     /// Get styled spans for a specific line range, applying the given theme.
     ///
     /// This is optimized for rendering only visible lines.
+    /// All returned spans use **character offsets** (not byte offsets) so they
+    /// can be used directly by the frontend for text slicing.
     pub fn styled_spans_for_lines(
         &mut self,
         colors: &SemanticColors,
@@ -236,21 +247,25 @@ impl EditorState {
         let text = self.document.text();
         let total_lines = self.document.len_lines();
 
-        // Convert line range to byte range
-        let start_byte = self.document.line_to_char(start_line);
-        let end_byte = if end_line >= total_lines {
-            text.len()
+        // Convert line range to character range (not byte range)
+        let start_char = self.document.line_to_char(start_line);
+        let end_char = if end_line >= total_lines {
+            self.document.len_chars()
         } else {
             self.document.line_to_char(end_line)
         };
 
         let mut result = Vec::new();
 
-        // Filter spans to the requested range
+        // Filter spans to the requested range, converting byte offsets to char offsets
         for span in &highlights {
-            if span.end > start_byte && span.start < end_byte {
-                let clamped_start = span.start.max(start_byte);
-                let clamped_end = span.end.min(end_byte);
+            // Convert byte offsets to character offsets
+            let span_start_char = self.document.byte_to_char(span.start);
+            let span_end_char = self.document.byte_to_char(span.end);
+
+            if span_end_char > start_char && span_start_char < end_char {
+                let clamped_start = span_start_char.max(start_char);
+                let clamped_end = span_end_char.min(end_char);
                 if clamped_start < clamped_end {
                     let token_type = zaroxi_lang_syntax::theme_map::SemanticTokenType::from_highlight(span.highlight);
                     let color = token_type.theme_color(colors);
