@@ -396,16 +396,12 @@ export function CodeEditor({
   className,
 }: CodeEditorProps) {
   const [isLarge, setIsLarge] = useState<boolean>(() => {
-    if (initialValue.length > 10_000_000) {
-      return true;
-    }
+    if (initialValue.length > 10_000_000) { return true; }
     const r = fastLineCount(initialValue);
     return r === 'exceeds';
   });
   const [displayValue, setDisplayValue] = useState<string>(() => {
-    if (isLarge) {
-      return truncateToNLines(initialValue, MAX_VISIBLE_LINES);
-    }
+    if (isLarge) { return truncateToNLines(initialValue, MAX_VISIBLE_LINES); }
     return initialValue;
   });
 
@@ -422,50 +418,35 @@ export function CodeEditor({
   const [highlightVersion, setHighlightVersion] = useState(0);
   const [documentVersion, setDocumentVersion] = useState(0);
 
-  // Ref to store the last valid styled spans to avoid flash when fetch is in progress
   const lastValidSpansRef = useRef<Array<{start: number; end: number; color: string}>>([]);
-  // Ref to store the last fetched line range to avoid redundant fetches
   const lastFetchedRangeRef = useRef<{firstLine: number; lastLine: number} | null>(null);
-
-  // Ref to store the actual container height (shared with VirtualEditor)
-  const containerHeightRef = useRef(600); // default until measured
-
-  // Debounce timer for highlight fetches
+  const containerHeightRef = useRef(600);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Abort controller for cancelling in-flight requests
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Re-fetch highlights when scroll position changes (debounced)
   const scrollRef = useRef(scrollTop);
   scrollRef.current = scrollTop;
 
-  // Fetch styled spans with caching and cancellation
   const fetchStyledSpans = useCallback(async (
     filePath: string,
     firstLine: number,
     lastLine: number,
     version: number,
   ) => {
-    // Check cache first
     const cacheKey = getCachedSpansKey(filePath, version, firstLine, lastLine);
     const cached = styledSpansCache.get(cacheKey);
     if (cached) {
-      console.log('[CodeEditor] Using cached styled spans for:', filePath, 'lines', firstLine, '-', lastLine);
       setStyledSpans(cached.spans);
       lastValidSpansRef.current = cached.spans;
       lastFetchedRangeRef.current = { firstLine, lastLine };
       return;
     }
 
-    // Cancel any in-flight request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    if (abortControllerRef.current) { abortControllerRef.current.abort(); }
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
     try {
-      console.log('[CodeEditor] Fetching styled spans for:', filePath, 'lines', firstLine, '-', lastLine);
       const spans: any = await invoke('get_styled_spans', {
         path: filePath,
         startLine: firstLine,
@@ -473,89 +454,53 @@ export function CodeEditor({
         version: version,
       });
 
-      // Check if this request was cancelled
-      if (controller.signal.aborted) {
-        return;
-      }
+      if (controller.signal.aborted) { return; }
 
       const newSpans = spans || [];
-      // Cache the result
-      styledSpansCache.set(cacheKey, {
-        spans: newSpans,
-        version,
-        firstLine,
-        lastLine,
-      });
-      // Limit cache size (keep last 100 entries)
+      styledSpansCache.set(cacheKey, { spans: newSpans, version, firstLine, lastLine });
       if (styledSpansCache.size > 100) {
         const firstKey = styledSpansCache.keys().next().value;
-        if (firstKey) {
-          styledSpansCache.delete(firstKey);
-        }
+        if (firstKey) { styledSpansCache.delete(firstKey); }
       }
 
       setStyledSpans(newSpans);
       lastValidSpansRef.current = newSpans;
       lastFetchedRangeRef.current = { firstLine, lastLine };
     } catch (err: any) {
-      if (err?.message?.includes('abort') || err?.name === 'AbortError') {
-        // Request was cancelled, ignore
-        return;
-      }
+      if (err?.message?.includes('abort') || err?.name === 'AbortError') { return; }
       console.error('[CodeEditor] Failed to get styled spans:', err);
-      // Fallback: keep last valid spans instead of clearing to avoid flash
-      if (lastValidSpansRef.current.length === 0) {
-        setStyledSpans([]);
-      }
+      if (lastValidSpansRef.current.length === 0) { setStyledSpans([]); }
     }
   }, []);
 
   useEffect(() => {
     if (!filePath) return;
+    if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); }
 
-    // Clear any pending debounce timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Set a new debounce timer (50 ms for responsiveness)
     debounceTimerRef.current = setTimeout(() => {
-      // Compute visible line range for the current scroll position
       const lineHeight = GUTTER_CONFIG.LINE_HEIGHT;
-      const containerHeight = containerHeightRef.current; // use the actual measured height
+      const containerHeight = containerHeightRef.current;
       const overscan = 5;
       const effectiveScrollTop = Math.max(0, scrollTop);
       const firstLine = Math.max(0, Math.floor(effectiveScrollTop / lineHeight) - overscan);
       const lastLine = Math.ceil((effectiveScrollTop + containerHeight) / lineHeight) + overscan - 1;
 
-      // Skip fetch if the range hasn't changed significantly (within 2 lines)
       const lastRange = lastFetchedRangeRef.current;
-      if (lastRange && Math.abs(lastRange.firstLine - firstLine) <= 2 && Math.abs(lastRange.lastLine - lastLine) <= 2) {
-        return;
-      }
+      if (lastRange && Math.abs(lastRange.firstLine - firstLine) <= 2 && Math.abs(lastRange.lastLine - lastLine) <= 2) { return; }
 
       fetchStyledSpans(filePath, firstLine, lastLine, documentVersion);
     }, 50);
 
-    // Cleanup timer on unmount or when dependencies change
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
+    return () => { if (debounceTimerRef.current) { clearTimeout(debounceTimerRef.current); } };
   }, [filePath, scrollTop, documentVersion, fetchStyledSpans]);
 
-  // Initial fetch when file opens
   useEffect(() => {
     if (!filePath) return;
-
-    // Fetch initial highlights immediately (no debounce)
     const lineHeight = GUTTER_CONFIG.LINE_HEIGHT;
     const containerHeight = containerHeightRef.current;
     const overscan = 5;
     const firstLine = 0;
     const lastLine = Math.ceil(containerHeight / lineHeight) + overscan - 1;
-
     fetchStyledSpans(filePath, firstLine, lastLine, documentVersion);
   }, [filePath, documentVersion, fetchStyledSpans]);
 
@@ -571,23 +516,16 @@ export function CodeEditor({
         setIsLarge(false);
         setDisplayValue(initialValue);
       }
-      // Invalidate highlights when content changes
       setHighlightVersion(v => v + 1);
       setDocumentVersion(v => v + 1);
     }
   }, [initialValue]);
 
   useEffect(() => {
-    if (document.getElementById('hide-scrollbar-style')) {
-      return;
-    }
+    if (document.getElementById('hide-scrollbar-style')) { return; }
     const style = document.createElement('style');
     style.id = 'hide-scrollbar-style';
-    style.innerHTML = `
-      .hide-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-    `;
+    style.innerHTML = `.hide-scrollbar::-webkit-scrollbar { display: none; }`;
     document.head.appendChild(style);
     return () => {};
   }, []);
@@ -599,10 +537,7 @@ export function CodeEditor({
       fullValueRef.current = newValue;
       setDisplayValue(newValue);
       onChange(newValue);
-      if (filePath) {
-        useTabsStore.getState().markDirty(filePath);
-      }
-      // Invalidate highlights when content changes
+      if (filePath) { useTabsStore.getState().markDirty(filePath); }
       setHighlightVersion(v => v + 1);
       setDocumentVersion(v => v + 1);
     },
