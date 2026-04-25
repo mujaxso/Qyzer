@@ -96,7 +96,6 @@ function VirtualEditor({
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(600);
-  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const update = () => {
@@ -274,76 +273,99 @@ function VirtualEditor({
         ref={containerRef}
         className="relative flex-1 overflow-hidden"
       >
-        {/* Gutter */}
+        {/* Single scrollable container that holds both textarea and overlay */}
         <div
           style={{
             position: 'absolute',
             left: 0,
             top: 0,
-            width: gutterWidth,
-            height: '100%',
-            pointerEvents: 'none',
-            overflow: 'hidden',
-            zIndex: 2,
-          }}
-        >
-          <LineNumberGutter
-            lineCount={displayLineCount}
-            cursorLine={cursorLine}
-            lineHeight={lineHeight}
-            scrollTop={scrollTop}
-            containerHeight={containerHeight}
-          />
-        </div>
-        {/* Styled overlay – this is the single source of visible text */}
-        <div
-          style={{
-            position: 'absolute',
-            left: gutterWidth,
-            top: 0,
-            right: 0,
-            height: totalHeight,
-            pointerEvents: 'none',
-            overflow: 'hidden',
-            fontFamily: FONT_TOKENS.editor,
-            fontSize: 'inherit',
-            lineHeight: `${lineHeight}px`,
-            whiteSpace: 'pre',
-            zIndex: 1,
-          }}
-          className="text-sm p-0 text-editor-foreground"
-        >
-          {codeRows}
-        </div>
-        {/* Textarea for editing – transparent, only captures input */}
-        <textarea
-          ref={textAreaRef}
-          style={{
-            ...codeStyle,
-            position: 'absolute',
-            left: gutterWidth,
-            top: 0,
             right: 0,
             bottom: 0,
-            zIndex: 0,
+            overflow: 'auto',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
           }}
-          className="text-sm p-0"
-          value={displayValue}
-          onChange={handleChange}
-          onScroll={handleScroll}
-          onSelect={handleSelectionChange}
-          onClick={() => {
-            // Ensure textarea receives focus on click
-            if (textAreaRef.current && editable) {
-              textAreaRef.current.focus();
+          className="hide-scrollbar"
+          onScroll={(e) => {
+            // Sync scrollTop from this container to the textarea
+            const st = (e.target as HTMLDivElement).scrollTop;
+            if (textAreaRef.current && textAreaRef.current.scrollTop !== st) {
+              textAreaRef.current.scrollTop = st;
             }
+            onScroll(st);
           }}
-          spellCheck={false}
-          autoComplete="off"
-          autoCorrect="off"
-          wrap="off"
-          readOnly={!editable}
-        />
+        >
+          {/* Gutter – sticky left */}
+          <div
+            style={{
+              position: 'sticky',
+              left: 0,
+              top: 0,
+              width: gutterWidth,
+              height: totalHeight,
+              pointerEvents: 'none',
+              overflow: 'hidden',
+              zIndex: 2,
+              float: 'left',
+            }}
+          >
+            <LineNumberGutter
+              lineCount={displayLineCount}
+              cursorLine={cursorLine}
+              lineHeight={lineHeight}
+              scrollTop={scrollTop}
+              containerHeight={containerHeight}
+            />
+          </div>
+          {/* Styled overlay – positioned relative to this scrollable container */}
+          <div
+            style={{
+              position: 'relative',
+              left: 0,
+              top: 0,
+              height: totalHeight,
+              pointerEvents: 'none',
+              overflow: 'hidden',
+              fontFamily: FONT_TOKENS.editor,
+              fontSize: 'inherit',
+              lineHeight: `${lineHeight}px`,
+              whiteSpace: 'pre',
+              zIndex: 1,
+            }}
+            className="text-sm p-0 text-editor-foreground"
+          >
+            {codeRows}
+          </div>
+          {/* Textarea for editing – transparent, only captures input */}
+          <textarea
+            ref={textAreaRef}
+            style={{
+              ...codeStyle,
+              position: 'absolute',
+              left: gutterWidth,
+              top: 0,
+              right: 0,
+              height: totalHeight,
+              zIndex: 0,
+            }}
+            className="text-sm p-0"
+            value={displayValue}
+            onChange={handleChange}
+            onScroll={handleScroll}
+            onSelect={handleSelectionChange}
+            onClick={() => {
+              // Ensure textarea receives focus on click
+              if (textAreaRef.current && editable) {
+                textAreaRef.current.focus();
+              }
+            }}
+            spellCheck={false}
+            autoComplete="off"
+            autoCorrect="off"
+            wrap="off"
+            readOnly={!editable}
+          />
+        </div>
       </div>
       {largeFileBanner}
     </div>
