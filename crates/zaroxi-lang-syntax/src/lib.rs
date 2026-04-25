@@ -16,6 +16,7 @@ pub mod language;
 pub mod manager;
 pub mod query_cache;
 pub mod runtime;
+pub mod theme_map;
 
 // Re-export main types for convenience
 pub use dynamic_loader::DynamicGrammarLoader;
