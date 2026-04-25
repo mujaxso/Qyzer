@@ -63,7 +63,7 @@ export function LineNumberGutter({
         }}
         className={`text-right text-sm font-mono tabular-nums select-none ${
           isCurrent
-            ? 'text-accent font-semibold'
+            ? 'text-accent font-semibold bg-accent/15'
             : 'text-editor-foreground opacity-40'
         }`}
       >
