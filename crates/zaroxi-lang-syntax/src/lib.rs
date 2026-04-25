@@ -22,7 +22,14 @@ pub mod theme_map;
 pub use dynamic_loader::DynamicGrammarLoader;
 pub use error::SyntaxError;
 pub use grammar_builder::build_and_install_grammar;
-pub use grammar_registry::{GrammarInfo, is_grammar_installed, install_missing_grammars, download_and_install_grammar};
+pub use grammar_registry::{
+    GrammarInfo,
+    for_language,
+    available_languages,
+    is_grammar_installed,
+    download_and_install_grammar,
+    install_missing_grammars,
+};
 pub use highlight::{Highlight, HighlightSpan};
 pub use language::LanguageId;
 pub use manager::SyntaxManager;
