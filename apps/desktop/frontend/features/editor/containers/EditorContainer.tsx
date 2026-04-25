@@ -34,8 +34,10 @@ export function EditorContainer() {
     if (activeFilePath && activeTab?.kind === 'file') {
       loadFile(activeFilePath);
     }
+  }, [activeFilePath, activeTab]);
 
-    // Add keyboard shortcut for save (Ctrl+S)
+  // Add keyboard shortcut for save (Ctrl+S) - separate effect to avoid re-registering on every file change
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
@@ -49,7 +51,7 @@ export function EditorContainer() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [activeFilePath, activeTab]);
+  }, [activeFilePath]);
 
 
   const loadFile = async (path: string) => {
@@ -140,7 +142,6 @@ export function EditorContainer() {
     <div className="h-full flex flex-col bg-editor min-h-0 w-full min-w-0">
       <div className="flex-1 overflow-hidden code-editor-font min-h-0 bg-editor w-full min-w-0">
         <CodeEditor
-          key={activeFilePath || 'editor'}
           filePath={activeFilePath || undefined}
           initialValue={content}
           onChange={handleEditorChange}

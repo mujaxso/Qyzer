@@ -22,13 +22,16 @@ const MAX_VISIBLE_LINES = 200_000;
  *  This avoids scanning gigabyte files completely. */
 function fastLineCount(text: string): number | 'exceeds' {
   let lines = 1;
-  for (let i = 0; i < text.length; i++) {
+  const len = text.length;
+  let i = 0;
+  while (i < len) {
     if (text.charCodeAt(i) === 10) {
       lines++;
       if (lines > MAX_VISIBLE_LINES) {
         return 'exceeds';
       }
     }
+    i++;
   }
   return lines;
 }
@@ -36,7 +39,9 @@ function fastLineCount(text: string): number | 'exceeds' {
 /** Return a substring that contains at most `maxLines` lines. */
 function truncateToNLines(text: string, maxLines: number): string {
   let newlineCount = 0;
-  for (let i = 0; i < text.length; i++) {
+  const len = text.length;
+  let i = 0;
+  while (i < len) {
     if (text.charCodeAt(i) === 10) {
       newlineCount++;
       if (newlineCount >= maxLines) {
@@ -44,6 +49,7 @@ function truncateToNLines(text: string, maxLines: number): string {
         return text.slice(0, i + 1);
       }
     }
+    i++;
   }
   return text; // not enough lines to truncate
 }
@@ -51,10 +57,13 @@ function truncateToNLines(text: string, maxLines: number): string {
 /** Return an array of character offsets where each line starts (first element is always 0). */
 function computeLineOffsets(s: string): number[] {
   const offsets: number[] = [0];
-  for (let i = 0; i < s.length; i++) {
+  const len = s.length;
+  let i = 0;
+  while (i < len) {
     if (s.charCodeAt(i) === 10 /* \n */) {
       offsets.push(i + 1);
     }
+    i++;
   }
   return offsets;
 }
@@ -273,7 +282,12 @@ export function CodeEditor({
 
   // Inject CSS that hides native scrollbars (professional IDE look)
   useEffect(() => {
+    // Check if style already exists to avoid duplicates
+    if (document.getElementById('hide-scrollbar-style')) {
+      return;
+    }
     const style = document.createElement('style');
+    style.id = 'hide-scrollbar-style';
     style.innerHTML = `
       .hide-scrollbar::-webkit-scrollbar {
         display: none;
@@ -281,7 +295,7 @@ export function CodeEditor({
     `;
     document.head.appendChild(style);
     return () => {
-      document.head.removeChild(style);
+      // Don't remove on unmount to avoid flickering when switching tabs
     };
   }, []);
 
