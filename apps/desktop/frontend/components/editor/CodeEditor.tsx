@@ -111,28 +111,6 @@ function mergeSpanArrays(
   return Array.from(spanMap.values()).sort((a, b) => a.start - b.start);
 }
 
-// Helper to merge two arrays of spans, keeping the most recent for overlapping ranges
-function mergeSpanArrays(
-  existing: Array<{start: number; end: number; color: string}>,
-  incoming: Array<{start: number; end: number; color: string}>
-): Array<{start: number; end: number; color: string}> {
-  // Build a map from start position to span for quick lookup
-  const spanMap = new Map<number, {start: number; end: number; color: string}>();
-  
-  // Add existing spans
-  for (const span of existing) {
-    spanMap.set(span.start, span);
-  }
-  
-  // Override with incoming spans (they are more recent)
-  for (const span of incoming) {
-    spanMap.set(span.start, span);
-  }
-  
-  // Convert back to array and sort by start position
-  return Array.from(spanMap.values()).sort((a, b) => a.start - b.start);
-}
-
 function VirtualEditor({
   displayValue,
   cursorLine,
@@ -489,7 +467,6 @@ export function CodeEditor({
 
   const lastValidSpansRef = useRef<Array<{start: number; end: number; color: string}>>([]);
   const styledSpansRef = useRef<Array<{start: number; end: number; color: string}>>([]);
-  const allSpansRef = useRef<Array<{start: number; end: number; color: string}>>([]);
   const allSpansRef = useRef<Array<{start: number; end: number; color: string}>>([]);
   const lastFetchedRangeRef = useRef<{firstLine: number; lastLine: number} | null>(null);
   const containerHeightRef = useRef(600);
