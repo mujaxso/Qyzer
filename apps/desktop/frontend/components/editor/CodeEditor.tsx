@@ -143,6 +143,10 @@ function VirtualEditor({
     if (firstLine < 0 || lastLine < 0) {
       return '';
     }
+    console.log('[VirtualEditor] codeHtml recompute, styledSpans count:', styledSpans.length);
+    if (styledSpans.length > 0) {
+      console.log('[VirtualEditor] First 3 styledSpans:', styledSpans.slice(0, 3));
+    }
     const lines: string[] = [];
     for (let idx = firstLine; idx <= lastLine; idx++) {
       const start = sentinel[idx];
@@ -155,6 +159,10 @@ function VirtualEditor({
       const lineSpans = styledSpans.filter(
         (s) => s.start >= lineStart && s.end <= lineEnd
       );
+
+      if (idx === firstLine && lineSpans.length > 0) {
+        console.log('[VirtualEditor] First line spans:', lineSpans);
+      }
 
       // Build HTML for this line
       let html = '';
@@ -179,7 +187,11 @@ function VirtualEditor({
         `<div style="position:absolute;left:${gutterWidth}px;top:${idx * lineHeight}px;right:0;height:${lineHeight}px;line-height:${lineHeight}px;white-space:pre;overflow:hidden;font-family:${FONT_TOKENS.editor};font-size:inherit;" class="text-sm p-0 text-editor-foreground">${html}</div>`
       );
     }
-    return lines.join('\n');
+    const result = lines.join('\n');
+    if (styledSpans.length > 0) {
+      console.log('[VirtualEditor] codeHtml first 500 chars:', result.substring(0, 500));
+    }
+    return result;
   }, [firstLine, lastLine, lineHeight, displayValue, sentinel, styledSpans]);
 
   // Helper to escape HTML special characters
