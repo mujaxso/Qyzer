@@ -175,6 +175,7 @@ function VirtualEditor({
   const overscan = 5;
   const totalHeight = localLineCount * lineHeight;
   const gutterWidth = computeGutterWidth(displayLineCount);
+  const GUTTER_RIGHT_PADDING = 12; // px
 
   // Compute visible range deterministically from scrollTop, containerHeight, lineHeight
   const { firstLine, lastLine } = useMemo(() => {
@@ -351,6 +352,7 @@ function VirtualEditor({
             pointerEvents: 'none',
             overflow: 'hidden',
             zIndex: 2,
+            paddingRight: GUTTER_RIGHT_PADDING,
           }}
         >
           <LineNumberGutter
@@ -365,7 +367,7 @@ function VirtualEditor({
         <div
           style={{
             position: 'absolute',
-            left: gutterWidth,
+            left: gutterWidth + GUTTER_RIGHT_PADDING,
             top: 0,
             right: 0,
             bottom: 0,
