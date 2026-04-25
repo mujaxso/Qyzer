@@ -105,10 +105,6 @@ export function CodeEditor({
     };
   }, []);
 
-  const [scrollTop, setScrollTop] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
-  const scrollTopRafId = useRef<number | null>(null);
-
   const lineHeight = GUTTER_CONFIG.LINE_HEIGHT;
 
   // Re‑measure container height and update gutter on mount / resize
