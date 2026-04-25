@@ -27,6 +27,7 @@ impl std::fmt::Debug for ParserPool {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ParserPool")
             .field("parsers", &self.parsers)
+            .field("num_parsers", &self.parsers.lock().len())
             .finish()
     }
 }
@@ -54,7 +55,7 @@ impl ParserPool {
         }
 
         // Create a new parser
-        let mut parser = Parser::new()?;
+        let mut parser = Parser::new();
 
         // Set the language for the parser
         let ts_lang = language.tree_sitter_language()?;
