@@ -139,11 +139,11 @@ function VirtualEditor({
     return { firstLine: first, lastLine: last };
   }, [scrollTop, lineHeight, localLineCount, containerHeight]);
 
-  const codeRows = useMemo(() => {
+  const codeHtml = useMemo(() => {
     if (firstLine < 0 || lastLine < 0) {
-      return null;
+      return '';
     }
-    const rows: React.ReactNode[] = [];
+    const lines: string[] = [];
     for (let idx = firstLine; idx <= lastLine; idx++) {
       const start = sentinel[idx];
       const end = sentinel[idx + 1];
@@ -156,57 +156,41 @@ function VirtualEditor({
         (s) => s.start >= lineStart && s.end <= lineEnd
       );
 
-      const segments: React.ReactNode[] = [];
+      // Build HTML for this line
+      let html = '';
       let currentPos = lineStart;
       for (const span of lineSpans) {
         if (span.start > currentPos) {
-          segments.push(
-            <span key={`${currentPos}-plain`}>
-              {text.slice(currentPos - lineStart, span.start - lineStart)}
-            </span>
-          );
+          // Unstyled text
+          const plainText = text.slice(currentPos - lineStart, span.start - lineStart);
+          html += escapeHtml(plainText);
         }
-        segments.push(
-          <span
-            key={`${span.start}-styled`}
-            style={{ color: span.color }}
-          >
-            {text.slice(span.start - lineStart, span.end - lineStart)}
-          </span>
-        );
+        const styledText = text.slice(span.start - lineStart, span.end - lineStart);
+        html += `<span style="color:${span.color}">${escapeHtml(styledText)}</span>`;
         currentPos = span.end;
       }
       if (currentPos < lineEnd) {
-        segments.push(
-          <span key={`${currentPos}-plain-end`}>
-            {text.slice(currentPos - lineStart)}
-          </span>
-        );
+        const remaining = text.slice(currentPos - lineStart);
+        html += escapeHtml(remaining);
       }
 
-      rows.push(
-        <div
-          key={idx}
-          style={{
-            position: 'absolute',
-            left: gutterWidth,
-            top: idx * lineHeight,
-            right: 0,
-            height: lineHeight,
-            lineHeight: `${lineHeight}px`,
-            whiteSpace: 'pre',
-            overflow: 'hidden',
-            fontFamily: FONT_TOKENS.editor,
-            fontSize: 'inherit',
-          }}
-          className="text-sm p-0 text-editor-foreground"
-        >
-          {segments.length > 0 ? segments : text}
-        </div>,
+      // Wrap each line in a div with absolute positioning
+      lines.push(
+        `<div style="position:absolute;left:${gutterWidth}px;top:${idx * lineHeight}px;right:0;height:${lineHeight}px;line-height:${lineHeight}px;white-space:pre;overflow:hidden;font-family:${FONT_TOKENS.editor};font-size:inherit;" class="text-sm p-0 text-editor-foreground">${html}</div>`
       );
     }
-    return rows;
+    return lines.join('\n');
   }, [firstLine, lastLine, lineHeight, displayValue, sentinel, styledSpans]);
+
+  // Helper to escape HTML special characters
+  function escapeHtml(str: string): string {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
   const handleScroll = useCallback(() => {
     if (rafRef.current != null) {
@@ -284,9 +268,8 @@ function VirtualEditor({
               lineHeight: `${lineHeight}px`,
             }}
             className="text-sm p-0 text-editor-foreground"
-          >
-            {codeRows}
-          </div>
+            dangerouslySetInnerHTML={{ __html: codeHtml }}
+          />
         </div>
       </div>
       {largeFileBanner}
