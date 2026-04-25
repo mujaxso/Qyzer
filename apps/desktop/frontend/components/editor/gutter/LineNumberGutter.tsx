@@ -76,6 +76,10 @@ export const LineNumberGutter = ({
 
   // Render only the visible line numbers
   const lineNumbers = useMemo(() => {
+    // Guard against uninitialised container height
+    if (firstLine < 0 || lastLine < 0) {
+      return [];
+    }
     const items = [];
     for (let lineIndex = firstLine; lineIndex <= lastLine; lineIndex++) {
       const lineNum = lineIndex + 1;
