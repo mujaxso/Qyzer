@@ -40,38 +40,34 @@ impl Runtime {
         // 0. First priority: runtime directory relative to the zaroxi-lang-syntax crate source directory
         // This is the most reliable location for development
         // We need to find the crate's Cargo.toml, not the desktop app's
-        if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
-            let manifest_path = PathBuf::from(manifest_dir);
-            // Walk up to find the zaroxi-lang-syntax crate's Cargo.toml
-            let mut current = manifest_path.clone();
-            while current.parent().is_some() {
-                let cargo_toml = current.join("Cargo.toml");
-                if cargo_toml.exists() {
-                    // Check if this is the zaroxi-lang-syntax crate by looking for its name
-                    if let Ok(content) = std::fs::read_to_string(&cargo_toml) {
-                        if content.contains("name = \"zaroxi-lang-syntax\"") {
-                            // Found the crate directory, look for runtime/treesitter relative to it
-                            let candidate = current.join("runtime/treesitter");
-                            if candidate.is_dir() {
-                                eprintln!("DEBUG: locate_root: found via zaroxi-lang-syntax crate dir: {:?}", candidate);
-                                return Some(candidate);
-                            }
-                            let runtime_dir = current.join("runtime");
-                            if runtime_dir.is_dir() {
-                                let ts_dir = runtime_dir.join("treesitter");
-                                if ts_dir.is_dir() {
-                                    eprintln!("DEBUG: locate_root: found via zaroxi-lang-syntax crate dir/runtime/treesitter: {:?}", ts_dir);
-                                    return Some(ts_dir);
-                                }
-                                eprintln!("DEBUG: locate_root: found via zaroxi-lang-syntax crate dir/runtime: {:?}", runtime_dir);
-                                return Some(runtime_dir);
-                            }
-                            break;
+        // Try to find the crate by looking for its Cargo.toml relative to the current executable
+        if let Ok(exe_path) = env::current_exe() {
+            if let Some(exe_dir) = exe_path.parent() {
+                // Walk up from executable to find the workspace root
+                let mut current = exe_dir.to_path_buf();
+                while current.parent().is_some() {
+                    let cargo_toml = current.join("Cargo.toml");
+                    if cargo_toml.exists() {
+                        // Found workspace root, look for crates/zaroxi-lang-syntax/runtime/treesitter
+                        let candidate = current.join("crates/zaroxi-lang-syntax/runtime/treesitter");
+                        if candidate.is_dir() {
+                            eprintln!("DEBUG: locate_root: found via workspace root/crates/zaroxi-lang-syntax/runtime/treesitter: {:?}", candidate);
+                            return Some(candidate);
                         }
+                        let runtime_dir = current.join("crates/zaroxi-lang-syntax/runtime");
+                        if runtime_dir.is_dir() {
+                            let ts_dir = runtime_dir.join("treesitter");
+                            if ts_dir.is_dir() {
+                                eprintln!("DEBUG: locate_root: found via workspace root/crates/zaroxi-lang-syntax/runtime/treesitter: {:?}", ts_dir);
+                                return Some(ts_dir);
+                            }
+                            eprintln!("DEBUG: locate_root: found via workspace root/crates/zaroxi-lang-syntax/runtime: {:?}", runtime_dir);
+                            return Some(runtime_dir);
+                        }
+                        break;
                     }
-                    break;
+                    current = current.parent().unwrap().to_path_buf();
                 }
-                current = current.parent().unwrap().to_path_buf();
             }
         }
 
