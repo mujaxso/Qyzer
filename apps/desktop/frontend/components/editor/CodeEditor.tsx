@@ -105,19 +105,23 @@ export function CodeEditor({
 
   const lineHeight = GUTTER_CONFIG.LINE_HEIGHT;
 
-  // Handle scroll: directly set the gutter container transform, no React state updates
-  const handleScroll = useCallback(() => {
-    const ta = textAreaRef.current;
-    if (!ta) return;
-    const st = ta.scrollTop;
+  // Use native scroll listener for performance and to avoid React re-renders
+  useEffect(() => {
+    const el = textAreaRef.current;
+    if (!el) return;
 
-    // Move the gutter inner container directly (no re‑render)
-    if (gutterInnerRef.current) {
-      gutterInnerRef.current.style.transform = `translateY(-${st}px)`;
-    }
+    const onScroll = () => {
+      const st = el.scrollTop;
+      const gutter = gutterInnerRef.current;
+      if (gutter) {
+        gutter.style.transform = `translateY(-${st}px)`;
+      }
+    };
+    // sync initial state
+    onScroll();
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
   }, []);
-
-  // No rAF, no scrollTop state, no containerHeight state for the gutter.
 
   const handleSelectionChange = useCallback(() => {
     const ta = textAreaRef.current;
@@ -199,7 +203,6 @@ export function CodeEditor({
             ...codeStyle,
             overflow: 'auto',
           }}
-          onScroll={handleScroll}
         >
           {displayValue}
         </pre>
@@ -232,7 +235,6 @@ export function CodeEditor({
         }}
         value={displayValue}
         onChange={handleChange}
-        onScroll={handleScroll}
         onSelect={handleSelectionChange}
         spellCheck={false}
         autoComplete="off"
