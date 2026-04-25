@@ -18,7 +18,7 @@ export function LineNumberGutter({
 }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
-  // Virtualized visible line range
+  // Virtualized visible line range (using a small overscan buffer)
   const start = useMemo(() => {
     if (containerHeight <= 0) return 0;
     const scrollLine = Math.floor(scrollTop / lineHeight);
@@ -50,7 +50,7 @@ export function LineNumberGutter({
     }
   }, [scrollTop]);
 
-  // Build the virtualized line‑number list
+  // Build the virtualized line‑number list using absolute positioning
   const numbers = [];
   for (let i = start; i < end; i++) {
     const lineNum = i + 1;
@@ -59,15 +59,19 @@ export function LineNumberGutter({
       <div
         key={i}
         style={{
+          position: 'absolute',
+          top: i * lineHeight,
+          left: 0,
+          right: 0,
           height: lineHeight,
           lineHeight: `${lineHeight}px`,
           paddingRight: GUTTER_CONFIG.PADDING_RIGHT,
           paddingLeft: GUTTER_CONFIG.PADDING_LEFT,
         }}
-        className={`relative text-right text-sm font-mono tabular-nums select-none ${
+        className={`text-right text-sm font-mono tabular-nums select-none ${
           isCurrent
-            ? 'text-accent font-semibold'       // current line marker
-            : 'text-editor-foreground opacity-40' // quiet, technical lines
+            ? 'text-accent font-semibold'
+            : 'text-editor-foreground opacity-40'
         }`}
       >
         {lineNum}
@@ -78,17 +82,16 @@ export function LineNumberGutter({
   return (
     <div
       ref={ref}
-      className="overflow-hidden shrink-0 border-r border-[rgba(128,128,128,0.18)]"
+      className="h-full overflow-y-auto overflow-x-hidden shrink-0 border-r border-[rgba(128,128,128,0.18)]"
       style={{
         width: gutterWidth,
-        paddingTop: start * lineHeight,
         scrollbarWidth: 'none',
         msOverflowStyle: 'none',
       }}
     >
       <div
-        className="min-w-full"
-        style={{ height: lineCount * lineHeight - start * lineHeight }}
+        className="min-w-full relative"
+        style={{ height: lineCount * lineHeight }}
       >
         {numbers}
       </div>

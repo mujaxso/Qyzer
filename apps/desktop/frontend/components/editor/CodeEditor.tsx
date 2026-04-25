@@ -140,7 +140,7 @@ export function CodeEditor({
     return (
       <div
         ref={containerRef}
-        className={cn('flex flex-row h-full w-full bg-editor', className)}
+        className={cn('flex flex-row h-full w-full gap-1 bg-editor', className)}
         onScroll={handleScroll}
       >
         {gutter}
@@ -161,7 +161,7 @@ export function CodeEditor({
   return (
     <div
       ref={containerRef}
-      className={cn('flex flex-row h-full w-full', className)}
+      className={cn('flex flex-row h-full w-full gap-1', className)}
       onScroll={handleScroll}
     >
       {gutter}
