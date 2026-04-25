@@ -46,7 +46,6 @@ export const LineNumberGutter: React.FC<Props> = ({
     return (
       <div
         style={{
-          width: model.width,
           pointerEvents: 'none',
           position: 'relative',
           overflow: 'hidden',
@@ -58,7 +57,6 @@ export const LineNumberGutter: React.FC<Props> = ({
   return (
     <div
       style={{
-        width: model.width,
         pointerEvents: 'none',
         position: 'relative',
         overflow: 'hidden',
