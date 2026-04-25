@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { useTabsStore } from '@/features/tabs/store';
 import { LineNumberGutter } from './gutter/LineNumberGutter';
@@ -13,13 +13,31 @@ interface CodeEditorProps {
   className?: string;
 }
 
+/** Maximum number of lines we allow to be rendered in the textarea at once.
+ * Files exceeding this limit will show a preview of the first lines and forbid editing. */
+const MAX_VISIBLE_LINES = 10_000;
+
 function countLines(text: string): number {
-  // Count linefeed occurrences, add one for the last line (even if empty)
   let lines = 1;
   for (let i = 0; i < text.length; i++) {
     if (text.charCodeAt(i) === 10) lines++;
   }
   return lines;
+}
+
+/** Return a substring that contains at most `maxLines` lines. */
+function truncateToNLines(text: string, maxLines: number): string {
+  let newlineCount = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (text.charCodeAt(i) === 10) {
+      newlineCount++;
+      if (newlineCount >= maxLines) {
+        // Include the newline we just counted, then stop.
+        return text.slice(0, i + 1);
+      }
+    }
+  }
+  return text; // not enough lines to truncate
 }
 
 export function CodeEditor({
@@ -30,7 +48,18 @@ export function CodeEditor({
   readOnly = false,
   className,
 }: CodeEditorProps) {
-  const [value, setValue] = useState(initialValue);
+  // Determine whether the file is too large to edit safely.
+  const [isLarge, setIsLarge] = useState<boolean>(false);
+  const [displayValue, setDisplayValue] = useState<string>(() => {
+    if (countLines(initialValue) > MAX_VISIBLE_LINES) {
+      setIsLarge(true);
+      return truncateToNLines(initialValue, MAX_VISIBLE_LINES);
+    }
+    return initialValue;
+  });
+
+  // The whole original content is stored so that `onChange` receives it even when truncated.
+  const fullValueRef = useRef(initialValue);
   const initialRef = useRef(initialValue);
 
   // Refs for scroll synchronisation
@@ -38,9 +67,8 @@ export function CodeEditor({
   const containerRef = useRef<HTMLDivElement>(null);
   const gutterInnerRef = useRef<HTMLDivElement>(null);
 
-  // Editor state we need to expose to the gutter (virtualisation)
+  // Editor state for the gutter (virtualisation)
   const [cursorLine, setCursorLine] = useState(() => {
-    // compute initial cursor line from text (starts at position 0)
     const beforeNewlines = initialValue.slice(0, 0).match(/\n/g);
     return beforeNewlines ? beforeNewlines.length + 1 : 1;
   });
@@ -49,24 +77,23 @@ export function CodeEditor({
 
   const scrollTopRafId = useRef<number | null>(null);
 
-  // lineCount is stored in state so it is **not** recomputed on every render
+  // lineCount is computed once from the *full* file (used for gutter width)
   const [lineCount, setLineCount] = useState(() => countLines(initialValue));
 
-  // Update lineCount only when the text value changes
-  const valueRef = useRef(value);
-  useEffect(() => {
-    if (valueRef.current !== value) {
-      valueRef.current = value;
-      setLineCount(countLines(value));
-    }
-  }, [value]);
-
-  // Sync when the parent supplies a new `initialValue`
+  // Update displayValue when initialValue changes from the outside
   useEffect(() => {
     if (initialRef.current !== initialValue) {
       initialRef.current = initialValue;
-      setValue(initialValue);
-      setLineCount(countLines(initialValue));
+      fullValueRef.current = initialValue;
+      const newLineCount = countLines(initialValue);
+      setLineCount(newLineCount);
+      if (newLineCount > MAX_VISIBLE_LINES) {
+        setIsLarge(true);
+        setDisplayValue(truncateToNLines(initialValue, MAX_VISIBLE_LINES));
+      } else {
+        setIsLarge(false);
+        setDisplayValue(initialValue);
+      }
     }
   }, [initialValue]);
 
@@ -107,12 +134,10 @@ export function CodeEditor({
     if (!ta) return;
     const st = ta.scrollTop;
 
-    // Apply pixel‑perfect transform to the gutter’s inner container (no React re‑render)
     if (gutterInnerRef.current) {
       gutterInnerRef.current.style.transform = `translateY(-${st}px)`;
     }
 
-    // Throttle scrollTop state update to at most once per frame (needed for virtualisation)
     if (scrollTopRafId.current !== null) {
       cancelAnimationFrame(scrollTopRafId.current);
     }
@@ -123,7 +148,6 @@ export function CodeEditor({
     });
   }, []);
 
-  // Cleanup rAF on unmount
   useEffect(() => {
     return () => {
       if (scrollTopRafId.current !== null) {
@@ -136,20 +160,23 @@ export function CodeEditor({
     const ta = textAreaRef.current;
     if (!ta) return;
     const selStart = ta.selectionStart;
-    const beforeNewlines = value.slice(0, selStart).match(/\n/g);
+    // Count newlines in the displayed (truncated) text only
+    const beforeNewlines = displayValue.slice(0, selStart).match(/\n/g);
     const line = beforeNewlines ? beforeNewlines.length + 1 : 1;
     setCursorLine(line);
-  }, [value]);
+  }, [displayValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (readOnly) return;
+    // If the file was too large, editing is disabled.
+    if (readOnly || isLarge) return;
     const newValue = e.target.value;
-    setValue(newValue);
+    // Keep track of the full content (may be larger than displayed, but here editing is only when file fits)
+    fullValueRef.current = newValue;
+    setDisplayValue(newValue);
     onChange(newValue);
     if (filePath) {
       useTabsStore.getState().markDirty(filePath);
     }
-    // Update cursor line after a change (will be refined on selection change)
     handleSelectionChange();
   };
 
@@ -182,12 +209,23 @@ export function CodeEditor({
     />
   );
 
-  if (readOnly) {
+  // Large‑file message (Read‑only preview)
+  const largeFileBanner = isLarge ? (
+    <div className="absolute bottom-0 left-0 right-0 bg-editor z-10 p-2 text-xs text-muted-foreground border-t border-[rgba(128,128,128,0.18)]">
+      File is larger than {MAX_VISIBLE_LINES.toLocaleString()} lines.
+      Showing a read‑only preview of the first {MAX_VISIBLE_LINES.toLocaleString()} lines.
+    </div>
+  ) : null;
+
+  // Because the actual rendered content (displayValue) may be shorter than fullValueRef,
+  // we need to tell the user the editor is read‑only when isLarge is true.
+  const effectiveReadOnly = readOnly || isLarge;
+
+  if (effectiveReadOnly) {
     return (
       <div
         ref={containerRef}
-        className={cn('flex flex-row h-full w-full gap-1 bg-editor', className)}
-        onScroll={handleScroll}
+        className={cn('flex flex-row h-full w-full bg-editor', className)}
       >
         {gutter}
         <pre
@@ -198,17 +236,23 @@ export function CodeEditor({
             overflow: 'auto',
           }}
         >
-          {value}
+          {displayValue}
         </pre>
+        {largeFileBanner}
       </div>
     );
   }
 
+  const containerClassName = cn(
+    'flex flex-row h-full w-full gap-1',
+    'relative',
+    className,
+  );
+
   return (
     <div
       ref={containerRef}
-      className={cn('flex flex-row h-full w-full gap-1', className)}
-      onScroll={handleScroll}
+      className={containerClassName}
     >
       {gutter}
       <textarea
@@ -221,7 +265,7 @@ export function CodeEditor({
           ...codeStyle,
           border: 'none',
         }}
-        value={value}
+        value={displayValue}
         onChange={handleChange}
         onScroll={handleScroll}
         onSelect={handleSelectionChange}
@@ -230,6 +274,7 @@ export function CodeEditor({
         autoCorrect="off"
         wrap="off"
       />
+      {largeFileBanner}
     </div>
   );
 }
