@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { GutterModel } from './GutterModel';
 import { GutterView } from './GutterView';
+import { ViewportState } from './GutterLayout';
 
 interface Props {
   lineCount: number;
@@ -23,18 +24,21 @@ export const LineNumberGutter: React.FC<Props> = ({
   scrollTop,
   containerHeight,
 }) => {
+  // Build viewport state
+  const viewport: ViewportState = useMemo(
+    () => ({
+      scrollTop,
+      containerHeight,
+      lineHeight,
+      totalLines: lineCount,
+    }),
+    [scrollTop, containerHeight, lineHeight, lineCount],
+  );
+
   // Create the model (memoized based on inputs)
   const model = useMemo(
-    () =>
-      new GutterModel(
-        scrollTop,
-        lineHeight,
-        lineCount,
-        containerHeight,
-        cursorLine,
-        3, // overscan
-      ),
-    [scrollTop, lineHeight, lineCount, containerHeight, cursorLine],
+    () => new GutterModel(viewport, cursorLine),
+    [viewport, cursorLine],
   );
 
   // Early return for empty document
@@ -60,7 +64,7 @@ export const LineNumberGutter: React.FC<Props> = ({
         overflow: 'visible',
       }}
     >
-      <GutterView model={model} />
+      <GutterView viewport={viewport} cursorLine={cursorLine} />
     </div>
   );
 };
