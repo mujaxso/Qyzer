@@ -1,5 +1,6 @@
-import { useRef, useMemo, useState, useLayoutEffect } from 'react';
-import { GUTTER_CONFIG } from './GutterConfig';
+import React, { useRef, useLayoutEffect, useState, useMemo } from 'react';
+import { GutterModel } from './GutterModel';
+import { GutterView } from './GutterView';
 
 interface Props {
   lineCount: number;
@@ -8,19 +9,22 @@ interface Props {
   scrollTop: number;
 }
 
-/** Number of extra lines above and below the visible area to keep rendered. */
-const OVERSCAN = 3;
-
-export const LineNumberGutter = ({
+/**
+ * Thin wrapper that measures container height and creates a GutterModel.
+ *
+ * This component is the public API for the gutter subsystem.
+ * All layout logic lives in `GutterModel`; all rendering lives in `GutterView`.
+ */
+export const LineNumberGutter: React.FC<Props> = ({
   lineCount,
   cursorLine,
   lineHeight,
   scrollTop,
-}: Props) => {
+}) => {
   const outerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(0);
 
-  // Measure our own height as soon as the component mounts (and on resize)
+  // Measure container height on mount and on resize
   useLayoutEffect(() => {
     const updateHeight = () => {
       if (outerRef.current) {
@@ -29,29 +33,34 @@ export const LineNumberGutter = ({
     };
     updateHeight();
     const observer = new ResizeObserver(updateHeight);
-    if (outerRef.current) observer.observe(outerRef.current);
+    if (outerRef.current) {
+      observer.observe(outerRef.current);
+    }
     return () => observer.disconnect();
   }, []);
 
-  // Gutter width based on number of digits of the last line
-  const gutterWidth = useMemo(() => {
-    const digits = String(lineCount).length;
-    return Math.max(
-      GUTTER_CONFIG.MIN_WIDTH,
-      digits * GUTTER_CONFIG.DIGIT_WIDTH +
-        GUTTER_CONFIG.PADDING_LEFT +
-        GUTTER_CONFIG.PADDING_RIGHT,
-    );
-  }, [lineCount]);
+  // Create the model (memoized based on inputs)
+  const model = useMemo(
+    () =>
+      new GutterModel(
+        scrollTop,
+        lineHeight,
+        lineCount,
+        containerHeight,
+        cursorLine,
+        3, // overscan
+      ),
+    [scrollTop, lineHeight, lineCount, containerHeight, cursorLine],
+  );
 
-  // Early return if there are no lines
+  // Early return for empty document
   if (lineCount === 0) {
     return (
       <div
         ref={outerRef}
         className="h-full overflow-hidden shrink-0 border-r border-[rgba(128,128,128,0.18)]"
         style={{
-          width: gutterWidth,
+          width: model.width,
           pointerEvents: 'none',
           position: 'relative',
         }}
@@ -59,73 +68,17 @@ export const LineNumberGutter = ({
     );
   }
 
-  // Visible line range (clamped, with overscan)
-  const { firstLine, lastLine } = useMemo(() => {
-    if (containerHeight === 0 || lineHeight <= 0) {
-      // Container not yet measured or invalid line height – render nothing
-      return { firstLine: -1, lastLine: -1 };
-    }
-    const effectiveScrollTop = Math.max(0, scrollTop);
-    const first = Math.max(0, Math.floor(effectiveScrollTop / lineHeight) - OVERSCAN);
-    const last = Math.min(
-      lineCount - 1,
-      Math.ceil((effectiveScrollTop + containerHeight) / lineHeight) + OVERSCAN - 1,
-    );
-    // Safety guard against non‑finite values that could cause an infinite loop
-    if (!Number.isFinite(first) || !Number.isFinite(last)) {
-      return { firstLine: -1, lastLine: -1 };
-    }
-    return { firstLine: first, lastLine: last };
-  }, [scrollTop, lineHeight, lineCount, containerHeight]);
-
-  // Render only the visible line numbers
-  const lineNumbers = useMemo(() => {
-    // Guard against uninitialised container height
-    if (firstLine < 0 || lastLine < 0) {
-      return [];
-    }
-    const items = [];
-    for (let lineIndex = firstLine; lineIndex <= lastLine; lineIndex++) {
-      const lineNum = lineIndex + 1;
-      const isCurrent = lineNum === cursorLine;
-      items.push(
-        <div
-          key={lineIndex}
-          style={{
-            position: 'absolute',
-            // Position relative to the parent (scrolled) area
-            top: lineIndex * lineHeight - scrollTop,
-            left: 0,
-            right: 0,
-            height: lineHeight,
-            lineHeight: `${lineHeight}px`,
-            paddingRight: GUTTER_CONFIG.PADDING_RIGHT,
-            paddingLeft: GUTTER_CONFIG.PADDING_LEFT,
-          }}
-          className={`text-right text-sm font-mono tabular-nums select-none ${
-            isCurrent
-              ? 'text-accent font-semibold bg-accent/15'
-              : 'text-editor-foreground opacity-40'
-          }`}
-        >
-          {lineNum}
-        </div>,
-      );
-    }
-    return items;
-  }, [firstLine, lastLine, cursorLine, lineHeight, scrollTop]);
-
   return (
     <div
       ref={outerRef}
       className="h-full overflow-hidden shrink-0 border-r border-[rgba(128,128,128,0.18)]"
       style={{
-        width: gutterWidth,
+        width: model.width,
         pointerEvents: 'none',
         position: 'relative',
       }}
     >
-      {lineNumbers}
+      <GutterView model={model} />
     </div>
   );
 };

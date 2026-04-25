@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import { useTabsStore } from '@/features/tabs/store';
 import { LineNumberGutter } from './gutter/LineNumberGutter';
 import { GUTTER_CONFIG } from './gutter/GutterConfig';
+import { GutterModel } from './gutter/GutterModel';
+import { GutterModel } from './gutter/GutterModel';
 
 interface CodeEditorProps {
   initialValue: string;
@@ -105,15 +107,19 @@ function ReadOnlyContent({
   );
   const localLineCount = lineOffsets.length;
 
-  const gutterWidth = useMemo(() => {
-    const digits = String(displayLineCount).length;
-    return Math.max(
-      GUTTER_CONFIG.MIN_WIDTH,
-      digits * GUTTER_CONFIG.DIGIT_WIDTH +
-        GUTTER_CONFIG.PADDING_LEFT +
-        GUTTER_CONFIG.PADDING_RIGHT,
-    );
-  }, [displayLineCount]);
+  const gutterModel = useMemo(
+    () =>
+      new GutterModel(
+        scrollTop,
+        lineHeight,
+        displayLineCount,
+        containerHeight,
+        cursorLine,
+        5, // overscan for ReadOnlyContent
+      ),
+    [scrollTop, lineHeight, displayLineCount, containerHeight, cursorLine],
+  );
+  const gutterWidth = gutterModel.width;
 
   const overscan = 5;
   const totalHeight = localLineCount * lineHeight;
