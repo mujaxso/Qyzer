@@ -84,7 +84,8 @@ export function LineNumberGutter({
         className="min-w-full relative"
         style={{
           height: lineCount * lineHeight,
-          marginTop: -scrollTop,
+          transform: `translateY(-${scrollTop}px)`,
+          willChange: 'transform',
         }}
       >
         {numbers}

@@ -55,6 +55,15 @@ export function CodeEditor({
     };
   }, []);
 
+  // Cancel any pending rAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, []);
+
   // Re‑measure container height and update gutter on mount / resize
   const measureContainer = useCallback(() => {
     if (containerRef.current) {
@@ -77,11 +86,19 @@ export function CodeEditor({
     [value],
   );
 
+  const rafIdRef = useRef<number | null>(null);
+
   const handleScroll = useCallback(() => {
     const ta = textAreaRef.current;
-    if (ta) {
-      setScrollTop(ta.scrollTop);
+    if (!ta) return;
+    const currentScroll = ta.scrollTop;
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
     }
+    rafIdRef.current = requestAnimationFrame(() => {
+      setScrollTop(currentScroll);
+      rafIdRef.current = null;
+    });
   }, []);
 
   const handleSelectionChange = useCallback(() => {
