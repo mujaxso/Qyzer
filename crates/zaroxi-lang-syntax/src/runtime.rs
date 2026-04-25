@@ -150,6 +150,33 @@ impl Runtime {
             }
         }
 
+        // 8. Try to find runtime directory relative to the CARGO_MANIFEST_DIR
+        if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+            let manifest_path = PathBuf::from(manifest_dir);
+            // Walk up to find workspace root
+            let mut current = manifest_path.clone();
+            while current.parent().is_some() {
+                let workspace_toml = current.join("Cargo.toml");
+                if workspace_toml.exists() {
+                    // Found workspace root, look for runtime/treesitter
+                    let candidate = current.join("runtime/treesitter");
+                    if candidate.is_dir() {
+                        return Some(candidate);
+                    }
+                    let runtime_dir = current.join("runtime");
+                    if runtime_dir.is_dir() {
+                        let ts_dir = runtime_dir.join("treesitter");
+                        if ts_dir.is_dir() {
+                            return Some(ts_dir);
+                        }
+                        return Some(runtime_dir);
+                    }
+                    break;
+                }
+                current = current.parent().unwrap().to_path_buf();
+            }
+        }
+
         None
     }
 
