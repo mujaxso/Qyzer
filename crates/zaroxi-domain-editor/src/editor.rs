@@ -251,6 +251,10 @@ impl EditorState {
         // Now we can borrow self.document immutably because highlights is owned
         let total_lines = self.document.len_lines();
 
+        // Clamp line range to document bounds
+        let start_line = start_line.min(total_lines.saturating_sub(1));
+        let end_line = end_line.min(total_lines);
+
         // Convert line range to character range (not byte range)
         let start_char = self.document.line_to_char(start_line);
         let end_char = if end_line >= total_lines {

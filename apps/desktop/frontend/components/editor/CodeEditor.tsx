@@ -93,13 +93,18 @@ function VirtualEditor({
 }) {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [containerHeight, setContainerHeight] = useState(0);
+  const containerHeightRef = useRef(600); // default until measured
+  const [containerHeight, setContainerHeight] = useState(600);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const update = () => {
       if (containerRef.current) {
-        setContainerHeight(containerRef.current.clientHeight);
+        const h = containerRef.current.clientHeight;
+        if (h > 0 && h !== containerHeightRef.current) {
+          containerHeightRef.current = h;
+          setContainerHeight(h);
+        }
       }
     };
     update();
@@ -124,10 +129,10 @@ function VirtualEditor({
   const totalHeight = localLineCount * lineHeight;
   const gutterWidth = computeGutterWidth(displayLineCount);
 
+  // Compute visible range deterministically from scrollTop, containerHeight, lineHeight
   const { firstLine, lastLine } = useMemo(() => {
-    // Use a default container height if not yet measured
     const effectiveContainerHeight = containerHeight > 0 ? containerHeight : 600;
-    if (lineHeight <= 0) {
+    if (lineHeight <= 0 || localLineCount === 0) {
       return { firstLine: -1, lastLine: -1 };
     }
     const effectiveScrollTop = Math.max(0, scrollTop);
@@ -153,8 +158,9 @@ function VirtualEditor({
     return map;
   }, [styledSpans]);
 
+  // Render rows for the computed visible range
   const codeRows = useMemo(() => {
-    if (firstLine < 0 || lastLine < 0) {
+    if (firstLine < 0 || lastLine < 0 || localLineCount === 0) {
       return null;
     }
     const rows: React.ReactNode[] = [];
@@ -214,18 +220,13 @@ function VirtualEditor({
       );
     }
     return rows;
-  }, [firstLine, lastLine, lineHeight, displayValue, sentinel, colorMap]);
+  }, [firstLine, lastLine, lineHeight, displayValue, sentinel, colorMap, localLineCount]);
 
+  // Synchronous scroll handler – no requestAnimationFrame delay
   const handleScroll = useCallback(() => {
-    if (rafRef.current != null) {
-      cancelAnimationFrame(rafRef.current);
+    if (textAreaRef.current) {
+      onScroll(textAreaRef.current.scrollTop);
     }
-    rafRef.current = requestAnimationFrame(() => {
-      if (textAreaRef.current) {
-        onScroll(textAreaRef.current.scrollTop);
-      }
-      rafRef.current = null;
-    });
   }, [onScroll]);
 
   const handleChange = useCallback(
