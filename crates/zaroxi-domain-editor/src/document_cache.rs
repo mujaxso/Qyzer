@@ -225,7 +225,7 @@ impl BufferManager {
 
                 if cached.meta.mtime_secs == current_mtime && cached.meta.file_size == current_size {
                     // File unchanged – reuse cached version.
-                    return Ok(cached.clone_deep());
+                    return Ok(cached.clone());
                 }
                 // File changed on disk – fall through to reload.
             }
