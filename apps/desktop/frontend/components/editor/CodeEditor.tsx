@@ -147,6 +147,7 @@ function VirtualEditor({
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(600);
+  const [containerWidth, setContainerWidth] = useState(800);
 
   useEffect(() => {
     const update = () => {
